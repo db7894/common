@@ -1,0 +1,472 @@
+/******************************************************************************
+ * Layout Information
+ * ---------------------------------------------------------------------------
+ * This stylesheet is used to handle layout only
+ *****************************************************************************/
+
+/******************************************************************************
+ * Global CSS Values
+ *****************************************************************************/
+* {
+}
+
+html {
+}
+
+body {
+	font: 13px/1.231 arial,helvetica,clean,sans-serif;
+	background:;
+}
+
+/******************************************************************************
+ * First Level Identifiers
+ *****************************************************************************/
+#container {
+	width:;
+	margin:;
+	padding:;
+	background:;
+	text-align:;
+}
+
+#mainContent {
+	position:;
+	float:;
+	width:;
+	margin:;
+	padding:;
+	background:;
+	text-align:;
+}
+
+#subContent {
+	position:;
+	float:;
+	width:;
+	margin:;
+	padding:;
+	background:;
+	text-align:;
+}
+
+#navigation {
+	margin:;
+	padding:;
+}
+
+#footer {
+	margin:;
+	padding:;
+	clear: both;
+}
+
+/******************************************************************************
+ * Common Classes
+ *****************************************************************************/
+.hide {
+	display:none;
+}
+
+.show {
+	display:block;
+}
+
+/******************************************************************************
+ * Header Elements
+ *****************************************************************************/
+h1, h2, h3, h4, h5, h6 {
+	font-weight: bold; 
+}
+
+h1, h2, h3 {
+	margin:1em 0; 
+}
+
+h1 {
+	font:;
+	font-size: 138.5%;  
+	color:;
+}
+
+h2 {
+	font:;
+	font-size: 123.1%;
+	color:;
+}
+
+h3 {
+	font:;
+	font-size: 108%;
+	color:;
+}
+
+/******************************************************************************
+ * Paragraph Elements
+ *****************************************************************************/
+p {
+	font:;
+	color:;
+
+	font-size:;
+	font-family:;
+	font-style:;
+	font-weight:;
+	font-variant:;
+
+	text-align:;
+	text-indent:;
+	text-decoration:;
+	text-shadow:;
+	text-transform:;
+
+	letter-spacing:;
+	word-spacing:;
+}
+
+#primaryContent p {
+}
+
+#secondaryContent p {
+}
+
+/******************************************************************************
+ * Quote Elements
+ *****************************************************************************/
+blockquote {
+	margin:;
+	padding:;
+	background-color:;
+	font:;
+	color:;
+}
+
+blockquote p {
+}
+
+cite {
+	font:;
+	color:;
+}
+
+blockquote cite {
+}
+
+abbr, acronym { 
+	border-bottom:1px dotted #000; 
+	cursor:help; 
+} 
+
+/******************************************************************************
+ * Preformatted Elements
+ *****************************************************************************/
+pre {
+	margin:;
+	padding:;
+	background-color:;
+	border:;
+	font-size:;
+	overflow: auto;
+}
+
+code {
+	font-size:;
+}
+
+p code {
+}
+
+pre code {
+}
+
+/******************************************************************************
+ * List Elements
+ *****************************************************************************/
+li {
+	list-style:;
+	list-style-type:;
+	list-style-image:;
+	list-style-position:;
+	float:;
+	margin:;
+	padding:;
+}
+
+li p {
+}
+
+ol {
+	width:;
+	margin:;
+	padding:;
+}
+
+ul {
+	width:;
+	margin:;
+	padding:;
+}
+
+ol li {
+}
+
+ul li {
+}
+
+#navigation li {
+}
+
+#navigation ul {
+}
+
+#navigation ul li {
+}
+
+#navigation ol {
+}
+
+#navigation ol li {
+}
+
+/******************************************************************************
+ * Image Elements
+ *****************************************************************************/
+img {
+	border: 0;
+}
+
+img a {
+	border: 0;
+	text-decoration: none;
+}
+
+img a:hover {
+	border:0;
+}
+
+br {
+	display: none;
+}
+
+hr {
+	display: none;
+}
+
+/******************************************************************************
+ * Text Formatting
+ *****************************************************************************/
+strong {
+	font-weight: bold;
+}
+
+em {
+	font-style:italic; 
+}
+
+b {
+	font-weight: bold;
+}
+
+i {
+	font-style:italic; 
+}
+
+/******************************************************************************
+ * Link Elements
+ *****************************************************************************/
+a {
+	font:;
+	color:;
+	text-decoration: none;
+	border-bottom:;
+}
+
+a:hover {
+	color:;
+	background-color:;
+	border-bottom:;
+}
+
+a:visited, a:active, a:focus {
+	color:;
+	background-color:;
+	border-bottom:;
+}
+
+a:visited {
+	color:;
+	background-color:;
+	border-bottom:;
+}
+
+a:active {
+	color:;
+	background-color:;
+	border-bottom:;
+}
+
+a:focus {
+	color:;
+	background-color:;
+	border-bottom:;
+}
+
+/******************************************************************************
+ * Table Elements
+ *****************************************************************************/
+table {
+	width:;
+	margin:;
+	padding:;
+	frame:;
+	text-align:;
+}
+
+caption {
+	font:;
+	color:;
+	position:;
+	text-align:;
+	display: none;
+}
+
+thead {
+	font:;
+	color:;
+	text-align:;
+	background-color:;
+	margin:;
+	padding:;
+}
+
+tbody {
+	font:;
+	color:;
+	text-align:;
+	background-color:;
+	margin:;
+	padding:;
+}
+
+tfoot {
+	font:;
+	color:;
+	text-align:;
+	background-color:;
+	margin:;
+	padding:;
+}
+
+tr {
+	font:;
+	color:;
+	background-color:;
+}
+
+tr .alt{
+	font:;
+	color:;
+	background-color:;
+}
+
+th, td {
+	border:1px solid #000; 
+	padding:.5em; 
+}
+
+th {
+    font-weight:bold; 
+	text-align:center; 
+}
+
+td {
+	width:;
+	margin:;
+	padding:;
+}
+
+/******************************************************************************
+ * Form Elements
+ *****************************************************************************/
+form {
+	width:;
+	margin:;
+	padding:;
+}
+
+fieldset {
+	border:;
+	width:;
+	margin:;
+	padding:;
+}
+
+legend {
+	font:;
+	color:;
+	margin:;
+	padding:;
+}
+
+label {
+	margin:;
+	padding:;
+	font-size:;
+	font-family:;
+}
+
+input {
+	border:;
+	margin:;
+	padding:;
+	font-size:;
+	font-family:;
+}
+
+textarea {
+	border:;
+	margin:;
+	padding:;
+	font-size:;
+	font-family:;
+}
+
+input, textarea a {
+}
+
+select {
+	border:;
+	margin:;
+	padding:;
+	font-size:;
+	font-family:;
+}
+
+optgroup {
+	font:;
+}
+
+option {
+	font:;
+}
+
+/******************************************************************************
+ * Definition Elements
+ *****************************************************************************/
+dl {
+	font-size:;
+	margin:;
+	padding:;
+}
+
+dt {
+	color:;
+	margin:;
+	padding:;
+}
+
+dd {
+	color:;
+	margin:;
+	padding:;
+}
+

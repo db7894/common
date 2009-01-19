@@ -1,0 +1,150 @@
+/**********************************************************
+ * Global Rules
+ * -------------------------------------------------------
+ * Validated 10/23/08
+ *********************************************************/
+body {
+	width: 100%;
+	height: 100%;
+	background: #ecf1ef;
+	color: #000;
+	padding: 0;
+	margin: 0;
+	font-size: 100%;
+}
+
+/**********************************************************
+ * Reset Rules
+ * -------------------------------------------------------
+ * This is not a complete reset style, however,
+ * for now it is all that is needed
+ *********************************************************/
+div, p, img,
+h1,h2,h3,h4,h5,h6 {
+	padding: 0;
+	margin: 0;
+	border: none;
+}
+
+address { font-style: normal }
+
+ol, ul { list-style: none; }
+
+/**********************************************************
+ * Link Styles
+ * -------------------------------------------------------
+ * This is not a complete link stlye, however,
+ * for now it is all that is needed
+ *********************************************************/
+:link, :visited {
+	text-decoration: none;
+	color: #b00;
+	border-bottom: 1px dotted #bbb;
+}
+
+:link:hover, :visited:hover { 
+	background-color: #eee;
+	color: #555
+}
+
+h1 :link, h1 :visited,
+h2 :link, h2 :visited,
+h3 :link, h3 :visited,
+h4 :link, h4 :visited,
+h5 :link, h5 :visited,
+h6 :link, h6 :visited {
+	color: inherit;
+}
+
+/**********************************************************
+ * Base Elements
+ * -------------------------------------------------------
+ * Base layout blocks (header, footer, content)
+ *********************************************************/
+#header {
+	width: 100%;
+	background: url("background2.png") repeat-x;
+	margin: 0 auto 1em auto;
+	padding: 1em 0 2em 0;
+	text-align: center;
+	border-bottom: 1px solid #aaa;
+	color: #000;
+}
+
+#header h2 {
+	/* nothing */
+}
+
+/**********************************************************
+ * Target Formatting
+ * -------------------------------------------------------
+ * Each sub content box
+ *********************************************************/
+.target {
+	background: #fff;
+	margin: 1em 0 2em 0;
+}
+
+.target .thead {
+	width: 20%;
+	margin-bottom: 1em;
+}
+
+.target .thead h3 {
+	color: #d60;
+   	font: normal 1.2em/1em helvetica, arial, sans-serif;
+}
+
+.target .thead h3 span {
+	padding-right: 4px;
+}
+
+.target .tbody {
+	padding: 0.5em 0.5em 0.2em 0.5em;
+}
+
+.target .tfoot {
+	font-size: 80%;
+	color: #666;
+	padding: 0 4em;
+}
+
+/**********************************************************
+ * Task Formatting
+ * -------------------------------------------------------
+ * Each list element in the sub-content boxes
+ *********************************************************/
+.task {
+	padding: 0 0 0.5em 0.7em;
+	background: url("bullet.png") no-repeat;
+	background-position: -3px 4px;
+}
+
+.task .task-name {
+color: #27408B;
+	padding-bottom: 0.5em;
+}
+
+.task .task-name span {
+	font-size: 70%;
+	color: #666;
+}
+
+/**********************************************************
+ * Message Formatting
+ * -------------------------------------------------------
+ * The actual build log text
+ *********************************************************/
+.message {
+	margin-left: 2em;
+	padding: 1.2em;
+	border: 1px solid #ccc;
+	background: #f8f8f8;
+	font: 95% courier,monospace;
+	color: #666;
+	overflow: auto;
+}
+
+.message p {
+	line-height: 20px;
+}
