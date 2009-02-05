@@ -1,0 +1,27 @@
+#---------------------------------------------------------------------------# 
+# Library
+#---------------------------------------------------------------------------# 
+ * Refactor to work like glib (s_funx), (s_type) ...
+
+#---------------------------------------------------------------------------# 
+# RFC ToDo
+#---------------------------------------------------------------------------# 
+ * Implement telnet function
+ * Remove cheesy rfc code (whois, time server, finger, who, dict) and replace with anonymous wrapper
+ * implement r/ functions
+ * implement www/ftp functions
+ * implement popx functions
+ http://www.koders.com/c/fid972D12C58F44800E9FAB551506A9977778CCE613.aspx?s=smtp+server
+ 
+#---------------------------------------------------------------------------# 
+# Data Structures To Complete
+#---------------------------------------------------------------------------# 
+- Stack (without dlist?)
+- Queue
+- Vector
+- Hash Table
+- Generic Array
+- Binary Tree
+- RB Tree
+- Priority Queue
+- Heap

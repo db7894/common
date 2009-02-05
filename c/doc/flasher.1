@@ -1,0 +1,53 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH FLASHER 1 "July 2008" Linux "User Manuals"
+.SH NAME
+flasher \- HP Management Module Flash Utility
+.SH SYNOPSIS
+.B flasher [-h][-s] [-m
+.I method
+.B ] [-t
+.I type
+.B ] [-f
+.I file
+.B ] [-d
+.I port
+.B ] [-c
+.I host
+.B ] [-u
+.I user
+.B ] [-p
+.I pass
+.B ]
+.SH DESCRIPTION
+.B flasher
+This program is used to flash a valid HP management
+module with a new firmware via serial or network.
+.SH OPTIONS
+.IP -h
+View the application help
+.IP -s
+Flash the card in silent mode (no-gui)
+.IP "-m method"
+The method to flash the image with. Options are
+(s)erial or (n)etwork
+.IP "-t type"
+The type of image to flash. Valid options are
+(b)ootloader, (f)irmware, (c)onfiguration
+.IP "-f file"
+The image to load to the management module
+.IP "-d port"
+The port number to use for a serial flash
+.IP "-c host"
+The host to use for a network flash
+.IP "-u username"
+The username to use for a newtork flash
+.IP "-p password"
+The password to use for a newtork flash
+.SH REQUIREMENTS
+This program requires libcurl, gtk+-2.0, glade,
+and pthreads.
+.SH AUTHOR
+Galen Collins <galen.collins@aperture.com>
+

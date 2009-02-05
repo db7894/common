@@ -1,0 +1,182 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Galen Collins
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: galen.collins@aperture.com\n"
+"POT-Creation-Date: 2008-07-23 14:37-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/ftp-client.c:79 src/serial-client.c:201
+#, c-format
+msgid "File [%s] Does Not Exist\n"
+msgstr ""
+
+#: src/ftp-client.c:90 src/serial-client.c:214
+#, c-format
+msgid "Sending Firmware [%d bytes]..."
+msgstr ""
+
+#: src/ftp-client.c:124
+#, c-format
+msgid "Host [%s] Does Not Exist\n"
+msgstr ""
+
+#: src/ftp-client.c:128
+msgid "Upgrade Successful!\n"
+msgstr ""
+
+#: src/ftp-client.c:131
+msgid "Upgrade Failed!\n"
+msgstr ""
+
+#: src/serial-client.c:198
+msgid "Initializing\n"
+msgstr ""
+
+#: src/serial-client.c:206
+msgid "Resetting the card..."
+msgstr ""
+
+#: src/serial-client.c:209 src/serial-client.c:223
+msgid "Done!\n"
+msgstr ""
+
+#: src/serial-client.c:225
+msgid "Testing Result..."
+msgstr ""
+
+#: src/serial-client.c:231
+msgid "Upload Successful\n"
+msgstr ""
+
+#: src/serial-client.c:238
+msgid "Upload Failed\n"
+msgstr ""
+
+#: src/gui-events.c:69
+msgid "Can only upgrade firmware over serial\n"
+msgstr ""
+
+#: src/gui-events.c:82
+msgid "Missing information for selected method\n"
+msgstr ""
+
+#: src/gui-events.c:88
+msgid "Incorrect file type for selected method\n"
+msgstr ""
+
+#: src/gui-settings.c:104
+msgid "English"
+msgstr ""
+
+#: src/gui-settings.c:104
+msgid "Spanish"
+msgstr ""
+
+#: src/gui-settings.c:105
+msgid "German"
+msgstr ""
+
+#: src/gui-settings.c:105
+msgid "Italian"
+msgstr ""
+
+#: src/gui-settings.c:106
+msgid "French"
+msgstr ""
+
+#: src/gui-settings.c:106
+msgid "Japanese"
+msgstr ""
+
+#: src/gui-settings.c:112
+msgid "Bootloader"
+msgstr ""
+
+#: src/gui-settings.c:112
+msgid "Firmware"
+msgstr ""
+
+#: src/gui-settings.c:112
+msgid "Configuration"
+msgstr ""
+
+#: src/gui-settings.c:118
+msgid "Port 1"
+msgstr ""
+
+#: src/gui-settings.c:118
+msgid "Port 2"
+msgstr ""
+
+#: src/gui-settings.c:119
+msgid "Port 3"
+msgstr ""
+
+#: src/gui-settings.c:119
+msgid "Port 4"
+msgstr ""
+
+#: src/gui-settings.c:125
+msgid "Serial Upgrade"
+msgstr ""
+
+#: src/gui-settings.c:125
+msgid "Network Upgrade"
+msgstr ""
+
+#: src/gui-settings.c:129
+msgid "Instructions"
+msgstr ""
+
+#: src/gui-settings.c:130
+msgid "Upgrade Type"
+msgstr ""
+
+#: src/gui-settings.c:131
+msgid "File Type"
+msgstr ""
+
+#: src/gui-settings.c:132
+msgid "File Name"
+msgstr ""
+
+#: src/gui-settings.c:133
+msgid "Type Settings"
+msgstr ""
+
+#: src/gui-settings.c:134
+msgid "Network Host"
+msgstr ""
+
+#: src/gui-settings.c:135
+msgid "Network Username"
+msgstr ""
+
+#: src/gui-settings.c:136
+msgid "Network Password"
+msgstr ""
+
+#: src/gui-settings.c:137
+msgid "Serial Port"
+msgstr ""
+
+#: src/gui-settings.c:138
+msgid "Language"
+msgstr ""
+
+#: src/gui-settings.c:140
+msgid ""
+"Select a upgrade method, a file to upgrade with, the type of file, and "
+"optionally a serial port to transfer on.  Then simply click flash."
+msgstr ""

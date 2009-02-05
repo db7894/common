@@ -1,0 +1,14 @@
+Package: libsimple
+Version: 0.1
+Section: lib
+Priority: optional
+Architecture: all
+Essential: no
+Depends: buildessential
+Recommends:
+Suggests:
+Installed-Size:
+Maintainer: Galen Collins<bashwork@gmail.com>
+Conflicts:
+Provides: libsimple
+Description: A library to simplify programming in C

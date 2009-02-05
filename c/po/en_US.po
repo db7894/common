@@ -1,0 +1,187 @@
+# HP Management Module Flasher
+# Copyright (C) 2008 Aperture Technologies
+# This file is distributed under the same license as the Flasher package.
+# Galen Collins <galen.collins@aperture.com>, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.1\n"
+"Report-Msgid-Bugs-To: galen.collins@aperture.com\n"
+"POT-Creation-Date: 2008-07-23 14:37-0500\n"
+"PO-Revision-Date: 2008-07-17 09:00+6\n"
+"Last-Translator: Galen Collins <galen.collins@aperture.com>\n"
+"Language-Team: English <galen.collins@aperture.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/ftp-client.c:79 src/serial-client.c:201
+#, c-format
+msgid "File [%s] Does Not Exist\n"
+msgstr "File [%s] Does Not Exist\n"
+
+#: src/ftp-client.c:90 src/serial-client.c:214
+#, c-format
+msgid "Sending Firmware [%d bytes]..."
+msgstr "Sending Firmware [%d bytes]..."
+
+#: src/ftp-client.c:124
+#, c-format
+msgid "Host [%s] Does Not Exist\n"
+msgstr "Host [%s] Does Not Exist\n"
+
+#: src/ftp-client.c:128
+msgid "Upgrade Successful!\n"
+msgstr "Upgrade Successful!\n"
+
+#: src/ftp-client.c:131
+msgid "Upgrade Failed!\n"
+msgstr "Upgrade Failed!\n"
+
+#: src/serial-client.c:198
+msgid "Initializing\n"
+msgstr "Initializing\n"
+
+#: src/serial-client.c:206
+msgid "Resetting the card..."
+msgstr ""
+
+#: src/serial-client.c:209 src/serial-client.c:223
+msgid "Done!\n"
+msgstr ""
+
+#: src/serial-client.c:225
+msgid "Testing Result..."
+msgstr ""
+
+#: src/serial-client.c:231
+msgid "Upload Successful\n"
+msgstr "Upgrade Successful!\n"
+
+#: src/serial-client.c:238
+msgid "Upload Failed\n"
+msgstr "Upgrade Failed!\n"
+
+#: src/gui-events.c:69
+msgid "Can only upgrade firmware over serial\n"
+msgstr "Can only upgrade firmware over serial\n"
+
+#: src/gui-events.c:82
+#, fuzzy
+msgid "Missing information for selected method\n"
+msgstr "Incorrect file type for selected method\n"
+
+#: src/gui-events.c:88
+msgid "Incorrect file type for selected method\n"
+msgstr "Incorrect file type for selected method\n"
+
+#: src/gui-settings.c:104
+msgid "English"
+msgstr "English"
+
+#: src/gui-settings.c:104
+msgid "Spanish"
+msgstr "Spanish"
+
+#: src/gui-settings.c:105
+msgid "German"
+msgstr "German"
+
+#: src/gui-settings.c:105
+msgid "Italian"
+msgstr "Italian"
+
+#: src/gui-settings.c:106
+msgid "French"
+msgstr "French"
+
+#: src/gui-settings.c:106
+msgid "Japanese"
+msgstr "Japanese"
+
+#: src/gui-settings.c:112
+msgid "Bootloader"
+msgstr "Bootloader"
+
+#: src/gui-settings.c:112
+msgid "Firmware"
+msgstr "Firmware"
+
+#: src/gui-settings.c:112
+msgid "Configuration"
+msgstr "Configuration"
+
+#: src/gui-settings.c:118
+msgid "Port 1"
+msgstr "Port 1"
+
+#: src/gui-settings.c:118
+msgid "Port 2"
+msgstr "Port 2"
+
+#: src/gui-settings.c:119
+msgid "Port 3"
+msgstr "Port 3"
+
+#: src/gui-settings.c:119
+msgid "Port 4"
+msgstr "Port 4"
+
+#: src/gui-settings.c:125
+msgid "Serial Upgrade"
+msgstr "Serial Upgrade"
+
+#: src/gui-settings.c:125
+msgid "Network Upgrade"
+msgstr "Network Upgrade"
+
+#: src/gui-settings.c:129
+msgid "Instructions"
+msgstr "Instructions"
+
+#: src/gui-settings.c:130
+msgid "Upgrade Type"
+msgstr "Upgrade Type"
+
+#: src/gui-settings.c:131
+msgid "File Type"
+msgstr "File Type"
+
+#: src/gui-settings.c:132
+msgid "File Name"
+msgstr "File Name"
+
+#: src/gui-settings.c:133
+msgid "Type Settings"
+msgstr "Type Settings"
+
+#: src/gui-settings.c:134
+msgid "Network Host"
+msgstr "Network Host"
+
+#: src/gui-settings.c:135
+msgid "Network Username"
+msgstr "Network Username"
+
+#: src/gui-settings.c:136
+msgid "Network Password"
+msgstr "Network Password"
+
+#: src/gui-settings.c:137
+msgid "Serial Port"
+msgstr "Serial Port"
+
+#: src/gui-settings.c:138
+msgid "Language"
+msgstr "Language"
+
+#: src/gui-settings.c:140
+msgid ""
+"Select a upgrade method, a file to upgrade with, the type of file, and "
+"optionally a serial port to transfer on.  Then simply click flash."
+msgstr ""
+"Select a upgrade method, a file to upgrade with, the type of file, and "
+"optionally a serial port to transfer on.  Then simply click flash."
+
+#~ msgid "Sending Firmware [%ld bytes]..."
+#~ msgstr "Sending Firmware [%ld bytes]..."
