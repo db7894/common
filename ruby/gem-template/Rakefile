@@ -1,0 +1,13 @@
+require 'rubygems'
+require 'rake'
+require 'echoe'
+
+Echoe.new('template', '0.1.0') do |p|
+  p.description    = "Unique description for your gem."
+  p.url            = "http://blog.platform45.com"
+  p.author         = "Platform45"
+  p.email          = "ryan@platform45.com"
+  p.ignore_pattern = ["tmp/*", "script/*"]
+  p.development_dependencies = []
+end
+
