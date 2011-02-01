@@ -2,9 +2,10 @@
 # Main program code listing
 #---------------------------------------------------------------------------# 
 noinst_LTLIBRARIES = libcsdl.la
-libcsdl_la_SOURCES = sll.c sll.h	\
-					 dll.c dll.h	\
-					 cll.c cll.h	\
+libcsdl_la_SOURCES = sll.c sll.h	    \
+					 dll.c dll.h	    \
+					 cll.c cll.h	    \
+					 queue.c queue.h	\
 					 stack.c stack.h
 
 libcsdl_la_LIBADD = $(srcdir)/../lib/libslib.la
