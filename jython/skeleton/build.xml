@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="wdm" default="package">
+  <description>A jython skeleton project</description>
+  <import file="${basedir}/ant/bootstrap.xml" />
+</project>
+
+
