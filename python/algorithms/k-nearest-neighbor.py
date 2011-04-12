@@ -2,7 +2,7 @@
 """
 quick implementation of k-nearest neighbors
 """
-from common import euclidean_distance as distance
+from common import chebyshev_distance as distance
 from itertools import groupby
 
 def knn(database, entry, k):
@@ -15,14 +15,6 @@ def knn(database, entry, k):
 	groups = groupby(sorted([d[-1] for d in dists[0:k]]))
 	return max(groups, key=lambda(key,group): len(list(group)))[0]
 
-def nn(database, entry):
-    ''' Implementation of nearest-neighbor
-    @param database The training database
-    @param entry The entry to label
-    @param k The number of neighbors to test
-    '''
-    return knn(database, entry, 1)
-
 #------------------------------------------------------------#
 # example run
 #------------------------------------------------------------#
@@ -33,6 +25,8 @@ if __name__ == "__main__":
     database = list(load_arff("training.arff"))
     training = list(load_arff("testing.arff"))
 
+    print "1-nearest-neighbor",
+    print [knn(database, entry, 1) for entry in training[0:tests]]
+    print "5-nearest-neighbor",
     print [knn(database, entry, 5) for entry in training[0:tests]]
-    print [nn(database, entry) for entry in training[0:tests]]
 
