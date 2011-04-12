@@ -2,13 +2,20 @@
 """
 quick implementation of k-nearest neighbors
 """
-from common import euclidean_distance as distance
 from common import Entry
+from distance import euclidean_distance as distance
+
+#------------------------------------------------------------#
+# Logging
+#------------------------------------------------------------#
+import logging
+_logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------#
 # classes
 #------------------------------------------------------------#
 class Leaf(object):
+    ''' Represents the leaf of a tree '''
 
     def __init__(self, label):
         self.label = label
@@ -17,19 +24,38 @@ class Leaf(object):
         return "[%s]" % (self.label)
 
 class Tree(object):
+    ''' Represents some level of a given tree '''
 
     def __init__(self, **kwargs):
         self.field = kwargs.get('field', 0)
         self.value = kwargs.get('value', 0)
-        self.left  = kwargs.get('left',  Leaf("x"))
-        self.right = kwargs.get('right', Leaf("x"))
+        self.left  = kwargs.get('left',  Leaf('x'))
+        self.right = kwargs.get('right', Leaf('x'))
 
-    def evaluate(self, entry):
+    def classify(self, entry):
+        ''' Classify a new entry with the current tree
+        
+        @param entry The entry to classify
+        @return The label of the new entry
+        '''
         root = self
         while True:
-            root = root.right if entry.values[root.field] > root.value else root.left
+            goright = (entry.values[root.field] > root.value)
+            root = root.right if goright else root.left
             if isinstance(root, Leaf):
                 return root.label
+
+    def accuracy(self, dataset):
+        ''' Test the accurracy of the given tree using the
+        provided testing set.
+        
+        @param dataset The dataset to evaluate
+        @return The accurracy of the given tree
+        '''
+        correct = 0
+        for entry in dataset:
+            correct += (self.classify(entry) == entry.label)
+        return float(correct)/len(dataset)
 
 #------------------------------------------------------------#
 # helper methods
@@ -55,20 +81,7 @@ def tree_to_rules(tree, attrs):
         _inner(root.right, rule + "%s >  %f, " % (attrs[root.field], root.value), rules)
         return rules
     return _inner(tree, "", [])
-
-def tree_accuracy(tree, testing):
-    ''' Test the accurracy of the given tree using the
-    provided testing set.
     
-    @param tree The tree to evaluate
-    @param testing The testing set to use
-    @return The accurracy of the given tree
-    '''
-    results = [(entry.label, tree.evaluate(entry)) for entry in training]
-    count   = sum(1 for i in results if i[0] == i[1])
-    return float(count)/len(testing)
-    
-
 #------------------------------------------------------------#
 # example run
 #------------------------------------------------------------#
@@ -81,9 +94,9 @@ if __name__ == "__main__":
     tree     = tree_build(database)
 
     print "first 3 examples:",
-    print [tree.evaluate(entry) for entry in training[0:3]]
+    print [tree.classify(entry) for entry in training[0:3]]
     print "accuracy:",
-    print tree_accuracy(tree, training)
+    print tree.accuracy(training)
     print "rules:"
     for rule in tree_to_rules(tree, attrs): print rule
 
