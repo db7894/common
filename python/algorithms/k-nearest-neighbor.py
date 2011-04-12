@@ -2,17 +2,21 @@
 """
 quick implementation of k-nearest neighbors
 """
-from common import chebyshev_distance as distance
+from common import manhattan_distance as distance
 from itertools import groupby
 
+#------------------------------------------------------------#
+# implementation
+#------------------------------------------------------------#
 def knn(database, entry, k):
 	''' Implementation of k-nearest-neighbor
+
 	@param database The training database
 	@param entry The entry to label
 	@param k The number of neighbors to test
 	'''
-	dists = sorted((distance(d, entry), d[-1]) for d in database)
-	groups = groupby(sorted([d[-1] for d in dists[0:k]]))
+	weight = sorted((distance(d.values, entry.values), d.label) for d in database)
+	groups = groupby(sorted([d[-1] for d in weight[0:k]]))
 	return max(groups, key=lambda(key,group): len(list(group)))[0]
 
 #------------------------------------------------------------#

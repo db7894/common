@@ -2,6 +2,22 @@
 A collection of helper utilities for the various
 algorithms.
 """
+
+#------------------------------------------------------------#
+# classes
+#------------------------------------------------------------#
+class Entry(object):
+
+    def __init__(self, label, values):
+        self.label  = label
+        self.values = tuple(values)
+
+    def __str__(self):
+        return "%s[%s]" % (self.values, self.label)
+
+#------------------------------------------------------------#
+# helpers
+#------------------------------------------------------------#
 def _load_file(path):
 	'''
 	@param path The file path to load
@@ -20,8 +36,8 @@ def _parse_arff_entry(entry):
 	'''
 	pieces = entry.split(",")
 	label  = pieces.pop().strip()
-	values = [float(piece) for piece in pieces] + [label]
-	return tuple(values)
+	values = tuple([float(piece) for piece in pieces])
+	return Entry(label, values)
 		
 def load_arff(path):
 	'''
@@ -38,7 +54,6 @@ def euclidean_distance(left, right):
 	@param right The right value to compare
 	@return The distance between the two
 	'''
-	left, right = left[0:-1], right[0:-1] # remove class labels
 	total = sum(pow(l - r, 2) for (l,r) in zip(left, right))
 	return pow(total, 0.5)
 	
@@ -48,9 +63,7 @@ def manhattan_distance(left, right):
 	@param right The right value to compare
 	@return The distance between the two
 	'''
-	left, right = left[0:-1], right[0:-1] # remove class labels
-	total = sum(abs(l - r) for (l,r) in zip(left, right))
-	return total
+	return sum(abs(l - r) for (l,r) in zip(left, right))
 	
 def chebyshev_distance(left, right):
 	'''
@@ -58,9 +71,7 @@ def chebyshev_distance(left, right):
 	@param right The right value to compare
 	@return The distance between the two
 	'''
-	left, right = left[0:-1], right[0:-1] # remove class labels
-	total = max(abs(l - r) for (l,r) in zip(left, right))
-	return total
+	return max(abs(l - r) for (l,r) in zip(left, right))
 
 def minkowski_distance(left, right, p=1):
 	'''
@@ -68,6 +79,5 @@ def minkowski_distance(left, right, p=1):
 	@param right The right value to compare
 	@return The distance between the two
 	'''
-	left, right = left[0:-1], right[0:-1] # remove class labels
 	total = sum(pow(abs(l - r), p) for (l,r) in zip(left, right))
 	return pow(total, 1/p)
