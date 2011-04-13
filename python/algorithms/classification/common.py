@@ -63,14 +63,42 @@ def entropy(dataset):
     d = count_groups(dataset)[1]
     return sum(((-1.0*v)/c) * log((1.0*v)/c, 2) for v in d.values())
 
-def gain(dataset, field):
+def entropya(dataset, field, value):
+    ''' Computres the attribute entropy
+
+    @param dataset The dataset to calculate entropy for
+    @param field The field to split on
+    @param value The value to split at
+    @return The entropy of the dataset
+    '''
+    c = len(dataset)
+    D = sorted((e.values[field], e) for e in dataset)
+    l = [e[1] for e in D if e[0] <= value]  # left  group
+    r = [e[1] for e in D if e[0] >  value]  # right group
+    return sum((float(len(dj))/c) * entropy(dj) for dj in [l, r] if len(dj) > 0)
+
+def gain(dataset, field, value):
     ''' gain(D,a) = entropy(D)-entropy(Da)
 
     @param dataset The dataset to test
     @param field The field to split on
+    @param value The value to split at
     @return The information gain at the split
     '''
-    return entropy(dataset) - entropy(field-split)
+    # memoize entropy here
+    return entropy(dataset) - entropya(dataset, field, value)
+
+def best_value_gain(dataset, field):
+    ''' Picks the best gain split threshold value for the
+    given continuous attribute.
+
+    @param dataset The dataset to test
+    @param field The field to try and split on
+    @return The best field split value
+    '''
+    values = sorted(e.values[field] for e in dataset)
+    gains  = ((gain(dataset, field, value), value) for value in values)
+    return max(gains) # (gain, value)
 
 def best_gain(dataset, fields):
     ''' Picks the best gain split from the given fields
@@ -79,8 +107,8 @@ def best_gain(dataset, fields):
     @param fields The fields to split on
     @return The best field to split on
     '''
-    gains = [(gain(dataset, field), field) for field in fields]
-    return max(gains)[1]
+    gains = [best_value_gain(dataset, field) + (field, ) for field in fields]
+    return max(gains) # (gain, value, field)
 
 #------------------------------------------------------------#
 # other helpers
