@@ -64,7 +64,7 @@ class Tree(object):
 #------------------------------------------------------------#
 # helper methods
 #------------------------------------------------------------#
-def tree_build(dataset, attributes, threshold=0.1):
+def tree_build(dataset, attributes, threshold=0.01):
     ''' Implementation of k-nearest-neighbor
     
     @param dataset The training dataset
@@ -108,30 +108,34 @@ def tree_to_rules(tree):
     return _inner(tree, "", [])
 
 def tree_to_graphviz(tree):
-    graph = """digraph G
-{
-    node [shape = record];
-"""
-    def _listnodes(root, count):
+    ''' Helper method to convert a tree to a graphviz
+    document.
+    
+    @param tree The tree to process
+    @return A graphviz representation of the tree
+    '''
+    def _listnodes(root, c):
         if isinstance(root, Leaf):
-            return 'node%d [label ="<%s>"];' % (count, root.label)
+            return (c, '\tnode%d [label ="%s"];\n' % (c, root.label))
         else:
-            g = 'node%d [label ="<%s>"];' % (count, root.name)
-            g += _listnodes(root.left,  count+1)
-            g += _listnodes(root.right, count+2)
-            return g
+            g = '\tnode%d [label ="%s"];\n' % (c, root.name)
+            (c, l) = _listnodes(root.left,  c+1)
+            (c, r) = _listnodes(root.right, c+1)
+            return (c, g + l + r)
 
-    def _linknodes(root, count):
-        if isinstance(root, Leaf): return ""
-        g  = '"node%d":%s -> "node%d":%s' % (count, root.name, count+1)
-        g += '"node%d":%s -> "node%d":%s' % (count, root.name, count+2)
-        g += _linknodes(root.left,  count+1)
-        g += _linknodes(root.right, count+2)
-        return g
+    def _linklinks(root, count):
+        if isinstance(root, Leaf): return (count, "")
+        g  = '\tnode%d -> node%d [label="<= %0.2f"]\n' % (count, count+1, root.value)
+        (c, l) = _linklinks(root.left,  count+1)
+        g += '\tnode%d -> node%d [label="> %0.2f"]\n'  % (count, c+1, root.value)
+        (c, r) = _linklinks(root.right, c+1)
+        return (c, g + l + r)
 
-    graph += _listnodes(tree, 0)
+    graph  = "digraph G\n{\n\tnode  [shape = diamond];\n"
+    graph += '\tedge  [color="#2554c7"];\n'
+    graph += _listnodes(tree, 0)[1]
     graph += "\n\n"
-    graph += _linknodes(tree, 0)
+    graph += _linklinks(tree, 0)[1]
 
     return graph + "}"
     
@@ -155,4 +159,6 @@ if __name__ == "__main__":
     print tree.accuracy(training)
     print "rules:"
     for rule in tree_to_rules(tree): print rule
+    print "tree:"
+    print tree_to_graphviz(tree)
 
