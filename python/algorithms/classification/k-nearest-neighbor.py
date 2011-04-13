@@ -25,8 +25,8 @@ if __name__ == "__main__":
     from common import load_arff
 
     tests    = 3
-    database = list(load_arff("training.arff"))
-    training = list(load_arff("testing.arff"))
+    database = list(load_arff("data/training.arff"))
+    training = list(load_arff("data/testing.arff"))
 
     print "1-nearest-neighbor",
     print [knn(database, entry, 1) for entry in training[0:tests]]

@@ -145,20 +145,22 @@ def tree_to_graphviz(tree):
 if __name__ == "__main__":
     from common import load_arff
 
-    logging.basicConfig()
-    _logger.setLevel(logging.DEBUG)
+    #logging.basicConfig()
+    #_logger.setLevel(logging.DEBUG)
 
     attributes = {0:"temp", 1:"humid", 2:"light", 3:"cloud"}
-    database = list(load_arff("training.arff"))
-    training = list(load_arff("testing.arff"))
-    tree     = tree_build(database, attributes)
+    training   = list(load_arff("data/training.arff"))
+    testing    = list(load_arff("data/testing.arff"))
+    tree       = tree_build(training, attributes)
 
-    print "first 3 examples:",
-    print [tree.classify(entry) for entry in training[0:3]]
-    print "accuracy:",
+    print "# first 3 examples:",
+    print [tree.classify(entry) for entry in testing[0:3]]
+    print "#\n# training accuracy:",
     print tree.accuracy(training)
-    print "rules:"
-    for rule in tree_to_rules(tree): print rule
-    print "tree:"
+    print "# testing accuracy: ",
+    print tree.accuracy(testing)
+    print "#\n# rules:"
+    for rule in tree_to_rules(tree): print "#    " + rule
+    print "#\n# tree:"
     print tree_to_graphviz(tree)
 
