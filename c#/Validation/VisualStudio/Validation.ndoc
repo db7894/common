@@ -1,0 +1,22 @@
+<project SchemaVersion="1.3">
+    <assemblies>
+        <assembly location="..\Build\Release\SharedAssemblies.General.Validation.dll" documentation="..\Build\Release\SharedAssemblies.General.Validation.xml" />
+    </assemblies>
+    <namespaces>
+        <namespace name="SharedAssemblies.General.Validation">Collection of general validation helper libraries</namespace>
+    </namespaces>
+    <documenters>
+        <documenter name="MSDN">
+            <!-- property name="OutputDirectory" value="..\Build\Documentation\API\SharedAssemblies" / -->
+            <property name="OutputDirectory" value="j:\" />
+            <property name="HtmlHelpName" value="Documentation" />
+            <property name="Title" value="Validate.Fluently" />
+            <property name="NamespaceTOCStyle" value="Hierarchical" />
+            <property name="ShowMissingSummaries" value="True" />
+            <property name="ShowMissingParams" value="True" />
+            <property name="ShowMissingReturns" value="True" />
+            <property name="SdkDocVersionString" value="VS.80" />
+            <property name="InstanceMembersDefaultToSafe" value="True" />
+        </documenter>
+    </documenters>
+</project>

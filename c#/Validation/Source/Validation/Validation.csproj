@@ -1,0 +1,181 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3197603D-61C7-4C17-AF28-A81CD13EB043}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SharedAssemblies.General.Validation</RootNamespace>
+    <AssemblyName>SharedAssemblies.General.Validation</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Debug\SharedAssemblies.General.Validation.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Release\SharedAssemblies.General.Validation.XML</DocumentationFile>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Validation.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attributes\AssemblyValidatorCache.cs" />
+    <Compile Include="Attributes\ValidationAttributeFactory.cs" />
+    <Compile Include="Attributes\ValidatorAttribute.cs" />
+    <Compile Include="Attributes\ValidatorMethodAttribute.cs" />
+    <Compile Include="Internal\ExpressionDocumenter.cs" />
+    <Compile Include="Internal\ExpressionUtility.cs" />
+    <Compile Include="Internal\Extensions.cs" />
+    <Compile Include="Internal\ICleanFluentInterface.cs" />
+    <Compile Include="IPropertyContext.cs" />
+    <Compile Include="PropertyCollectionContext.cs" />
+    <Compile Include="PropertyContext.cs" />
+    <Compile Include="Resources\MessageResources.de.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MessageResources.de.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\MessageResources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MessageResources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\MessageResources.en.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MessageResources.en.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\MessageResources.es.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MessageResources.es.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\MessageResources.fr.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MessageResources.fr.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\MessageResources.it.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MessageResources.it.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\MessageResources.zh.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MessageResources.zh.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ValidationCollectionContext.cs" />
+    <Compile Include="ValidationContext.cs" />
+    <Compile Include="Validate.cs" />
+    <Compile Include="IValidationContext.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ValidationFailure.cs" />
+    <Compile Include="ValidationEnumerations.cs" />
+    <Compile Include="ValidationException.cs" />
+    <Compile Include="ValidationLanguage.cs" />
+    <Compile Include="ValidationOptions.cs" />
+    <Compile Include="ValidationPredicate.cs" />
+    <Compile Include="ValidationResult.cs" />
+    <Compile Include="ValidationRules\ContainsAllElementsValidation.cs" />
+    <Compile Include="ValidationRules\ContainsAnyElementsValidation.cs" />
+    <Compile Include="ValidationRules\BoolValidation.cs" />
+    <Compile Include="ValidationRules\CharacterValidation.cs" />
+    <Compile Include="ValidationRules\DateTimeValidation.cs" />
+    <Compile Include="ValidationRules\DoubleValidation.cs" />
+    <Compile Include="ValidationRules\ContainsElementValidation.cs" />
+    <Compile Include="ValidationRules\BetweenValidation.cs" />
+    <Compile Include="ValidationRules\EqualsOneOfValidation.cs" />
+    <Compile Include="ValidationRules\EqualToValidation.cs" />
+    <Compile Include="ValidationRules\GreaterThanValidation.cs" />
+    <Compile Include="ValidationRules\IgnoreValidation.cs" />
+    <Compile Include="ValidationRules\IntegarValidation.cs" />
+    <Compile Include="ValidationRules\IsNotNullValidation.cs" />
+    <Compile Include="ValidationRules\IsValidFormValidation.cs" />
+    <Compile Include="ValidationRules\LengthValidation.cs" />
+    <Compile Include="ValidationRules\LessThanValidation.cs" />
+    <Compile Include="ValidationRules\FormValidationType.cs" />
+    <Compile Include="ValidationRules\RegularExpressionValidation.cs" />
+    <Compile Include="Internal\FormValidationTester.cs" />
+    <Compile Include="ValidationRules\StringValidation.cs" />
+    <Compile Include="ValidationRules\UniqueCollectionValidation.cs" />
+    <Compile Include="ValidationRunner.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Validation.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\MessageResources.zh.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MessageResources.zh.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\MessageResources.en.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MessageResources.en.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\MessageResources.de.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MessageResources.de.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\MessageResources.es.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MessageResources.es.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\MessageResources.it.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MessageResources.it.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\MessageResources.fr.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MessageResources.fr.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\MessageResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MessageResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
