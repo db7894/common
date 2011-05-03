@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SharedAssemblies.General.Validation.Attributes;
-using SharedAssemblies.General.Validation.Tests.Types;
+using Bashwork.Validation.Attributes;
+using Bashwork.Validation.Tests.Types;
 
-namespace SharedAssemblies.General.Validation.Tests.Attributes
+namespace Bashwork.Validation.Tests.Attributes
 {
 	[TestClass]
 	public class ValidationAttributeFactoryTests

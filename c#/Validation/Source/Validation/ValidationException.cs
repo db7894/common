@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using SharedAssemblies.General.Validation.Resources;
+using Bashwork.Validation.Resources;
 
-namespace SharedAssemblies.General.Validation
+namespace Bashwork.Validation
 {
 	/// <summary>
 	/// Represents an exception that is thrown by this library.

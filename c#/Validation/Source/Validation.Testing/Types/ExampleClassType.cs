@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SharedAssemblies.General.Validation.Tests.Types
+namespace Bashwork.Validation.Tests.Types
 {
 	/// <summary>
 	/// A simple type that we can use for testing

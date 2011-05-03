@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq.Expressions;
-using SharedAssemblies.General.Validation.Internal;
-using SharedAssemblies.General.Validation.Resources;
+using Bashwork.Validation.Internal;
+using Bashwork.Validation.Resources;
 
-namespace SharedAssemblies.General.Validation
+namespace Bashwork.Validation
 {
 	// TODO I need to figure out what I need to do to make this work
 

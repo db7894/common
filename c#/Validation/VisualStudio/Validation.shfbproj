@@ -18,7 +18,7 @@
 	<Name>Documentation</Name>
 	<!-- SHFB properties -->
 	<OutputPath>..\Build\Documentation\Sandcastle\</OutputPath>
-	<HtmlHelpName>SharedAssemblies</HtmlHelpName>
+	<HtmlHelpName>BashworkValidation</HtmlHelpName>
 	<HelpFileFormat>Help1xAndWebsite</HelpFileFormat>
 	<FrameworkVersion>3.5</FrameworkVersion>
 	<SandcastlePath>c:\Program Files\Sandcastle\</SandcastlePath>
@@ -44,15 +44,15 @@
 		</ComponentConfig>
 	</ComponentConfigurations>
     <DocumentationSources>
-		<DocumentationSource sourceFile="..\Build\Release\SharedAssemblies.General.Validation.dll" xmlns="" />
-		<DocumentationSource sourceFile="..\Build\Release\SharedAssemblies.General.Validation.xml" xmlns="" />
+		<DocumentationSource sourceFile="..\Build\Release\Bashwork.Validation.dll" xmlns="" />
+		<DocumentationSource sourceFile="..\Build\Release\Bashwork.Validation.xml" xmlns="" />
 	</DocumentationSources>
-	<ProjectSummary>Scottrade Shared Assemblies</ProjectSummary>
+	<ProjectSummary>Bashwork Validation</ProjectSummary>
 	<NamespaceSummaries>
-        <NamespaceSummaryItem isDocumented="True" name="SharedAssemblies.General.Validation">Collection of general validation helper libraries</NamespaceSummaryItem>
+        <NamespaceSummaryItem isDocumented="True" name="Bashwork.Validation">Collection of general validation helper libraries</NamespaceSummaryItem>
 	</NamespaceSummaries>
 	<HelpTitle>Validation.Fluently</HelpTitle>
-	<CopyrightText>Scottrade 2010</CopyrightText>
+	<CopyrightText>Bashwork 2011</CopyrightText>
 	<ShowFeedbackControl>False</ShowFeedbackControl>
 </PropertyGroup>
 

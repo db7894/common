@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace SharedAssemblies.General.Validation.Tests
+namespace Bashwork.Validation.Tests
 {
 	/// <summary>
 	/// Code to test the various extension methods attatched to the validation context.

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using SharedAssemblies.General.Validation.Internal;
+using Bashwork.Validation.Internal;
 
-namespace SharedAssemblies.General.Validation.Attributes
+namespace Bashwork.Validation.Attributes
 {
 	/// <summary>
 	/// A class that abstracts creating a cache for all the available validation

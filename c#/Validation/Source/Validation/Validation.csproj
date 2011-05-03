@@ -8,8 +8,8 @@
     <ProjectGuid>{3197603D-61C7-4C17-AF28-A81CD13EB043}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SharedAssemblies.General.Validation</RootNamespace>
-    <AssemblyName>SharedAssemblies.General.Validation</AssemblyName>
+    <RootNamespace>Bashwork.Validation</RootNamespace>
+    <AssemblyName>Bashwork.Validation</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -22,7 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Debug\SharedAssemblies.General.Validation.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Bashwork.Validation.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,7 +32,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Release\SharedAssemblies.General.Validation.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Bashwork.Validation.XML</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>

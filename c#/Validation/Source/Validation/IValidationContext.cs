@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
-using SharedAssemblies.General.Validation.Internal;
+using Bashwork.Validation.Internal;
 
-namespace SharedAssemblies.General.Validation
+namespace Bashwork.Validation
 {
 	/// <summary>
 	/// Represents the current context for a complex type validation

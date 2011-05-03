@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SharedAssemblies.General.Validation.Resources {
+namespace Bashwork.Validation.Resources {
     using System;
     
     
@@ -42,7 +42,7 @@ namespace SharedAssemblies.General.Validation.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SharedAssemblies.General.Validation.Resources.MessageResources", typeof(MessageResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Bashwork.Validation.Resources.MessageResources", typeof(MessageResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

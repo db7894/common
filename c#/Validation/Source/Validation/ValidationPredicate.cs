@@ -1,5 +1,5 @@
 ﻿
-namespace SharedAssemblies.General.Validation
+namespace Bashwork.Validation
 {
 	/// <summary>
 	/// A collection of extra delegate types used in this library.

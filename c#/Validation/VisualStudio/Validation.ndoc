@@ -1,13 +1,13 @@
 <project SchemaVersion="1.3">
     <assemblies>
-        <assembly location="..\Build\Release\SharedAssemblies.General.Validation.dll" documentation="..\Build\Release\SharedAssemblies.General.Validation.xml" />
+        <assembly location="..\Build\Release\Bashwork.Validation.dll" documentation="..\Build\Release\Bashwork.Validation.xml" />
     </assemblies>
     <namespaces>
-        <namespace name="SharedAssemblies.General.Validation">Collection of general validation helper libraries</namespace>
+        <namespace name="Bashwork.Validation">Collection of general validation helper libraries</namespace>
     </namespaces>
     <documenters>
         <documenter name="MSDN">
-            <!-- property name="OutputDirectory" value="..\Build\Documentation\API\SharedAssemblies" / -->
+            <!-- property name="OutputDirectory" value="..\Build\Documentation\API\BashworkValidation" / -->
             <property name="OutputDirectory" value="j:\" />
             <property name="HtmlHelpName" value="Documentation" />
             <property name="Title" value="Validate.Fluently" />

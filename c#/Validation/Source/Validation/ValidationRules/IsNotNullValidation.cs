@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
-using SharedAssemblies.General.Validation.Internal;
-using SharedAssemblies.General.Validation.Resources;
+using Bashwork.Validation.Internal;
+using Bashwork.Validation.Resources;
 
-namespace SharedAssemblies.General.Validation.ValidationRules
+namespace Bashwork.Validation.ValidationRules
 {
 	/// <summary>
 	/// A collection of validation methods that check if the supplied

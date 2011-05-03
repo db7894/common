@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Reflection;
-using SharedAssemblies.General.Validation.Internal;
-using SharedAssemblies.General.Validation.Resources;
+using Bashwork.Validation.Internal;
+using Bashwork.Validation.Resources;
 
-namespace SharedAssemblies.General.Validation.Attributes
+namespace Bashwork.Validation.Attributes
 {
 	/// <summary>
 	/// A factory that can be used to find a validator for the given type in the current

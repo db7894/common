@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SharedAssemblies.General.Validation.Internal
+namespace Bashwork.Validation.Internal
 {
 	/// <summary>
 	/// A collection of extension methods that are used in this library.

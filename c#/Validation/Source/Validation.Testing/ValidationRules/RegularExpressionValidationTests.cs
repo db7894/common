@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SharedAssemblies.General.Validation.Tests.Internal;
-using SharedAssemblies.General.Validation.Tests.Types;
-using SharedAssemblies.General.Validation.ValidationRules;
+using Bashwork.Validation.Tests.Internal;
+using Bashwork.Validation.Tests.Types;
+using Bashwork.Validation.ValidationRules;
 
-namespace SharedAssemblies.General.Validation.Tests.ValidationRules
+namespace Bashwork.Validation.Tests.ValidationRules
 {
 	/// <summary>
 	/// Code to test the validation methods that check if the supplied

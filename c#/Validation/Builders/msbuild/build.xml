@@ -17,8 +17,8 @@
         <BuildDirectory>$(RootDirectory)\Build</BuildDirectory>
         <OutputDirectory>$(BuildDirectory)\$(Configuration)</OutputDirectory>
         <TestDirectory>$(BuildDirectory)\Testing</TestDirectory>
-        <MainAssembly>Scottrade.Banking.Service.dll</MainAssembly>
-        <ProjectName>BankingService</ProjectName>
+        <MainAssembly>Bashwork.Validation.dll</MainAssembly>
+        <ProjectName>BashworkValidation</ProjectName>
     </PropertyGroup>
  
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 

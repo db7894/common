@@ -1,5 +1,5 @@
 ﻿
-namespace SharedAssemblies.General.Validation
+namespace Bashwork.Validation
 {
 	/// <summary>
 	/// Enumeration to specify the regular expression pattern to use when matching.
@@ -158,8 +158,7 @@ namespace SharedAssemblies.General.Validation
 		Number,
 
 		/// <summary>
-		/// This regular expression pattern exceeds the Scottrade Security standards and enforces
-		/// the following password properties:
+		/// This enforces the following password properties:
 		/// • At least eight characters long
 		/// • Contains each of the following four character types:
 		/// • Upper Case letters (i.e. A-Z)

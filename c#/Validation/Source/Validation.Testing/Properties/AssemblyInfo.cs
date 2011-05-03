@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SharedAssemblies.General.Validation.Tests")]
+[assembly: AssemblyTitle("Bashwork.Validation.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Scottrade")]
-[assembly: AssemblyProduct("SharedAssemblies.General.Validation.Tests")]
-[assembly: AssemblyCopyright("Copyright © Scottrade 2010")]
+[assembly: AssemblyCompany("Bashwork")]
+[assembly: AssemblyProduct("Bashwork.Validation.Tests")]
+[assembly: AssemblyCopyright("Copyright © Bashwork 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

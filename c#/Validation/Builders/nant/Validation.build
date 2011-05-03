@@ -21,7 +21,7 @@
     <target name="build.validation">
         <solution configuration="${configuration}" solutionfile="../../VisualStudio/Validation.sln">
         </solution>
-        <property name="expected.output" value="bin/${configuration}/SharedAssemblies.General.Validation.dll"/>
+        <property name="expected.output" value="bin/${configuration}/Bashwork.Validation.dll"/>
         <fail unless="${file::exists(expected.output)}">Output file doesn't exist in ${expected.output}</fail>
     </target>
     

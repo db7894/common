@@ -1,4 +1,4 @@
-﻿namespace SharedAssemblies.General.Validation
+﻿namespace Bashwork.Validation
 {
 	/// <summary>
 	/// Represents how the validation should cascade the

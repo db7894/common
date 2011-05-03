@@ -1,6 +1,6 @@
-﻿using SharedAssemblies.General.Validation.Resources;
+﻿using Bashwork.Validation.Resources;
 
-namespace SharedAssemblies.General.Validation
+namespace Bashwork.Validation
 {
 	/// <summary>
 	/// This represents a single validation failure

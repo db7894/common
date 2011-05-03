@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using SharedAssemblies.General.Validation.Internal;
+using Bashwork.Validation.Internal;
 
-namespace SharedAssemblies.General.Validation
+namespace Bashwork.Validation
 {
 	/// <summary>
 	/// Helper class that abstracts away the iteration and validation of the

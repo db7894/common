@@ -2,12 +2,12 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("SharedAssemblies.General.Validation")]
+[assembly: AssemblyTitle("Bashwork.Validation")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Scottrade")]
-[assembly: AssemblyProduct("SharedAssemblies.General.Validation")]
-[assembly: AssemblyCopyright("Copyright © Scottrade 2010")]
+[assembly: AssemblyCompany("Bashwork")]
+[assembly: AssemblyProduct("Bashwork.Validation")]
+[assembly: AssemblyCopyright("Copyright © Bashwork 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace SharedAssemblies.General.Validation.Tests.Internal
+namespace Bashwork.Validation.Tests.Internal
 {
 	/// <summary>
 	/// A collection of Asserts that are not included in MSTest

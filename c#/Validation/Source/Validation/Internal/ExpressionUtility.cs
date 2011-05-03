@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace SharedAssemblies.General.Validation.Internal
+namespace Bashwork.Validation.Internal
 {
 	/// <summary>
 	/// A collection of helper methods to abstract away dealing with expression tress.

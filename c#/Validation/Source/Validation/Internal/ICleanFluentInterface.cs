@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace SharedAssemblies.General.Validation.Internal
+namespace Bashwork.Validation.Internal
 {
 	/// <summary>
 	/// From Kzu's blog: http://www.clariusconsulting.net/blogs/kzu/archive/2008/03/10/58301.aspx 

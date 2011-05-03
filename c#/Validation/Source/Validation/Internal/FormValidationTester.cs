@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace SharedAssemblies.General.Validation.Internal
+namespace Bashwork.Validation.Internal
 {
 	/// <summary>
 	/// <para>

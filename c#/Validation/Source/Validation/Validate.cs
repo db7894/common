@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SharedAssemblies.General.Validation
+namespace Bashwork.Validation
 {
 	/// <summary>
 	/// Top level factory that simply creates the initial validation context.

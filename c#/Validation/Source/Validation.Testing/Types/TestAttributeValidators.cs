@@ -1,7 +1,7 @@
 ﻿using System;
-using SharedAssemblies.General.Validation.Attributes;
+using Bashwork.Validation.Attributes;
 
-namespace SharedAssemblies.General.Validation.Tests.Types
+namespace Bashwork.Validation.Tests.Types
 {
 	[Validator]
 	public static class TestAttributeValidators

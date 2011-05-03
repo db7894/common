@@ -26,7 +26,7 @@
           <Configuration>
             <CodeCoverage keyFile="Validation.snk" xmlns="">
               <Regular>
-                <CodeCoverageItem binaryFile="C:\Documents and Settings\gcollins\My Documents\Visual Studio 2010\Projects\Validation\Source\Validation\bin\Debug\SharedAssemblies.General.Validation.dll" pdbFile="C:\Documents and Settings\gcollins\My Documents\Visual Studio 2010\Projects\Validation\Source\Validation\bin\Debug\SharedAssemblies.General.Validation.pdb" instrumentInPlace="true" />
+                <CodeCoverageItem binaryFile="C:\Documents and Settings\gcollins\My Documents\Visual Studio 2010\Projects\Validation\Source\Validation\bin\Debug\Bashwork.Validation.dll" pdbFile="C:\Documents and Settings\gcollins\My Documents\Visual Studio 2010\Projects\Validation\Source\Validation\bin\Debug\Bashwork.Validation.pdb" instrumentInPlace="true" />
               </Regular>
             </CodeCoverage>
           </Configuration>

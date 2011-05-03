@@ -1,6 +1,6 @@
 using System;
 
-namespace SharedAssemblies.General.Validation.Attributes
+namespace Bashwork.Validation.Attributes
 {
 	/// <summary>
 	/// Validator attribute to define the a method that can validate the given type

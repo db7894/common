@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
-using SharedAssemblies.General.Validation.Resources;
+using Bashwork.Validation.Resources;
 
-namespace SharedAssemblies.General.Validation.Internal
+namespace Bashwork.Validation.Internal
 {
 	/// <summary>
 	/// A helper class to abstract away extracting error messages from
