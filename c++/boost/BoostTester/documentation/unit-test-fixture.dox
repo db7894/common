@@ -1,0 +1,92 @@
+/*! @page unittest1 Example Unit-Test Fixture
+
+@section intro Introduction
+By using the following skeleton, you will be able to create a unit test that
+can be automatically collected and run by a root CppUnit test runner.
+
+@code 
+/**
+ * @brief Fixture to test functionality of Example
+ */
+#include "stdafx.h"
+#include <cppunit/extensions/HelperMacros.h>
+/* requirements */
+
+//---------------------------------------------------------------------------//
+// Helper Types
+//---------------------------------------------------------------------------//
+/* any structures, classes, typedefs */
+
+//---------------------------------------------------------------------------//
+// Helper Functions
+//---------------------------------------------------------------------------//
+/* any quick helper functions */
+
+//---------------------------------------------------------------------------//
+// Test Suite Interface
+//---------------------------------------------------------------------------//
+/**
+ * @brief Example test fixture
+ */
+class ExampleFixture : public CppUnit::TestFixture
+{
+	//-----------------------------------------------------------------------//
+	// define the test suite
+	//-----------------------------------------------------------------------//
+	CPPUNIT_TEST_SUITE(ExampleFixture);
+		CPPUNIT_TEST(testExample);
+	CPPUNIT_TEST_SUITE_END();
+
+public:
+	//-----------------------------------------------------------------------//
+	/* define the test interface */
+	//-----------------------------------------------------------------------//
+	void setUp(void);
+	void tearDown(void);
+
+	//-----------------------------------------------------------------------//
+	/* define out tests */
+	//-----------------------------------------------------------------------//
+	void testExample(void);
+};
+/* auto register the test suite */
+CPPUNIT_TEST_SUITE_REGISTRATION(ExampleFixture);
+
+//---------------------------------------------------------------------------//
+// Test Suite Interface Implementation
+//---------------------------------------------------------------------------//
+/**
+ * @brief Used to perform any pre-test setup
+ * @return void
+ */
+void ExampleFixture::setUp(void)
+{
+	/* nothing */
+}
+
+/**
+ * @brief Used to perform any post-test cleanup
+ * @return void
+ */
+void ExampleFixture::tearDown(void)
+{
+	/* nothing */
+}
+
+//---------------------------------------------------------------------------//
+// Test Suite Tests Implementation
+//---------------------------------------------------------------------------//
+
+/**
+ * @brief Quick explanation of test
+ * @return void
+ *
+ * Detailed description of test if needed
+ */
+void ExampleFixture::testExample(void)
+{
+	CPPUNIT_ASSERT(true == true);
+}
+@endcode
+
+!*/

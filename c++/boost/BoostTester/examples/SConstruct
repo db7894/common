@@ -1,0 +1,99 @@
+__doc__ = """
+Settings for a windows build
+"""
+#--------------------------------------------------------------------------------#
+# Global Environment Initialization
+#--------------------------------------------------------------------------------#
+
+env = Environment(
+	#PLATFORM = ARGUMENTS.get('OS', Platform()),
+#--------------------------------------------------------------------------------#
+# System Options
+#--------------------------------------------------------------------------------#
+# The current version of Scons does not detect vc90.
+# It is fixed in the vs_revamp branch
+#--------------------------------------------------------------------------------#
+	# Visual Studio toolset path
+	ENV = {
+		'PATH' :	[
+			'C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\bin',
+			'C:\\Program Files\\Microsoft Visual Studio 9.0\\Common7\\IDE',
+			'C:\\Program Files\\Microsoft Visual Studio 9.0\\Common7\\Tools',
+			'C:\\Program Files\\Microsoft SDKs\\Windows\\v6.0A\\bin',
+		]
+	},
+
+#--------------------------------------------------------------------------------#
+# Linker Options
+#--------------------------------------------------------------------------------#
+	# Visual Studio library path
+	LIBPATH =		[
+		'C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\lib',
+		'C:\\Program Files\\Microsoft SDKs\\Windows\\v6.0A\\Lib',
+		'C:\\sourcecode\\trunk\\ThirdParty\\BOOST\\boost_1_38_0\\stage\\lib',
+	],
+	# Visual Studio linker flags
+	LINKFLAGS =		[
+		'/NOLOGO',				# Suppress startup banner
+		'/SUBSYSTEM:CONSOLE',	# Define module entry point
+		'/INCREMENTAL:NO',		# Disable incremental linking
+		'/DEBUG',				# Enable debug binary
+		'/MACHINE:x86',			# Compile for x86 machine
+		'/DYNAMICBASE',			# Enable base randomization
+		'/NXCOMPAT',			# Data Execution Prevention
+		#'/MANIFEST:NO',			# Disable generating a manifest file
+	],
+
+#--------------------------------------------------------------------------------#
+# Compiler Options
+#--------------------------------------------------------------------------------#
+	# Visual Studio header path
+	CPPPATH =		[
+		"C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\include",
+		"C:\\Program Files\\Microsoft SDKs\Windows\\v6.0A\\Include",
+		"C:\\sourcecode\\trunk\\ThirdParty\\BOOST\\boost_1_38_0",
+	],
+	# Visual Studio compiler defines
+	CPPDEFINES =	[
+		('_WIN32_WINNT', '0x0600'),
+		('WINVER', '0x0600'),
+		'WIN32',
+		'_WINDOWS',
+		'WIN32_LEAN_AND_MEAN',
+		'_DEBUG',
+		'_CONSOLE',
+	],
+	# Visual Studio compiler flags
+	CPPFLAGS =		[
+		'/EHsc',				# Enable exception handling
+		'/RTC1',				# VCCLCompilerTool.BasicRuntimeChecks="3"
+		'/MDd',					# VCCLCompilerTool.RuntimeLibrary=Debug Dll
+		'/W3',					# VCCLCompilerTool.WarningLevel="3"
+		'/TP',					# Treat input files as c++ files
+	],
+	# Visual Studio PDB flags
+	CCPDBFLAGS =	[
+		'/Zi',					# PDB file without edit-and-continue
+#		'/Fd${TARGET}.pdb'		# PDB file to use
+	],
+)
+
+#--------------------------------------------------------------------------------#
+# Embed the Manifest files
+#--------------------------------------------------------------------------------#
+env.Append(
+	LINKCOM		= [
+		'mt.exe -nologo -manifest ${TARGET}.manifest -outputresource:$TARGET;1'
+	],
+	SHLINKCOM	= [
+		'mt.exe -nologo -manifest ${TARGET}.manifest -outputresource:$TARGET;2'
+	],
+)
+
+#--------------------------------------------------------------------------------#
+# Build Rules
+#--------------------------------------------------------------------------------#
+env.Decider( 'MD5-timestamp' )
+SConscript('src/SConscript', exports='env', variant_dir='build')
+#Default('build')
+

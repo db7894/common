@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Scottrade", "BoostTester\BoostTester.vcproj", "{71B022C0-2621-4C77-B53B-631CD174E0F3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5B7FE34D-A847-4AC8-AC5F-80784559DEB9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tester", "Tester\Tester.vcproj", "{28D97EFA-202E-4763-80F1-96F28808278D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{99F8C149-BD74-414B-8C73-6C9088FA2A6C} = {99F8C149-BD74-414B-8C73-6C9088FA2A6C}
+		{71B022C0-2621-4C77-B53B-631CD174E0F3} = {71B022C0-2621-4C77-B53B-631CD174E0F3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTester", "UnitTester\UnitTester.vcproj", "{47528F8B-2CB3-4491-A8C1-1729C0C28753}"
+	ProjectSection(ProjectDependencies) = postProject
+		{71B022C0-2621-4C77-B53B-631CD174E0F3} = {71B022C0-2621-4C77-B53B-631CD174E0F3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScottLog", "ScottLogger\ScottLogger.vcproj", "{99F8C149-BD74-414B-8C73-6C9088FA2A6C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{71B022C0-2621-4C77-B53B-631CD174E0F3} = {71B022C0-2621-4C77-B53B-631CD174E0F3}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{71B022C0-2621-4C77-B53B-631CD174E0F3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{71B022C0-2621-4C77-B53B-631CD174E0F3}.Debug|Win32.Build.0 = Debug|Win32
+		{71B022C0-2621-4C77-B53B-631CD174E0F3}.Release|Win32.ActiveCfg = Release|Win32
+		{71B022C0-2621-4C77-B53B-631CD174E0F3}.Release|Win32.Build.0 = Release|Win32
+		{28D97EFA-202E-4763-80F1-96F28808278D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{28D97EFA-202E-4763-80F1-96F28808278D}.Release|Win32.ActiveCfg = Release|Win32
+		{28D97EFA-202E-4763-80F1-96F28808278D}.Release|Win32.Build.0 = Release|Win32
+		{47528F8B-2CB3-4491-A8C1-1729C0C28753}.Debug|Win32.ActiveCfg = Debug|Win32
+		{47528F8B-2CB3-4491-A8C1-1729C0C28753}.Debug|Win32.Build.0 = Debug|Win32
+		{47528F8B-2CB3-4491-A8C1-1729C0C28753}.Release|Win32.ActiveCfg = Release|Win32
+		{47528F8B-2CB3-4491-A8C1-1729C0C28753}.Release|Win32.Build.0 = Release|Win32
+		{99F8C149-BD74-414B-8C73-6C9088FA2A6C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{99F8C149-BD74-414B-8C73-6C9088FA2A6C}.Debug|Win32.Build.0 = Debug|Win32
+		{99F8C149-BD74-414B-8C73-6C9088FA2A6C}.Release|Win32.ActiveCfg = Release|Win32
+		{99F8C149-BD74-414B-8C73-6C9088FA2A6C}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,15 @@
+/*!
+@mainpage Scottrade Shared Networking Library
+
+@section intro Introduction
+
+This attempts to be a one stop portable networking library for Scottrade.
+The aim is to make creating high performance asynchronous services as easy
+as possible to not only create, but to maintain.
+
+@section example Examples
+
+The following pages may assist in working with this library:
+  - Unit Testing
+    -# @ref unittest1 "Example Fixture"
+!*/
