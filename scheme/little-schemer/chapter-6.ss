@@ -24,7 +24,7 @@
 ;; Given an equation, validate that it is correct
 ;; @param exp The equation to validate
 ;; @returns #t if the equation is correct, #f otherwise
-;; @example (value '(+ '(* 2 4)'(+ 4 5)))
+;; @example (value '(+ (* 2 4)(+ 4 5)))
 (define _value
   (lambda (exp)
     (cond
@@ -64,7 +64,7 @@
 ;; Given an equation, validate that it is correct
 ;; @param exp The equation to validate
 ;; @returns #t if the equation is correct, #f otherwise
-;; @example (value '(+ '(* 2 4)'(+ 4 5)))
+;; @example (value '(+ (* 2 4)(+ 4 5)))
 (define value
   (lambda (exp)
     (cond

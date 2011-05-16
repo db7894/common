@@ -109,7 +109,8 @@
     (cond
       ((null? xs) '())
       ((eq? x (car xs)) (cdr xs))
-      (else (cons (car xs) (rember x (cdr xs)))))))
+      (else (cons (car xs)
+                  (rember x (cdr xs)))))))
 
 ;; Given a list of lists, return the first of each list
 ;; @param xs The list of lists to project
@@ -118,7 +119,8 @@
   (lambda (xs)
     (cond
       ((null? xs) '())
-      (else (cons (car (car xs)) (firsts (cdr xs)))))))
+      (else (cons (car (car xs))
+                  (firsts (cdr xs)))))))
 
 ;; Given a list of lists, return the second of each list
 ;; @param xs The list of lists to project
@@ -127,7 +129,8 @@
   (lambda (xs)
     (cond
       ((null? xs) '())
-      (else (cons (car (cdr (car xs))) (seconds (cdr xs)))))))
+      (else (cons (car (cdr (car xs)))
+                  (seconds (cdr xs)))))))
 
 ;; Given a list, append the right atom after the left
 ;; @param r The right atom to append
@@ -139,7 +142,8 @@
     (cond
       ((null? xs) '())
       ((eq? l (car xs)) (cons l (cons r (cdr xs))))
-      (else (cons (car xs) (insertR r l (cdr xs)))))))
+      (else (cons (car xs)
+                  (insertR r l (cdr xs)))))))
 
 ;; Given a list, replace the first occurrance of l with r
 ;; @param r The right atom to replace with
@@ -151,7 +155,8 @@
     (cond
       ((null? xs) '())
       ((eq? l (car xs)) (cons r (cdr xs)))
-      (else (cons (car xs) (subst r l (cdr xs)))))))
+      (else (cons (car xs)
+                  (subst r l (cdr xs)))))))
 
 ;; Given a list, replace the first occurrance of l with r
 ;; @param r The right atom to replace with
@@ -165,7 +170,8 @@
       ((null? xs) '())
       ((or (eq? l1 (car xs))(eq? l2 (car xs))) 
        (cons r (cdr xs)))
-      (else (cons (car xs) (subst r l1 l2 (cdr xs)))))))
+      (else (cons (car xs)
+                  (subst r l1 l2 (cdr xs)))))))
 
 ;; Given a list, remove the every instance of the specified atom
 ;; @param x The atom to remove from the list
