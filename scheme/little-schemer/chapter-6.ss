@@ -11,6 +11,10 @@
   (lambda (x)
     (and (not (pair? x)) (not (null? x)))))
 
+;; ---------------------------------------------------------
+;; end of helper methods
+;; ---------------------------------------------------------
+
 ;; Given an equation, validate that it is correct
 ;; @param exp The equation to validate
 ;; @returns #t if the equation is correct, #f otherwise

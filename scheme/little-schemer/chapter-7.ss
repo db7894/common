@@ -97,6 +97,10 @@
       ((equal? x (car xs)) #t)
       (else (member? x (cdr xs))))))
 
+;; ---------------------------------------------------------
+;; end of helper methods
+;; ---------------------------------------------------------
+
 ;; Given a list, check if the list is a set
 ;; @param xs The list to check for set characterists
 ;; @returns #t if the list is a set, #f otherwise

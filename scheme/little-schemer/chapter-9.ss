@@ -114,6 +114,10 @@
   (lambda (a b)
     (cons a (cons b '()))))
 
+;; ---------------------------------------------------------
+;; end of helper methods
+;; ---------------------------------------------------------
+
 ;; Attempt to find an atom in the maze
 ;; @param x The atom to find
 ;; @param xs The list containing the instructions

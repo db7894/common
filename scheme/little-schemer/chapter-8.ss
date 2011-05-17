@@ -57,6 +57,10 @@
       (else (and (equal? (car ls)(car rs))
                  (equal? (cdr ls)(cdr rs)))))))
 
+;; ---------------------------------------------------------
+;; end of helper methods
+;; ---------------------------------------------------------
+
 ;; Given a list, remove the first instance of the specified atom
 ;; @param test? The test to perform for removing
 ;; @param x The atom to remove from the list
