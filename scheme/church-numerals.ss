@@ -83,14 +83,51 @@
   (lambda (f) f)))
 
 ;------------------------------------------------------------
-; and a few helpers
+; we can describe a conditional test, because true(b) will
+; select the consequence(t), while false will select the
+; alternative(f)
+;------------------------------------------------------------
+; @example (((test true) true) false)
+(define test
+ (lambda (b)
+  (lambda (t)
+   (lambda (f) ((b t) f)))))
+
+;------------------------------------------------------------
+; can use the booleans to test for values, here zero will
+; simply ignore the false successor and return the truth
+;------------------------------------------------------------
+; @example (zero? zero)
+(define zero?
+ (lambda (n)
+  ((n (lambda (x) false)) true)
+
+;------------------------------------------------------------
+; using these ideas, we can define the basic boolean logic
+;------------------------------------------------------------
+; @example ((and true) true)
+(define and
+ (lambda (m)
+  (lambda (n) ((m ((n true) false)) false))))
+
+; @example ((or true) false)
+(define or
+ (lambda (m)
+  (lambda (n) ((m true)((n true) false)))))
+
+; @example (not true)
+(define not
+ (lambda (m) ((m false) true)))
+
+;------------------------------------------------------------
+; lets define a few helpers that we might need
 ;------------------------------------------------------------
 (define const
  (lambda (t)
   (lambda (f) t)))
 
 ;------------------------------------------------------------
-; to convert to and from church numerals and int
+; to convert to and from church numerals and integars
 ;------------------------------------------------------------
 (define int->church
  (lambda (n)
