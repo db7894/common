@@ -15,6 +15,15 @@
   (lambda (x) (f x))))
 
 ;------------------------------------------------------------
+; To view the results as integars, you can use the following:
+; \f -> add1
+; \x -> 0
+;
+; ((zero add1) 0)
+; ((one add1) 0)
+;------------------------------------------------------------
+
+;------------------------------------------------------------
 ; Thus any number can be defined as:
 ; Cn = \f.\x.f^n x
 ;------------------------------------------------------------
@@ -120,11 +129,29 @@
  (lambda (m) ((m false) true)))
 
 ;------------------------------------------------------------
-; lets define a few helpers that we might need
+; a few helpers that may be needed
 ;------------------------------------------------------------
+; @example (const zero)
 (define const
  (lambda (t)
   (lambda (f) t)))
+
+;------------------------------------------------------------
+; we can also use booleans to make pairs
+;------------------------------------------------------------
+; @example ((pair zero) one)
+(define pair
+ (lambda (x)
+  (lambda (y)
+    (lambda (z) ((z x) y)))))
+
+; @example (first ((pair zero) one))
+(define first
+ (lambda (n) (n true))
+
+; @example (second ((pair zero) one))
+(define second
+ (lambda (n) (n false))
 
 ;------------------------------------------------------------
 ; to convert to and from church numerals and integars
@@ -138,3 +165,48 @@
 (define church->int
  (lambda (num)
   ((num (lambda (x) (+ 1 x))) 0)))
+
+;------------------------------------------------------------
+; the Y-Combinator to allow for anonymous recursion
+;------------------------------------------------------------
+(define Y
+ (lambda (f)
+  ((lambda (r) (f (lambda (a) ((r r) a))))
+   (lambda (r) (f (lambda (a) ((r r) a)))))))
+
+;------------------------------------------------------------
+; can also define it inside out (and many other ways)
+;
+;(define Y
+; ((lambda (r) (lambda (f) (f (lambda (a) (((r r) f) a)))))
+;  (lambda (r) (lambda (f) (f (lambda (a) (((r r) f) a)))))))
+;------------------------------------------------------------
+
+;------------------------------------------------------------
+; the U-Combinator to pass one to itself
+;------------------------------------------------------------
+(define U
+ (lambda (f) (f f)))
+
+;------------------------------------------------------------
+; SKI combinator calculus can also be used to represent
+; the previous language. To convert between the two:
+; 
+; \x.x     -> 𝛗(e) = I
+; \x.c     -> 𝛗(e) = (K c)
+; \x.(𝛂 𝛃) -> 𝛗(e) = (S(\x. 𝛗(𝛂))(\x. 𝛗(𝛃)))
+;
+; Also, I is not actually needed as it can be replaced with
+; I = (S K K) -> (S K K x)
+;------------------------------------------------------------
+(define I
+ (lambda (x) x))
+
+(define K
+ (lambda (x)
+  (lambda (y) x)))
+
+(define S
+ (lambda (x)
+  (lambda (y)
+   (lambda (z) ((x z)(y z))))))
