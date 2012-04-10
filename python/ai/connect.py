@@ -2,9 +2,12 @@ import sys
 import time
 import random
 import logging
-from optparse import OptionParser
 import pygame
-import curses
+
+try:
+    import curses
+except ImportError:
+    pass # no pretty logging
  
 # ------------------------------------------------------------
 # utilities
@@ -43,6 +46,7 @@ def setup_logging(debug=False):
 # pretty logging 
 # ------------------------------------------------------------
 class _LogFormatter(logging.Formatter):
+
     def __init__(self, color, *args, **kwargs):
         logging.Formatter.__init__(self, *args, **kwargs)
         self._color = color
@@ -54,14 +58,10 @@ class _LogFormatter(logging.Formatter):
             fg_color = unicode(curses.tigetstr("setaf") or 
                                curses.tigetstr("setf") or "", "ascii")
             self._colors = {
-                logging.DEBUG: unicode(curses.tparm(fg_color, 4), # Blue
-                                       "ascii"),
-                logging.INFO: unicode(curses.tparm(fg_color, 2), # Green
-                                      "ascii"),
-                logging.WARNING: unicode(curses.tparm(fg_color, 3), # Yellow
-                                         "ascii"),
-                logging.ERROR: unicode(curses.tparm(fg_color, 1), # Red
-                                       "ascii"),
+                logging.DEBUG:   unicode(curses.tparm(fg_color, 4), "ascii"),
+                logging.INFO:    unicode(curses.tparm(fg_color, 2), "ascii"),
+                logging.WARNING: unicode(curses.tparm(fg_color, 3), "ascii"),
+                logging.ERROR:   unicode(curses.tparm(fg_color, 1), "ascii"),
             }
             self._normal = unicode(curses.tigetstr("sgr0"), "ascii")
 
@@ -93,6 +93,8 @@ def get_options():
 
     :returns: The command line arguments
     '''
+    from optparse import OptionParser
+
     parser = OptionParser()
     parser.add_option("-r", "--red", dest="red", action="store_true", default=True,
         help="Play as the red player (first turn)")
@@ -106,6 +108,8 @@ def get_options():
         help="Enable debug logging to stdout")
     parser.add_option("-d", "--difficulty", dest="difficulty", type="int", default=2,
         help="The difficulty of the computer")
+    parser.add_option("-l", "--length", dest="length", type="int", default=4,
+        help="The number of tokens to connect to win")
     (options, args) = parser.parse_args()
     return options
  
@@ -125,11 +129,12 @@ class Color(object):
     ''' A collection of common colors
     '''
     black  = (  0,  0,  0)
-    white  = (255,255,255)
+    white  = (245,245,245)
     green  = (  0,255,  0)
     red    = (255,  0,  0)
     blue   = (  0,  0,255)
-    yellow = (255,255,  0)
+    yellow = (255,215,  0)
+
  
 class Piece(object):
     ''' Represents the board pieces for the game
@@ -137,6 +142,17 @@ class Piece(object):
     empty    = ' '
     player   = 'p'
     computer = 'c'
+
+    @staticmethod
+    def switch(piece):
+        ''' A helper method to switch piece turns
+
+        :param piece: The piece to switch
+        :returns: The opposing players piece
+        '''
+        if piece == Piece.player:
+            return Piece.computer
+        return Piece.player
  
  
 class Winner(object):
@@ -180,17 +196,24 @@ class Board(object):
             self.grid[idx][col] = piece
         else: raise InvalidMoveException()
 
-    def is_valid(self, col):
+    def is_valid_move(self, col):
         ''' Checks if a move on the specified column is valid
 
         :param col: The column to check for a valid move
         :returns: True if valid, False otherwise
         '''
         row = [g[col] for g in self.grid]
-        idx = find(row, Piece.empty)
-        return idx != -1
+        return Piece.empty in row
+
+    def get_valid_moves(self):
+        ''' Returns all the currently valid moves
+
+        :returns: A list of valid moves
+        '''
+        return [i for i in range(self.size)
+                if self.is_valid_move(i)]
  
-    def is_tied(self):
+    def is_game_tied(self):
         ''' Check if the game is finished at a tie
  
         :returns: True if tied, False otherwise
@@ -201,7 +224,7 @@ class Board(object):
                     return False
         return True
  
-    def is_winner(self):
+    def is_game_won(self):
         ''' Check if the game has a winner
  
         :returns: The winner or False otherwise
@@ -247,7 +270,7 @@ class Board(object):
                 is_winner  = self.grid[x+1][y-1] == piece
                 is_winner &= self.grid[x+2][y-2] == piece
                 is_winner &= self.grid[x+3][y-3] == piece
-                if is_winner: return True
+                if is_winner: return piece
         return False
 
     def is_diar_winner(self):
@@ -262,7 +285,7 @@ class Board(object):
                 is_winner  = self.grid[x+1][y+1] == piece
                 is_winner &= self.grid[x+2][y+2] == piece
                 is_winner &= self.grid[x+3][y+3] == piece
-                if is_winner: return True
+                if is_winner: return piece
         return False
 
 
@@ -273,30 +296,165 @@ class GameState(object):
     def __init__(self, options, **kwargs):
         ''' Initialize a new instance of the game state
         '''
+        self.winner = None
         self.size   = options.size
         self.board  = Board(size=self.size)
         self.margin = kwargs.get('margin',  5)
         self.rate   = kwargs.get('rate',   20)
         self.width  = kwargs.get('width', 100)
         self.tsize  = (self.width + self.margin) * self.size + self.margin
-        self.tsize  = [self.tsize, self.tsize]
-        self.screen = pygame.display.set_mode(self.tsize)
+        self.screen = pygame.display.set_mode([self.tsize, self.tsize])
         self.clock  = pygame.time.Clock()
-        self.is_running = True
+        self.font   = pygame.font.SysFont(None, 70)
+        self.difficulty = options.difficulty
+        self.computer = self.__get_computer(options.computer)
         setup_logging(options.verbose)
+        self.is_running = True
+
+    @staticmethod
+    def __get_computer(strategy):
+        ''' A helper method to lookup the computer to play
+
+        :param strategy: The strategy for the computer to use
+        '''
+        g = globals()
+        computer = g.get(strategy + '_computer', None)
+        computer = computer or random_computer
+        logging.info('user competing against %s', computer)
+        return computer
 
 # ------------------------------------------------------------
-# game logic
+# computer game logic
 # ------------------------------------------------------------
+def get_state_features(board, piece):
+    ''' Get the feature values for the supplied game state
+
+    :param board: The current game state
+    :param piece: The piece the computer is using
+    :returns: The feature values for this board
+    '''
+    is_game_won = (board.is_game_won() == piece)
+    off_count = 1
+    def_count = 1
+
+    return {
+        'game_won': is_game_won,
+        'offense':  off_count,
+        'defense':  def_count,
+    }
+
+def get_state_value(board, piece):
+    ''' Get the current heuristic value for the supplied game state
+
+    :param board: The current game state
+    :param piece: The piece the computer is using
+    :returns: The current value for the state
+    '''
+    features = get_state_features(board, piece)
+    weights  = {
+        'game_won': 1000,
+        'offense':     1,
+        'defense':     1,
+    }
+    return sum(weights[k] * v for k,v in features.items())
+
+def random_computer(state):
+    ''' A computer that simply produces a random move
+
+    :param state: The current state of the game
+    '''
+    choices = state.board.get_valid_moves()
+    return random.choice(choices)
+
+def minimax_computer(state):
+    ''' A computer that uses minimax to produce the next move
+
+    :param state: The current state of the game
+    '''
+    def minimax(board, piece, depth):
+        if depth == 0 or board.is_game_won():
+            return (get_state_value(board, piece), -1)
+
+        value  = (sys.maxint, -1)
+        npiece = Piece.switch(piece)
+        for choice in state.board.get_valid_moves():
+            nboard = Board.clone(board)
+            nboard.add_piece(piece, choice)
+            value = min(value, (-minimax(nboard, npiece, depth - 1)[0], choice))
+        return value
+    return minimax(state.board, Piece.computer, state.difficulty)[1]
+
+
+def abeta_computer(state):
+    ''' A computer that uses alphabeta to produce the next move
+
+    :param state: The current state of the game
+    '''
+    def minimax(board, piece, depth):
+        if depth == 0 or board.is_game_won():
+            return (get_state_value(board, piece), -1)
+
+        value  = (sys.maxint, -1)
+        npiece = Piece.switch(piece)
+        for choice in state.board.get_valid_moves():
+            nboard = Board.clone(board)
+            nboard.add_piece(piece, choice)
+            value = min(value, (-minimax(nboard, npiece, depth - 1)[0], choice))
+        return value
+    return minimax(state.board, Piece.computer, state.difficulty)[1]
+
+# ------------------------------------------------------------
+# python game logic
+# ------------------------------------------------------------
+def handle_game_sound(state, sound):
+    ''' Handle playing a game sound
+
+    :param sound: The sound to play
+    :param state: The current game state
+    '''
+    logging.debug('playing sound file %s', sound)
+    sound = pygame.mixer.Sound(sound)
+    sound.play()
+    while pygame.mixer.get_busy():
+        state.clock.tick(state.rate)
+
+def handle_game_over(state):
+    ''' Present the game over screen
+
+    :param state: The current game state
+    '''
+    texta = state.font.render(state.winner, True, Color.black)
+    textb = state.font.render("Game Over",  True, Color.black)
+
+    while not state.is_running:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN: break
+            if event.type == pygame.QUIT: break
+
+        state.screen.fill(Color.white)
+        state.screen.blit(texta, (
+            (state.tsize - texta.get_width())  // 2,
+            (state.tsize - texta.get_height()) // 2 - texta.get_height()))
+        state.screen.blit(textb, (
+            (state.tsize - textb.get_width())  // 2,
+            (state.tsize - textb.get_height()) // 2))
+        state.clock.tick(state.rate)
+        pygame.display.flip()
+    handle_game_quit(state)
+
 def handle_game_step(state):
+    ''' Handle the next game step
+
+    :param state: The current game state
     '''
-    '''
-    draw_board(state)
-    state.clock.tick(state.rate)
-    pygame.display.flip()
+    if not state.is_running:
+        handle_game_over(state)
+    else: handle_next_board(state)
 
 def handle_game_events(state):
-    '''
+    ''' Handle the main game events
+
+    :param state: The current game state
     '''
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -323,24 +481,36 @@ def handle_drop_token(state):
     row = min(state.size - 1, pos[1] // (state.width + state.margin))
     col = min(state.size - 1, pos[0] // (state.width + state.margin))
     logging.debug("user clicked (%d, %d)", row, col)
-    if not state.board.is_valid(col): return
-    state.board.add_piece(Piece.player, col)
-    check_game_state(state)
 
-    choice = random.choice(range(state.size))
-    while not state.board.is_valid(choice):
-        choice = random.choice(range(state.size))
+    if not state.board.is_valid_move(col):
+        return # invalid column, return to main loop
+
+    state.board.add_piece(Piece.player, col)
+    if check_game_state(state):
+        return # user won, return to main loop
+
+    choice = state.computer(state)
     state.board.add_piece(Piece.computer, choice)
     check_game_state(state)
 
 def check_game_state(state):
     ''' Check the game state between moves
     '''
-    winner  = state.board.is_winner()
-    is_tied = state.board.is_tied()
-    state.is_running = not (winner or is_tied)
+    is_won  = state.board.is_game_won()
+    is_tied = state.board.is_game_tied()
+    is_done = is_won or is_tied
 
-def draw_board(state):
+    if is_won == Piece.player:
+        state.winner = "You Won"
+    elif is_won == Piece.computer:
+        state.winner = "The Computer Won"
+    elif is_tied:
+        state.winner = "You Tied The Computer"
+    state.is_running = not is_done
+
+    return is_done
+
+def handle_next_board(state):
     ''' Draw the next board to be displayed
     '''
     state.screen.fill(Color.yellow)
@@ -351,10 +521,17 @@ def draw_board(state):
             elif state.board.grid[row][col] == Piece.computer:
                 color = Color.black
             else: color = Color.white
-            pos = [
+            cpos = [
                 (state.margin + state.width) * col + state.margin + state.width/2,
                 (state.margin + state.width) * (state.size - row - 1) + state.margin + state.width/2]
-            pygame.draw.circle(state.screen, color, pos, state.width/2, 0)
+            rpos = [
+                (state.margin + state.width) * col + state.margin,
+                (state.margin + state.width) * row + state.margin, state.width, state.width]
+            pygame.draw.rect(state.screen, Color.black, rpos, 1)
+            pygame.draw.circle(state.screen, color, cpos, state.width/2, 0)
+            pygame.draw.circle(state.screen, Color.black, cpos, state.width/2, 1)
+    state.clock.tick(state.rate)
+    pygame.display.flip()
     
  
 # ------------------------------------------------------------
