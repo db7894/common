@@ -326,6 +326,60 @@ class GameState(object):
 # ------------------------------------------------------------
 # computer game logic
 # ------------------------------------------------------------
+def get_offense_value(board, piece):
+    ''' Get the offensive feature value
+
+    :param board: The current game state
+    :param piece: The piece the computer is using
+    :returns: The feature value for this board
+    '''
+    points = 0
+    for idx in range(board.size):
+        column  = [c[idx] for c in board.grid]
+        value   = ''.join(column)
+        if '   c' in value: points += 1
+        if '  cc' in value: points += 2
+        if ' ccc' in value: points += 100
+
+    for row in board.grid:
+        s = ''.join(row)
+        for value in (s[i:i+4] for i in range(0, board.size - 3)):
+            if   '   c' == value: points += 1
+            elif '  cc' == value: points += 2
+            elif ' cc ' == value: points += 8
+            elif ' ccc' == value: points += 100
+            elif 'ccc ' == value: points += 100
+            elif 'cc  ' == value: points += 2
+            elif 'c   ' == value: points += 1
+    return points
+
+def get_defense_value(board, piece):
+    ''' Get the defensive feature value
+
+    :param board: The current game state
+    :param piece: The piece the computer is using
+    :returns: The feature value for this board
+    '''
+    points = 0
+    for idx in range(board.size):
+        column  = [c[idx] for c in board.grid]
+        value   = ''.join(column)
+        if '   p' in value: points -= 1
+        if '  pp' in value: points -= 2
+        if ' ppp' in value: points -= 100
+
+    for row in board.grid:
+        s = ''.join(row)
+        for value in (s[i:i+4] for i in range(0, board.size - 3)):
+            if   '   p' == value: points -= 1
+            elif '  pp' == value: points -= 2
+            elif ' pp ' == value: points -= 4
+            elif ' ppp' == value: points -= 100
+            elif 'ppp ' == value: points -= 100
+            elif 'pp  ' == value: points -= 2
+            elif 'p   ' == value: points -= 1
+    return points
+
 def get_state_features(board, piece):
     ''' Get the feature values for the supplied game state
 
@@ -333,14 +387,12 @@ def get_state_features(board, piece):
     :param piece: The piece the computer is using
     :returns: The feature values for this board
     '''
-    is_game_won = (board.is_game_won() == piece)
-    off_count = 1
-    def_count = 1
-
+    winner = board.is_game_won()
     return {
-        'game_won': is_game_won,
-        'offense':  off_count,
-        'defense':  def_count,
+        'game_won':  winner == piece,
+        'game_lost': winner == Piece.switch(piece),
+        'offense':   get_offense_value(board, piece),
+        'defense':   get_defense_value(board, piece),
     }
 
 def get_state_value(board, piece):
@@ -352,9 +404,10 @@ def get_state_value(board, piece):
     '''
     features = get_state_features(board, piece)
     weights  = {
-        'game_won': 1000,
-        'offense':     1,
-        'defense':     1,
+        'game_won':   1000,
+        'game_lost': -1000,
+        'offense':       2,
+        'defense':       1,
     }
     return sum(weights[k] * v for k,v in features.items())
 
@@ -375,12 +428,12 @@ def minimax_computer(state):
         if depth == 0 or board.is_game_won():
             return (get_state_value(board, piece), -1)
 
-        value  = (sys.maxint, -1)
+        value  = (-sys.maxint, -1)
         npiece = Piece.switch(piece)
-        for choice in state.board.get_valid_moves():
+        for choice in board.get_valid_moves():
             nboard = Board.clone(board)
             nboard.add_piece(piece, choice)
-            value = min(value, (-minimax(nboard, npiece, depth - 1)[0], choice))
+            value = max(value, (-minimax(nboard, npiece, depth - 1)[0], choice))
         return value
     return minimax(state.board, Piece.computer, state.difficulty)[1]
 
@@ -394,12 +447,12 @@ def abeta_computer(state):
         if depth == 0 or board.is_game_won():
             return (get_state_value(board, piece), -1)
 
-        value  = (sys.maxint, -1)
+        value  = (-sys.maxint, -1)
         npiece = Piece.switch(piece)
-        for choice in state.board.get_valid_moves():
+        for choice in board.get_valid_moves():
             nboard = Board.clone(board)
             nboard.add_piece(piece, choice)
-            value = min(value, (-minimax(nboard, npiece, depth - 1)[0], choice))
+            value = max(value, (-minimax(nboard, npiece, depth - 1)[0], choice))
         return value
     return minimax(state.board, Piece.computer, state.difficulty)[1]
 
@@ -423,13 +476,14 @@ def handle_game_over(state):
 
     :param state: The current game state
     '''
+    gwait = True
     texta = state.font.render(state.winner, True, Color.black)
     textb = state.font.render("Game Over",  True, Color.black)
 
-    while not state.is_running:
+    while gwait:
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN: break
-            if event.type == pygame.QUIT: break
+            gwait  = event.type == pygame.KEYDOWN
+            gwait |= event.type == pygame.QUIT
 
         state.screen.fill(Color.white)
         state.screen.blit(texta, (
