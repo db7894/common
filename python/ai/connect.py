@@ -8,6 +8,13 @@ try:
     import curses
 except ImportError:
     pass # no pretty logging
+
+
+# ------------------------------------------------------------
+# setup main logger
+# ------------------------------------------------------------
+logger = logging.getLogger(__file__)
+
  
 # ------------------------------------------------------------
 # utilities
@@ -36,10 +43,11 @@ def setup_logging(debug=False):
             curses.setupterm()
             color = (curses.tigetnum("colors") > 0)
         except Exception: pass
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
     stream = logging.StreamHandler()
     stream.setFormatter(_LogFormatter(color=color))
+
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
     root.addHandler(stream)
 
 # ------------------------------------------------------------
@@ -56,7 +64,7 @@ class _LogFormatter(logging.Formatter):
             # The explict calls to unicode() below are harmless in python2,
             # but will do the right conversion in python3.
             fg_color = unicode(curses.tigetstr("setaf") or 
-                               curses.tigetstr("setf") or "", "ascii")
+                               curses.tigetstr("setf")  or "", "ascii")
             self._colors = {
                 logging.DEBUG:   unicode(curses.tparm(fg_color, 4), "ascii"),
                 logging.INFO:    unicode(curses.tparm(fg_color, 2), "ascii"),
@@ -121,6 +129,7 @@ class InvalidMoveException(Exception):
     ''' Indicates that an invalid action has been attempted
     '''
     pass
+
  
 # ------------------------------------------------------------
 # classes
@@ -165,17 +174,6 @@ class Winner(object):
 class Board(object):
     ''' Represents the current game board state
     '''
- 
-    @staticmethod
-    def clone(board):
-        ''' Given an initial board, create a clone
- 
-        :param board: The board to clone
-        :returns: A deep copy of that board
-        '''
-        clean = Board(size=board.size)
-        clean.grid = [list(a) for a in board.grid]
-        return clean
  
     def __init__(self, **kwargs):
         ''' Initialize a default game board
@@ -288,6 +286,18 @@ class Board(object):
                 if is_winner: return piece
         return False
 
+    # --------------------------------------------------
+    # magic
+    # --------------------------------------------------
+    def __hash__(self):
+        value = ''.join(''.join(r) for r in self.grid)
+        return hash(value)
+
+    def __eq__(self, othr):
+        lvalue = ''.join(''.join(r) for r in self.grid)
+        rvalue = ''.join(''.join(r) for r in othr.grid)
+        return lvalue == rvalue
+
 
 class GameState(object):
     ''' maintains the current state of the game
@@ -320,12 +330,26 @@ class GameState(object):
         g = globals()
         computer = g.get(strategy + '_computer', None)
         computer = computer or random_computer
-        logging.info('user competing against %s', computer)
+        logger.info('user competing against %s', computer)
         return computer
 
 # ------------------------------------------------------------
 # computer game logic
 # ------------------------------------------------------------
+def get_valid_boards(board, piece):
+    ''' Generate all possible next valid boards for the supplid
+    board.
+
+    :param board: The board to generate children of
+    :param piece: The piece to apply the next move for
+    :returns: A generator of board child states
+    '''
+    for choice in board.get_valid_moves():
+        nboard = Board(size=board.size)
+        nboard.grid = [list(a) for a in board.grid]
+        nboard.add_piece(piece, choice)
+        yield choice, nboard
+
 def get_offense_value(board, piece):
     ''' Get the offensive feature value
 
@@ -378,6 +402,7 @@ def get_defense_value(board, piece):
             elif 'ppp ' == value: points -= 100
             elif 'pp  ' == value: points -= 2
             elif 'p   ' == value: points -= 1
+
     return points
 
 def get_state_features(board, piece):
@@ -395,13 +420,14 @@ def get_state_features(board, piece):
         'defense':   get_defense_value(board, piece),
     }
 
-def get_state_value(board, piece):
+def get_state_value(board, piece, memo={}):
     ''' Get the current heuristic value for the supplied game state
 
     :param board: The current game state
     :param piece: The piece the computer is using
     :returns: The current value for the state
     '''
+    if board in memo: return memo[board]
     features = get_state_features(board, piece)
     weights  = {
         'game_won':   1000,
@@ -409,7 +435,10 @@ def get_state_value(board, piece):
         'offense':       2,
         'defense':       1,
     }
-    return sum(weights[k] * v for k,v in features.items())
+    total = sum(weights[k] * v for k,v in features.items())
+    memo[board] = total
+    return total
+
 
 def random_computer(state):
     ''' A computer that simply produces a random move
@@ -418,6 +447,7 @@ def random_computer(state):
     '''
     choices = state.board.get_valid_moves()
     return random.choice(choices)
+
 
 def minimax_computer(state):
     ''' A computer that uses minimax to produce the next move
@@ -430,31 +460,37 @@ def minimax_computer(state):
 
         value  = (-sys.maxint, -1)
         npiece = Piece.switch(piece)
-        for choice in board.get_valid_moves():
-            nboard = Board.clone(board)
-            nboard.add_piece(piece, choice)
+        for choice, nboard in get_valid_boards(board, piece):
             value = max(value, (-minimax(nboard, npiece, depth - 1)[0], choice))
         return value
     return minimax(state.board, Piece.computer, state.difficulty)[1]
 
 
-def abeta_computer(state):
+def alphabeta_computer(state):
     ''' A computer that uses alphabeta to produce the next move
 
     :param state: The current state of the game
     '''
-    def minimax(board, piece, depth):
+    def alphabeta(board, piece, depth, alpha, beta):
         if depth == 0 or board.is_game_won():
             return (get_state_value(board, piece), -1)
 
-        value  = (-sys.maxint, -1)
         npiece = Piece.switch(piece)
-        for choice in board.get_valid_moves():
-            nboard = Board.clone(board)
-            nboard.add_piece(piece, choice)
-            value = max(value, (-minimax(nboard, npiece, depth - 1)[0], choice))
-        return value
-    return minimax(state.board, Piece.computer, state.difficulty)[1]
+        if piece == Piece.computer:
+            for choice, nboard in get_valid_boards(board, piece):
+                value = alphabeta(nboard, npiece, depth - 1, alpha, beta)
+                alpha = max(alpha, (value[0], choice))
+                if beta <= alpha: break
+            return alpha
+        else:
+            for choice, nboard in get_valid_boards(board, piece):
+                value = alphabeta(nboard, npiece, depth - 1, alpha, beta)
+                beta  = min(beta, (value[0], choice))
+                if beta <= alpha: break
+            return beta
+
+    return alphabeta(state.board, Piece.computer, state.difficulty,
+            (-sys.maxint, -1), (sys.maxint, -1))[1]
 
 # ------------------------------------------------------------
 # python game logic
@@ -465,7 +501,7 @@ def handle_game_sound(state, sound):
     :param sound: The sound to play
     :param state: The current game state
     '''
-    logging.debug('playing sound file %s', sound)
+    logger.debug('playing sound file %s', sound)
     sound = pygame.mixer.Sound(sound)
     sound.play()
     while pygame.mixer.get_busy():
@@ -522,7 +558,7 @@ def handle_game_quit(state):
  
     :param event: The event associated with this callback
     '''
-    logging.debug("user quit the program")
+    logger.debug("user quit the program")
     pygame.quit()
     sys.exit(1)
 
@@ -534,7 +570,7 @@ def handle_drop_token(state):
     pos = pygame.mouse.get_pos()
     row = min(state.size - 1, pos[1] // (state.width + state.margin))
     col = min(state.size - 1, pos[0] // (state.width + state.margin))
-    logging.debug("user clicked (%d, %d)", row, col)
+    logger.debug("user moved to (%d)", col)
 
     if not state.board.is_valid_move(col):
         return # invalid column, return to main loop
@@ -544,6 +580,7 @@ def handle_drop_token(state):
         return # user won, return to main loop
 
     choice = state.computer(state)
+    logger.debug("computer moved to (%d)", choice)
     state.board.add_piece(Piece.computer, choice)
     check_game_state(state)
 
