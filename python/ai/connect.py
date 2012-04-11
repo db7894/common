@@ -3,6 +3,7 @@ import time
 import random
 import logging
 import pygame
+import subprocess
 
 try:
     import curses
@@ -118,6 +119,8 @@ def get_options():
         help="The difficulty of the computer")
     parser.add_option("-l", "--length", dest="length", type="int", default=4,
         help="The number of tokens to connect to win")
+    parser.add_option("-m", "--mode", dest="mode", default="gui",
+        help="The mode to play the game in (text|gui)")
     (options, args) = parser.parse_args()
     return options
  
@@ -148,7 +151,7 @@ class Color(object):
 class Piece(object):
     ''' Represents the board pieces for the game
     '''
-    empty    = ' '
+    empty    = '.'
     player   = 'p'
     computer = 'c'
 
@@ -289,6 +292,12 @@ class Board(object):
     # --------------------------------------------------
     # magic
     # --------------------------------------------------
+    def __str__(self):
+        rows = (''.join(r) for r in reversed(self.grid))
+        return '\n'.join(rows)
+
+    __repr__ = __str__
+
     def __hash__(self):
         value = ''.join(''.join(r) for r in self.grid)
         return hash(value)
@@ -313,11 +322,10 @@ class GameState(object):
         self.rate   = kwargs.get('rate',   20)
         self.width  = kwargs.get('width', 100)
         self.tsize  = (self.width + self.margin) * self.size + self.margin
-        self.screen = pygame.display.set_mode([self.tsize, self.tsize])
         self.clock  = pygame.time.Clock()
-        self.font   = pygame.font.SysFont(None, 70)
         self.difficulty = options.difficulty
         self.computer = self.__get_computer(options.computer)
+        self.mode     = self.__get_mode(options.mode)
         setup_logging(options.verbose)
         self.is_running = True
 
@@ -332,6 +340,14 @@ class GameState(object):
         computer = computer or random_computer
         logger.info('user competing against %s', computer)
         return computer
+
+    @staticmethod
+    def __get_mode(mode):
+        g = globals()
+        display = g.get(mode + '_game_mode', None)
+        display = display or gui_game_mode
+        logger.info('playing in %s mode', display)
+        return display()
 
 # ------------------------------------------------------------
 # computer game logic
@@ -361,20 +377,20 @@ def get_offense_value(board, piece):
     for idx in range(board.size):
         column  = [c[idx] for c in board.grid]
         value   = ''.join(column)
-        if '   c' in value: points += 1
-        if '  cc' in value: points += 2
-        if ' ccc' in value: points += 100
+        if '...c' in value: points += 1
+        if '..cc' in value: points += 2
+        if '.ccc' in value: points += 32
 
     for row in board.grid:
         s = ''.join(row)
         for value in (s[i:i+4] for i in range(0, board.size - 3)):
-            if   '   c' == value: points += 1
-            elif '  cc' == value: points += 2
-            elif ' cc ' == value: points += 8
-            elif ' ccc' == value: points += 100
-            elif 'ccc ' == value: points += 100
-            elif 'cc  ' == value: points += 2
-            elif 'c   ' == value: points += 1
+            if   '...c' == value: points += 1
+            elif '..cc' == value: points += 2
+            elif '.cc.' == value: points += 4
+            elif '.ccc' == value: points += 8
+            elif 'ccc.' == value: points += 8
+            elif 'cc..' == value: points += 2
+            elif 'c...' == value: points += 1
     return points
 
 def get_defense_value(board, piece):
@@ -388,20 +404,20 @@ def get_defense_value(board, piece):
     for idx in range(board.size):
         column  = [c[idx] for c in board.grid]
         value   = ''.join(column)
-        if '   p' in value: points -= 1
-        if '  pp' in value: points -= 2
-        if ' ppp' in value: points -= 100
+        if '...p' in value: points -= 1
+        if '..pp' in value: points -= 2
+        if '.ppp' in value: points -= 32
 
     for row in board.grid:
         s = ''.join(row)
         for value in (s[i:i+4] for i in range(0, board.size - 3)):
-            if   '   p' == value: points -= 1
-            elif '  pp' == value: points -= 2
-            elif ' pp ' == value: points -= 4
-            elif ' ppp' == value: points -= 100
-            elif 'ppp ' == value: points -= 100
-            elif 'pp  ' == value: points -= 2
-            elif 'p   ' == value: points -= 1
+            if   '...p' == value: points -= 1
+            elif '..pp' == value: points -= 2
+            elif '.pp.' == value: points -= 4
+            elif '.ppp' == value: points -= 8
+            elif 'ppp.' == value: points -= 8
+            elif 'pp..' == value: points -= 2
+            elif 'p...' == value: points -= 1
 
     return points
 
@@ -493,89 +509,145 @@ def alphabeta_computer(state):
             (-sys.maxint, -1), (sys.maxint, -1))[1]
 
 # ------------------------------------------------------------
-# python game logic
+# game gui
 # ------------------------------------------------------------
-def handle_game_sound(state, sound):
-    ''' Handle playing a game sound
+class text_game_mode(object):
 
-    :param sound: The sound to play
-    :param state: The current game state
-    '''
-    logger.debug('playing sound file %s', sound)
-    sound = pygame.mixer.Sound(sound)
-    sound.play()
-    while pygame.mixer.get_busy():
-        state.clock.tick(state.rate)
+    def initialize(self, state):
+        pass
 
-def handle_game_over(state):
-    ''' Present the game over screen
+    def draw_game_board(self, state):
+        print state.board
+        print ''.join(chr(48 + i) for i in range(state.size))
+        print '\n'
 
-    :param state: The current game state
-    '''
-    gwait = True
-    texta = state.font.render(state.winner, True, Color.black)
-    textb = state.font.render("Game Over",  True, Color.black)
+    def draw_game_over(self, state):
+        print state.winner
+        print "game over\n"
 
-    while gwait:
-        for event in pygame.event.get():
-            gwait  = event.type == pygame.KEYDOWN
-            gwait |= event.type == pygame.QUIT
+    def get_move(self, state):
+        move = input("#> ")
+        return int(move)
 
-        state.screen.fill(Color.white)
-        state.screen.blit(texta, (
-            (state.tsize - texta.get_width())  // 2,
-            (state.tsize - texta.get_height()) // 2 - texta.get_height()))
-        state.screen.blit(textb, (
-            (state.tsize - textb.get_width())  // 2,
-            (state.tsize - textb.get_height()) // 2))
+    def play_sound(self, state, sound):
+        ''' Handle playing a game sound
+
+        :param state: The current game state
+        :param sound: The sound to play
+        '''
+        logger.debug('playing sound file %s', sound)
+        subprocess.call(['mpg123', sound]) 
+
+    def quit_game(self, state):
+        logger.debug("user quit the program")
+        pygame.quit()
+        sys.exit(1)
+
+class gui_game_mode(object):
+
+    def initialize(self, state):
+        state.screen = pygame.display.set_mode([state.tsize, state.tsize])
+        state.font   = pygame.font.SysFont(None, 70)
+
+    def draw_game_board(self, state):
+        ''' Draw the next board to be displayed
+        '''
+        pygame.display.set_caption("Connect Four")
+        state.screen.fill(Color.yellow)
+        for row in range(state.size):
+            for col in range(state.size):
+                if state.board.grid[row][col] == Piece.player:
+                    color = Color.red
+                elif state.board.grid[row][col] == Piece.computer:
+                    color = Color.black
+                else: color = Color.white
+                cpos = [
+                    (state.margin + state.width) * col + state.margin + state.width/2,
+                    (state.margin + state.width) * (state.size - row - 1) + state.margin + state.width/2]
+                rpos = [
+                    (state.margin + state.width) * col + state.margin,
+                    (state.margin + state.width) * row + state.margin, state.width, state.width]
+                pygame.draw.rect(state.screen, Color.black, rpos, 1)
+                pygame.draw.circle(state.screen, color, cpos, state.width/2, 0)
+                pygame.draw.circle(state.screen, Color.black, cpos, state.width/2, 1)
         state.clock.tick(state.rate)
         pygame.display.flip()
-    handle_game_quit(state)
 
-def handle_game_step(state):
-    ''' Handle the next game step
+    def draw_game_over(self, state):
+        ''' Present the game over screen
 
-    :param state: The current game state
-    '''
-    if not state.is_running:
-        handle_game_over(state)
-    else: handle_next_board(state)
+        :param state: The current game state
+        '''
+        gwait = True
+        texta = state.font.render(state.winner, True, Color.black)
+        textb = state.font.render("Game Over",  True, Color.black)
 
-def handle_game_events(state):
-    ''' Handle the main game events
+        while gwait:
+            for event in pygame.event.get():
+                gwait  = event.type == pygame.KEYDOWN
+                gwait |= event.type == pygame.QUIT
 
-    :param state: The current game state
-    '''
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            handle_game_quit(state)
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            handle_drop_token(state)
-        else: pass
+            state.screen.fill(Color.white)
+            state.screen.blit(texta, (
+                (state.tsize - texta.get_width())  // 2,
+                (state.tsize - texta.get_height()) // 2 - texta.get_height()))
+            state.screen.blit(textb, (
+                (state.tsize - textb.get_width())  // 2,
+                (state.tsize - textb.get_height()) // 2))
+            state.clock.tick(state.rate)
+            pygame.display.flip()
 
-def handle_game_quit(state):
-    ''' event handler for the quit event
- 
-    :param event: The event associated with this callback
-    '''
-    logger.debug("user quit the program")
-    pygame.quit()
-    sys.exit(1)
+    def get_move(self, state):
+        ''' event handler for the mouse click event
 
-def handle_drop_token(state):
+        :param event: The event associated with this callback
+        '''
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.quit_game(state)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                row = min(state.size - 1, pos[1] // (state.width + state.margin))
+                col = min(state.size - 1, pos[0] // (state.width + state.margin))
+                logger.debug("user moved to (%d)", col)
+                return col
+        return None
+
+    def play_sound(self, state, sound):
+        ''' Handle playing a game sound
+
+        :param state: The current game state
+        :param sound: The sound to play
+        '''
+        logger.debug('playing sound file %s', sound)
+        sound = pygame.mixer.Sound(sound)
+        sound.play()
+        while pygame.mixer.get_busy():
+            state.clock.tick(state.rate)
+
+    def quit_game(self, state):
+        ''' event handler for the quit event
+     
+        :param event: The event associated with this callback
+        '''
+        logger.debug("user quit the program")
+        pygame.quit()
+        sys.exit(1)
+
+
+# ------------------------------------------------------------
+# python game logic
+# ------------------------------------------------------------
+def handle_player_move(state, column):
     ''' event handler for the mouse click event
 
-    :param event: The event associated with this callback
+    :param state: The state to manipulate
+    :param column: The column to modify
     '''
-    pos = pygame.mouse.get_pos()
-    row = min(state.size - 1, pos[1] // (state.width + state.margin))
-    col = min(state.size - 1, pos[0] // (state.width + state.margin))
-    logger.debug("user moved to (%d)", col)
-
-    if not state.board.is_valid_move(col):
+    if not state.board.is_valid_move(column):
         return # invalid column, return to main loop
 
-    state.board.add_piece(Piece.player, col)
+    state.board.add_piece(Piece.player, column)
     if check_game_state(state):
         return # user won, return to main loop
 
@@ -601,49 +673,17 @@ def check_game_state(state):
 
     return is_done
 
-def handle_next_board(state):
-    ''' Draw the next board to be displayed
-    '''
-    state.screen.fill(Color.yellow)
-    for row in range(state.size):
-        for col in range(state.size):
-            if state.board.grid[row][col] == Piece.player:
-                color = Color.red
-            elif state.board.grid[row][col] == Piece.computer:
-                color = Color.black
-            else: color = Color.white
-            cpos = [
-                (state.margin + state.width) * col + state.margin + state.width/2,
-                (state.margin + state.width) * (state.size - row - 1) + state.margin + state.width/2]
-            rpos = [
-                (state.margin + state.width) * col + state.margin,
-                (state.margin + state.width) * row + state.margin, state.width, state.width]
-            pygame.draw.rect(state.screen, Color.black, rpos, 1)
-            pygame.draw.circle(state.screen, color, cpos, state.width/2, 0)
-            pygame.draw.circle(state.screen, Color.black, cpos, state.width/2, 1)
-    state.clock.tick(state.rate)
-    pygame.display.flip()
-    
- 
-# ------------------------------------------------------------
-# initialization
-# ------------------------------------------------------------
 def initialize_game():
     ''' Perform all the game initialization
 
     :returns: The game state used through out the game
     '''
     pygame.init()
-    pygame.display.set_caption("Connect Four")
     options = get_options()
-    return GameState(options)
-    
-    #token_size = 50
-    #red_token  = pygame.image.load('red_token.png').convert()
-    #red_token  = pygame.transform.smoothscale(red_token, (token_size, token_size))
-    #blk_token  = pygame.image.load('blk_token.png').convert()
-    #blk_token  = pygame.transform.smoothscale(blk_token, (token_size, token_size))
- 
+    state = GameState(options)
+    state.mode.initialize(state)
+    state.mode.draw_game_board(state)
+    return state
  
 # ------------------------------------------------------------
 # main loop
@@ -651,8 +691,11 @@ def initialize_game():
 def main():
     state = initialize_game()
     while state.is_running:
-        handle_game_events(state)
-        handle_game_step(state)
-    handle_game_quit(state)
+        choice = state.mode.get_move(state)
+        if choice != None:
+            handle_player_move(state, choice)
+        state.mode.draw_game_board(state)
+    state.mode.draw_game_over(state)
+    state.mode.quit_game(state)
 
 if __name__ == "__main__": main()
