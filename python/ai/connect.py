@@ -112,11 +112,11 @@ def get_options():
     parser.add_option("-s", "--size", dest="size", type="int", default=7,
         help="The size of the game board")
     parser.add_option("-c", "--computer", dest="computer", default="random",
-        help="The computer strategy to use (random, minimax)")
+        help="The computer strategy to use (random, minimax,alphabeta)")
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False,
         help="Enable debug logging to stdout")
     parser.add_option("-d", "--difficulty", dest="difficulty", type="int", default=2,
-        help="The difficulty of the computer")
+        help="The difficulty of the computer (1-10)")
     parser.add_option("-l", "--length", dest="length", type="int", default=4,
         help="The number of tokens to connect to win")
     parser.add_option("-m", "--mode", dest="mode", default="gui",
@@ -366,6 +366,44 @@ def get_valid_boards(board, piece):
         nboard.add_piece(piece, choice)
         yield choice, nboard
 
+def get_diaganol_points(board, piece):
+    ''' Given a piece, compute all their diaganol point
+    moves.
+
+    :param board: The board to evaluate
+    :param piece: The piece to compute for
+    :returns: The points for that board
+    '''
+    points = 0
+    values = {
+        Piece.computer: 1 if piece == Piece.computer else -4,
+        Piece.player:   1 if piece == Piece.player else -4,
+        Piece.empty: 0,
+    }
+    # diaganol left points
+    for x in range(board.size - 3):
+        for y in range(3, board.size):
+            if board.grid[x][y] != piece:
+                continue
+            total  = values[board.grid[x][y]]
+            total += values[board.grid[x+1][y-1]]
+            total += values[board.grid[x+2][y-2]]
+            total += values[board.grid[x+3][y-3]]
+            if total > 0: points += total * 2
+
+    # diaganol right points
+    for x in range(board.size - 3):
+        for y in range(board.size - 3):
+            if board.grid[x][y] != piece:
+                continue
+            total  = values[board.grid[x][y]]
+            total += values[board.grid[x+1][y+1]]
+            total += values[board.grid[x+2][y+2]]
+            total += values[board.grid[x+3][y+3]]
+            if total > 0: points += total * 2
+
+    return points
+
 def get_offense_value(board, piece):
     ''' Get the offensive feature value
 
@@ -374,23 +412,40 @@ def get_offense_value(board, piece):
     :returns: The feature value for this board
     '''
     points = 0
+
+    # vertical points
     for idx in range(board.size):
         column  = [c[idx] for c in board.grid]
         value   = ''.join(column)
-        if '...c' in value: points += 1
-        if '..cc' in value: points += 2
-        if '.ccc' in value: points += 32
+        if '...c'   in value: points += 1
+        if '..cc'   in value: points += 2
+        if '.ccc'   in value: points += 8
 
+    # row level points
     for row in board.grid:
-        s = ''.join(row)
-        for value in (s[i:i+4] for i in range(0, board.size - 3)):
-            if   '...c' == value: points += 1
-            elif '..cc' == value: points += 2
-            elif '.cc.' == value: points += 4
-            elif '.ccc' == value: points += 8
-            elif 'ccc.' == value: points += 8
-            elif 'cc..' == value: points += 2
-            elif 'c...' == value: points += 1
+        value = ''.join(row)
+        # simple plays
+        if '...c'   in value: points += 1
+        if '..c.'   in value: points += 2
+        if '..cc'   in value: points += 2
+        if '.c..'   in value: points += 2
+        if '.c.c'   in value: points += 1
+        if '.cc.'   in value: points += 4
+        if '.ccc'   in value: points += 8
+        if 'c...'   in value: points += 1
+        if 'c..c'   in value: points += 1
+        if 'c.c.'   in value: points += 1
+        if 'c.cc'   in value: points += 8
+        if 'cc..'   in value: points += 2
+        if 'cc.c'   in value: points += 8
+        if 'ccc.'   in value: points += 8
+
+        # powerful plays
+        if '..cc.'  in value: points += 8
+        if '.ccc.'  in value: points += 64
+        if 'c.cc.c' in value: points += 64
+
+    points += get_diaganol_points(board, piece)
     return points
 
 def get_defense_value(board, piece):
@@ -404,21 +459,32 @@ def get_defense_value(board, piece):
     for idx in range(board.size):
         column  = [c[idx] for c in board.grid]
         value   = ''.join(column)
-        if '...p' in value: points -= 1
-        if '..pp' in value: points -= 2
-        if '.ppp' in value: points -= 32
+        if '...p'   in value: points -= 1
+        if '..pp'   in value: points -= 2
+        if '.ppp'   in value: points -= 32
 
     for row in board.grid:
-        s = ''.join(row)
-        for value in (s[i:i+4] for i in range(0, board.size - 3)):
-            if   '...p' == value: points -= 1
-            elif '..pp' == value: points -= 2
-            elif '.pp.' == value: points -= 4
-            elif '.ppp' == value: points -= 8
-            elif 'ppp.' == value: points -= 8
-            elif 'pp..' == value: points -= 2
-            elif 'p...' == value: points -= 1
+        value = ''.join(row)
+        if '...p'   in value: points -= 1
+        if '..p.'   in value: points -= 2
+        if '..pp'   in value: points -= 2
+        if '.p..'   in value: points -= 2
+        if '.p.p'   in value: points -= 1
+        if '.pp.'   in value: points -= 4
+        if '.ppp'   in value: points -= 8
+        if 'p...'   in value: points -= 1
+        if 'p..p'   in value: points -= 1
+        if 'p.p.'   in value: points -= 1
+        if 'p.pp'   in value: points -= 8
+        if 'pp..'   in value: points -= 2
+        if 'pp.p'   in value: points -= 8
+        if 'ppp.'   in value: points -= 8
+        # powerful plays
+        if '..pp.'  in value: points -= 8
+        if '.ppp.'  in value: points -= 64
+        if 'p.pp.p' in value: points -= 64
 
+    points -= get_diaganol_points(board, piece)
     return points
 
 def get_state_features(board, piece):
@@ -493,17 +559,21 @@ def alphabeta_computer(state):
 
         npiece = Piece.switch(piece)
         if piece == Piece.computer:
+            test = (-sys.maxint, -1)
             for choice, nboard in get_valid_boards(board, piece):
                 value = alphabeta(nboard, npiece, depth - 1, alpha, beta)
-                alpha = max(alpha, (value[0], choice))
-                if beta <= alpha: break
-            return alpha
+                test  = max(test, (value[0], choice))
+                if test >= beta: return test
+                alpha = max(alpha, test)
+            return test
         else:
+            test = (sys.maxint, -1)
             for choice, nboard in get_valid_boards(board, piece):
                 value = alphabeta(nboard, npiece, depth - 1, alpha, beta)
-                beta  = min(beta, (value[0], choice))
-                if beta <= alpha: break
-            return beta
+                test  = min(test, (value[0], choice))
+                if test <= alpha: return test
+                beta  = min(beta, test)
+            return test
 
     return alphabeta(state.board, Piece.computer, state.difficulty,
             (-sys.maxint, -1), (sys.maxint, -1))[1]
