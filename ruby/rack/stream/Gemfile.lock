@@ -1,0 +1,26 @@
+GEM
+  specs:
+    daemons (1.1.4)
+    em-synchrony (1.0.1)
+      eventmachine (>= 1.0.0.beta.1)
+    eventmachine (1.0.0.beta.1)
+    faye-websocket (0.4.5)
+      eventmachine (>= 0.12.0)
+    rack (1.3.5)
+    rack-stream (0.0.4)
+      em-synchrony
+      eventmachine
+      faye-websocket
+      rack
+    thin (1.2.11)
+      daemons (>= 1.0.9)
+      eventmachine (>= 0.12.6)
+      rack (>= 1.0.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  eventmachine (= 1.0.0.beta.1)
+  rack-stream
+  thin
