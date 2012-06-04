@@ -1,0 +1,28 @@
+<project>
+
+    <property name="src.dir" location="${basedir}/src" />
+    <property name="bld.dir" location="${basedir}/build" />
+    <property name="cls.dir" location="${bld.dir}/classes" />
+    <property name="jar.dir" location="${bld.dir}/jar" />
+    <property name="lib.dir" location="/opt/hadoop/" />
+
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="*.jar" />
+        <fileset dir="${lib.dir}/lib" includes="*.jar" />
+    </path>
+
+    <target name="clean">
+        <delete dir="${bld.dir}"/>
+    </target>
+
+    <target name="compile" depends="clean">
+        <mkdir dir="${cls.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${cls.dir}"
+            classpathref="classpath" includeantruntime="false" />
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}" />
+        <jar destfile="${jar.dir}/wordcount.jar" basedir="${cls.dir}" />
+    </target>
+</project>
