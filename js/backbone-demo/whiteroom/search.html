@@ -1,0 +1,104 @@
+<!DOCTYPE html> 
+<html> 
+ 
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- configuration -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <head> 
+    <title>Simple Search Application</title> 
+    <link href="../css/bootstrap.css" rel="stylesheet"> 
+    <link href="../css/main.css" media="all" rel="stylesheet" type="text/css"/> 
+  </head> 
+ 
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- navigation -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <body> 
+
+    <div class="navbar navbar-fixed-top"> 
+      <div class="navbar-inner"> 
+        <div class="container"> 
+          <a class="brand" href="#">Search Example</a> 
+          </div>
+        </div> 
+      </div> 
+    </div> 
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- content -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <div class="container"> 
+      <div id="event-app">
+
+        <form id='search-events' class='well form-search'>
+          <input id='new-event' type='text' class='input-xlarge search-query' placeholder='What are you looking for' />
+          <button id='new-event-submit' type='submit' class='btn'><i class='icon-search'></i> Search</button>
+      </form>
+
+        <div class='row'>
+          <div class="span12">
+          <div id="events">
+            <ul id='event-list'></ul>
+          </div>
+          </div>
+        </div>
+
+        <div id='event-status'>
+        </div>
+
+      </div>
+    </div>
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- templates -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <script type="text/template" id="event-template">
+        <a class="close event-close">&times;</a>
+        <div class='event'>
+          <div class='event-time'>
+            <span class='event-title'><%= author %></span>
+            <span class='event-time-date'><%= time %></span>
+            <span class='event-time-time'><%= date %></span>
+          </div>
+          <div class='event-text'><%= text %></div>
+          <div class='event-tags'>
+          <% _.each(tags, function(tag) { %>
+             <span class='label'><%= tag %></span>
+          <% }); %>
+          </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="status-template">
+      <div class="row">
+        <div class="offset2 span3">
+          <div class="pull-right" style="padding-top:5px;">
+            <p><i class='icon-pencil'></i> Best score <%= score %></p>
+            <p><i class='icon-signal'></i> Found <%= count %> events</p>
+          </div>
+        </div>
+        <div class="span3">
+          <div class="pull-right" style="padding-top:5px;">
+            <p><i class='icon-time'></i> Query took <%= time %> ms</p>
+            <p><i class='icon-ok'></i> <%= valid ? 'No Errors' : 'Possible Errors' %></p>
+          </div>
+        </div>
+      </div>
+  </script>
+
+  <script type="text/template" id="example-template">
+   <p class='well'>
+     <strong><%= text %></strong>
+   </p>
+  </script>
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <!-- javascript -->
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <script src="../js/lib/jquery.js"></script> 
+    <script src="../js/lib/underscore.js"></script> 
+    <script src="../js/lib/backbone.js"></script> 
+    <script src="./speleo.js"></script> 
+
+  </body> 
+</html>

@@ -1,0 +1,47 @@
+body {
+  padding-top: 60px;
+}
+.navbar .container {
+  padding-left: 3em;
+}
+
+#events {
+  overflow:auto;
+}
+
+#events ul {
+  list-style:none;
+  margin-left: 0;
+}
+
+#events ul .focused {
+  background-color: #fcf8e3;
+  border-color: #fbeed5;
+}
+
+.event-time {
+  color: #ccc;
+}
+
+.health-table tbody {
+  display: none;
+}
+
+#health-toolbar {
+  padding-bottom: 0px;
+}
+
+#event-pager {
+  font-size: 80%;
+}
+
+#block-status .thumbnail {
+  text-align:center;
+  padding: 1em;
+}
+
+#block-status button {
+ padding-left: 5em;
+ padding-right: 5em;
+}
+
