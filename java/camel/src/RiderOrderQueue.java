@@ -4,40 +4,33 @@ import javax.jms.ConnectionFactory;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.camel.CamelContext;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.component.jms.JmsComponent;
 
 /**
  * An example for using camel to connect
- * JMS Queue to consuming to Text File
+ * two file directories
  *
  */
-public final class CamelJmsToFileExample {
+public final class RiderOrderQueue {
 
-    private CamelJmsToFileExample() {
+    private RiderOrderQueue() {
     }
 
     public static void main(String args[]) throws Exception {
         CamelContext context = new DefaultCamelContext();
         ConnectionFactory factory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false");
-        context.addComponent("test-jms", JmsComponent.jmsComponentAutoAcknowledge(factory));
+        context.addComponent("jms", JmsComponent.jmsComponentAutoAcknowledge(factory));
         context.addRoutes(new RouteBuilder() {
             public void configure() {
-                from("test-jms:queue:test.queue")
-                    .to("file://data/queue");
+                from("ftp://localhost/orders?username=testing&password=testing")
+                    .to("jms:queue:incomingOrders");
             }
         });
 
-        ProducerTemplate producer = context.createProducerTemplate();
         context.start();
-
-        for (int i = 0; i < 10; ++i) {
-            producer.sendBody("test-jms:queue:test.queue", "Test Message: " + i);
-        }
-
-        Thread.sleep(1000);
+        Thread.sleep(10000);
         context.stop();
     }
 }

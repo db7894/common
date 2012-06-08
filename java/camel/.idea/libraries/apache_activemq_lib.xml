@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="apache-activemq-lib">
+    <CLASSES>
+      <root url="file:///opt/lib/java/apache-activemq/lib" />
+      <root url="file:///opt/lib/java/apache-activemq/lib" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file:///opt/lib/java/apache-activemq/lib" recursive="false" />
+  </library>
+</component>

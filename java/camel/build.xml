@@ -2,7 +2,7 @@
 
     <property name="src.dir" location="${basedir}/src" />
     <property name="cnf.dir" location="${basedir}/conf" />
-    <property name="tst.dir" location="${basedir}/test" />
+    <property name="tst.dir" location="${basedir}/data" />
     <property name="bld.dir" location="${basedir}/build" />
     <property name="cls.dir" location="${bld.dir}/classes" />
     <property name="jar.dir" location="${bld.dir}/jar" />
