@@ -4,14 +4,14 @@ import javax.jms.ConnectionFactory;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.component.jms.JmsComponent;
 
 /**
- * An example for using camel to connect
- * two file directories
- *
+ * A quick summery of a number of camels' features
  */
 public final class RiderOrderQueue {
 
@@ -24,8 +24,85 @@ public final class RiderOrderQueue {
         context.addComponent("jms", JmsComponent.jmsComponentAutoAcknowledge(factory));
         context.addRoutes(new RouteBuilder() {
             public void configure() {
-                from("ftp://localhost/orders?username=testing&password=testing")
-                    .to("jms:queue:incomingOrders");
+
+			/**
+			 * How to change the source of the messages
+			 */
+            //from("ftp://localhost/orders?username=testing&password=testing&noop=true")
+			from("file:data?noop=true")
+				.to("jms:incomingOrders");
+
+			/**
+			 * How to conditionally route messages
+			 * We can also continue to send these messages to another route
+			 * with the chain.end() keyword (and we can block messages from further processing
+			 * with the chain.stop() method)
+			 */
+            from("jms:incomingOrders").choice()
+				.when(header("CamelFileName").endsWith(".xml")).to("jms:xmlOrders")
+            	.when(header("CamelFileName").endsWith(".csv")).to("jms:csvOrders")
+				.otherwise().to("jms:badOrders").stop()
+				.end()
+				.to("jms:furtherProcessing");
+
+
+			/**
+			 * How to filter messages (with xpath in this case)
+			 */
+			from("jms:xmlOrders").filter(xpath("/order[not(@test)]"))
+				.process(new Processor() {
+					@Override
+					public void process(Exchange exchange) throws Exception {
+						System.out.println("Downloading XML order " + exchange.getIn().getHeader("CamelFileName"));
+					}
+				});
+
+			/**
+			 * How to route with recipient lists determined dynamically
+			 * from the message.
+			 */
+			from("jms:xmlOrders")
+				.setHeader("customer", xpath("/order/@customer"))
+				.process(new Processor() {
+					@Override
+					public void process(Exchange exchange) throws Exception {
+						String recipients = "jms:accounting";
+						String customer = exchange.getIn().getHeader("customer", String.class);
+						if (customer.equals("honda")) {
+							recipients += ",jms:production";
+						}
+						exchange.getIn().setHeader("recipients", recipients);
+					}
+				}).recipientList(header("recipients"));
+
+			/**
+			 * How to multi-cast messages sequentially
+			 */
+			from("jms:csvOrders")
+				.multicast()
+				.to("jms:accounting", "jms:production");
+
+			/**
+			 * How to multi-cast messages in parallel
+			 * This uses a default thread pool size of 10. To change, supply
+			 * an initialized ExecutorService like: chain.executorService(executor)
+			 *
+			 * To stop all processors on an exception: chain.stopOnException()
+			 */
+			from("jms:csvOrders")
+				.multicast().parallelProcessing()
+				.to("jms:accounting", "jms:production");
+
+			/**
+			 * A bad message queue example
+			 */
+			from("jms:badOrders")
+				.process(new Processor() {
+					@Override
+					public void process(Exchange exchange) throws Exception {
+						System.out.println("Downloading BAD order " + exchange.getIn().getHeader("CamelFileName"));
+					}
+				});
             }
         });
 

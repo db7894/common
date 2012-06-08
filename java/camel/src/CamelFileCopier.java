@@ -18,8 +18,8 @@ public final class CamelFileCopier {
         CamelContext context = new DefaultCamelContext();
         context.addRoutes(new RouteBuilder() {
             public void configure() {
-                from("file:data/input?noop=true")
-                    .to("file://data/outbox");
+            from("file:data/input?noop=true")
+                .to("file://data/outbox");
             }
         });
 
