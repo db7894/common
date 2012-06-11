@@ -2,16 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d85399bd-6905-40e5-b592-5c2e9fb684b1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/action/OrderToCsvProcessor.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/action/RecipientListBean.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/org/action/OrderToCsvProcessorTest.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/CamelFileCopier.java" afterPath="$PROJECT_DIR$/src/org/action/CamelFileCopier.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/CamelJmsToFileExample.java" afterPath="$PROJECT_DIR$/src/org/action/CamelJmsToFileExample.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/DownloadLogger.java" afterPath="$PROJECT_DIR$/src/org/action/DownloadLogger.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/FileCopier.java" afterPath="$PROJECT_DIR$/src/org/action/FileCopier.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/RiderOrderQueue.java" afterPath="$PROJECT_DIR$/src/org/action/RiderOrderQueue.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/commons.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/action/ExampleBook.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/action/OrderToCsvBean.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/org/action/OrderToCsvBeanTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/org/action/ProtobufExampleTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/org/action/PurchaseOrderCsvTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/org/action/PurchaseOrderJsonTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Camel.iml" afterPath="$PROJECT_DIR$/Camel.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/action/RiderOrderQueue.java" afterPath="$PROJECT_DIR$/src/org/action/RiderOrderQueue.java" />
     </list>
     <ignored path="camel.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -69,42 +69,56 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="OrderToCsvProcessorTest.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tests/org/action/OrderToCsvProcessorTest.java">
+      <file leaf-file-name="ProtobufExampleTest.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tests/org/action/ProtobufExampleTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="4" column="83" selection-start="141" selection-end="141" vertical-scroll-proportion="0.0">
+            <state line="15" column="34" selection-start="416" selection-end="416" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DownloadLogger.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/action/DownloadLogger.java">
+      <file leaf-file-name="PurchaseOrderJsonTest.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tests/org/action/PurchaseOrderJsonTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1" column="0" selection-start="20" selection-end="20" vertical-scroll-proportion="0.0">
+            <state line="16" column="41" selection-start="554" selection-end="554" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#835#1071#0" expanded="true" />
+                <element signature="e#1066#1067#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="RecipientListBean.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/action/RecipientListBean.java">
+      <file leaf-file-name="PurchaseOrderCsvTest.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/tests/org/action/PurchaseOrderCsvTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="19" column="45" selection-start="471" selection-end="471" vertical-scroll-proportion="0.0">
+            <state line="35" column="90" selection-start="1008" selection-end="1008" vertical-scroll-proportion="0.9354839">
               <folding>
-                <element signature="imports" expanded="true" />
+                <element signature="e#872#1083#0" expanded="true" />
+                <element signature="e#1078#1079#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FileCopier.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/org/action/FileCopier.java">
+      <file leaf-file-name="ExampleBook.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/action/ExampleBook.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="36" column="8" selection-start="1080" selection-end="1080" vertical-scroll-proportion="1.032258">
+            <state line="4" column="15" selection-start="82" selection-end="82" vertical-scroll-proportion="0.0">
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OrderToCsvBeanTest.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tests/org/action/OrderToCsvBeanTest.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="19" column="90" selection-start="693" selection-end="693" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -122,10 +136,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/CamelJmsToFileExample.java" />
-        <option value="$PROJECT_DIR$/src/org/action/RiderOrderQueue.java" />
-        <option value="$PROJECT_DIR$/src/CamelFileCopier.java" />
-        <option value="$PROJECT_DIR$/src/SpringExample.java" />
         <option value="$PROJECT_DIR$/src/DownloadLogger.java" />
         <option value="$PROJECT_DIR$/conf/beans.xml" />
         <option value="$PROJECT_DIR$/conf/log4j.properties" />
@@ -136,6 +146,12 @@
         <option value="$PROJECT_DIR$/tests/org/action/OrderToCsvProcessorTest.java" />
         <option value="$PROJECT_DIR$/src/org/action/DownloadLogger.java" />
         <option value="$PROJECT_DIR$/src/org/action/FileCopier.java" />
+        <option value="$PROJECT_DIR$/src/org/action/OrderToCsvBean.java" />
+        <option value="$PROJECT_DIR$/tests/org/action/OrderToCsvBeanTest.java" />
+        <option value="$PROJECT_DIR$/src/org/action/RiderOrderQueue.java" />
+        <option value="$PROJECT_DIR$/tests/org/action/ProtobufExampleTest.java" />
+        <option value="$PROJECT_DIR$/src/org/action/ExampleBook.java" />
+        <option value="$PROJECT_DIR$/tests/org/action/PurchaseOrderCsvTest.java" />
       </list>
     </option>
   </component>
@@ -193,6 +209,24 @@
               <option name="myItemId" value="camel" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="camel" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="apache-camel-lib" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
@@ -247,7 +281,7 @@
   <component name="PropertiesComponent">
     <property name="last_directory_selection" value="$PROJECT_DIR$/src/org/action" />
     <property name="GoToFile.includeJavaFiles" value="false" />
-    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.last.edited" value="Libraries" />
     <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary" value="JUnit4" />
     <property name="OverrideImplement.combined" value="true" />
     <property name="project.structure.proportion" value="0.15" />
@@ -276,7 +310,7 @@
       <recent name="org.action" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.OrderToCsvProcessorTest.testProcess">
+  <component name="RunManager" selected="JUnit.PurchaseOrderCsvTest.testUnmarshal">
     <configuration default="false" name="RiderOrderQueue" type="Application" factoryName="Application" temporary="true">
       <option name="MAIN_CLASS_NAME" value="org.action.RiderOrderQueue" />
       <option name="VM_PARAMETERS" />
@@ -300,6 +334,72 @@
       <option name="PACKAGE_NAME" value="org.action" />
       <option name="MAIN_CLASS_NAME" value="org.action.OrderToCsvProcessorTest" />
       <option name="METHOD_NAME" value="testProcess" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <patterns />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="Camel Unit Tests" type="JUnit" factoryName="JUnit" temporary="true">
+      <module name="Camel" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="PACKAGE_NAME" value="org.action" />
+      <option name="MAIN_CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="package" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <patterns />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="PurchaseOrderCsvTest.testProcess" type="JUnit" factoryName="JUnit" temporary="true">
+      <module name="Camel" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="org.action" />
+      <option name="MAIN_CLASS_NAME" value="org.action.PurchaseOrderCsvTest" />
+      <option name="METHOD_NAME" value="testProcess" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-ea" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <patterns />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="PurchaseOrderCsvTest.testUnmarshal" type="JUnit" factoryName="JUnit" temporary="true">
+      <module name="Camel" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="org.action" />
+      <option name="MAIN_CLASS_NAME" value="org.action.PurchaseOrderCsvTest" />
+      <option name="METHOD_NAME" value="testUnmarshal" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-ea" />
       <option name="PARAMETERS" />
@@ -432,9 +532,12 @@
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
-    <list size="2">
+    <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Application.RiderOrderQueue" />
       <item index="1" class="java.lang.String" itemvalue="JUnit.OrderToCsvProcessorTest.testProcess" />
+      <item index="2" class="java.lang.String" itemvalue="JUnit.Camel Unit Tests" />
+      <item index="3" class="java.lang.String" itemvalue="JUnit.PurchaseOrderCsvTest.testProcess" />
+      <item index="4" class="java.lang.String" itemvalue="JUnit.PurchaseOrderCsvTest.testUnmarshal" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -466,11 +569,16 @@
       <created>1339174361121</created>
       <updated>1339174361121</updated>
     </task>
+    <task id="LOCAL-00001" summary="Restructuring the project layout">
+      <created>1339433702060</created>
+      <updated>1339433702060</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-3" y="1" width="1286" height="1025" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295325" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -480,14 +588,14 @@
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32951945" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32951945" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32951945" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21463415" sideWeight="0.67048055" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32951945" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32951945" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
@@ -499,7 +607,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="OFFER_MOVE_TO_ANOTHER_CHANGELIST_ON_PARTIAL_COMMIT" value="true" />
-    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="true" />
     <option name="myTodoPanelSettings">
       <value>
@@ -563,16 +671,6 @@
     </buildFile>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/build.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="62" selection-start="591" selection-end="591" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Camel.iml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="65" selection-start="676" selection-end="676" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/action/CamelFileCopier.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="27" column="23" selection-start="707" selection-end="707" vertical-scroll-proportion="0.4893617">
@@ -594,40 +692,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/action/RiderOrderQueue.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="123" selection-start="1306" selection-end="1306" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#814#3857#0" expanded="true" />
-            <element signature="e#3396#3602#0" expanded="true" />
-            <element signature="e#3595#3596#0" expanded="true" />
-            <element signature="e#3645#3846#0" expanded="true" />
-            <element signature="e#3839#3840#0" expanded="true" />
-            <element signature="e#3852#3853#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/action/OrderToCsvProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="27" selection-start="376" selection-end="376" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/action/CamelJmsToFileExample.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="15" column="138" selection-start="431" selection-end="431" vertical-scroll-proportion="0.17021276">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/org/action/OrderToCsvProcessorTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="83" selection-start="141" selection-end="141" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -652,8 +719,90 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/action/FileCopier.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="8" selection-start="1080" selection-end="1080" vertical-scroll-proportion="1.032258">
+        <state line="23" column="27" selection-start="680" selection-end="680" vertical-scroll-proportion="0.0">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/action/OrderToCsvProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="27" selection-start="376" selection-end="376" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/action/OrderToCsvBean.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="71" selection-start="300" selection-end="300" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/org/action/OrderToCsvProcessorTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="12" column="46" selection-start="391" selection-end="391" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/action/RiderOrderQueue.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="135" column="0" selection-start="4287" selection-end="4287" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#879#4538#0" expanded="true" />
+            <element signature="e#4326#4527#0" expanded="true" />
+            <element signature="e#4520#4521#0" expanded="true" />
+            <element signature="e#4533#4534#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/org/action/OrderToCsvBeanTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="90" selection-start="693" selection-end="693" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/org/action/ProtobufExampleTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="15" column="34" selection-start="416" selection-end="416" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/action/ExampleBook.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="15" selection-start="82" selection-end="82" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/org/action/PurchaseOrderJsonTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="41" selection-start="554" selection-end="554" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#835#1071#0" expanded="true" />
+            <element signature="e#1066#1067#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/org/action/PurchaseOrderCsvTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="35" column="90" selection-start="1008" selection-end="1008" vertical-scroll-proportion="0.9354839">
+          <folding>
+            <element signature="e#872#1083#0" expanded="true" />
+            <element signature="e#1078#1079#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -714,7 +863,6 @@
             <option name="proportions">
               <list>
                 <option value="0.2" />
-                <option value="0.5" />
               </list>
             </option>
           </splitter-proportions>
@@ -734,7 +882,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited>apache-activemq-optional</last-edited>
+          <last-edited>commons</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>

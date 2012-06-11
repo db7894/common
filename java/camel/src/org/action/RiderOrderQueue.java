@@ -9,6 +9,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.component.jms.JmsComponent;
+import org.apache.camel.processor.aggregate.AggregationStrategy;
 
 /**
  * A quick summery of a number of camels' features
@@ -111,6 +112,26 @@ public final class RiderOrderQueue {
 						System.out.println("Downloading BAD order " + exchange.getIn().getHeader("CamelFileName"));
 					}
 				});
+
+			/**
+			 * An example of an in-place transformer and an in place enricher
+			 */
+/*			from("jms:accounting")
+				.transform(body().regexReplaceAll("\n", "<br/>"))
+				.pollEnrich("ftp://example", new AggregationStrategy() {
+					@Override
+					public Exchange aggregate(Exchange exchange, Exchange nexchange) {
+						if (nexchange == null) {
+							return exchange;
+						}
+
+						String first = exchange.getIn().getBody(String.class);
+						String second = nexchange.getIn().getBody(String.class);
+						exchange.getIn().setBody(first + "\n" + second);
+
+						return exchange;
+					}
+				}).to("mock:result");*/
 
 			from("jms:production")
 				.process(new Processor() {
