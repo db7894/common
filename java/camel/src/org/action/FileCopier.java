@@ -13,7 +13,9 @@ public class FileCopier {
         File inbox = new File("data/inbox");
         File outbox = new File("data/outbox");
 
-        outbox.mkdir();
+        if (!outbox.mkdir()) {
+			throw new IllegalArgumentException("Invalid output directory");
+		}
 
         File[] files = inbox.listFiles();
         for (File source : files) {
@@ -32,6 +34,7 @@ public class FileCopier {
         FileInputStream in = new FileInputStream(source);
         byte[] buffer = new byte[(int)source.length()];
         in.read(buffer);
+
         try {
             out.write(buffer);
         } finally {
