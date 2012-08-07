@@ -1,8 +1,15 @@
 #include "llvm/DerivedTypes.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/Support/IRBuilder.h"
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
+#include "llvm/PassManager.h"
 #include "llvm/Analysis/Verifier.h"
+#include "llvm/Analysis/Passes.h"
+#include "llvm/Target/TargetData.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Support/TargetSelect.h"
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -493,6 +500,7 @@ llvm::Function* FunctionNode::Codegen() {
     if (llvm::Value *retval = Body->Codegen()) {
         Builder.CreateRet(retval);
         llvm::verifyFunction(*func);
+        TheFPM->run(func);
         return func;
     }
 
@@ -593,6 +601,17 @@ int main() {
     // prime the interpreter
     fprintf(stderr, "ready> ");
     getNextToken();
+
+    // initialize the optimizer
+    llvm::FunctionPassManager FPM(TheModule);
+    FPM.add(new llvm::TargetData(*TheExecutionEngine->getTargetData()));
+    FPM.add(llvm::createBasicAliasAnalysisPass());
+    FPM.add(llvm::createInstructionCombiningPass());
+    FPM.add(llvm::createReassociatePass());
+    FPM.add(llvm::createGVNPass()):
+    FPM.add(llvm::createCFGSimplificationPass());
+    FPM.doInitialization();
+    TheFPM = &FPM:
 
     // run the interpreter
     StartExpr();
