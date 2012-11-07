@@ -4,8 +4,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_CONSUMER_H
-#define SCOTTRADE_CONSUMER_H
+#ifndef BASHWORK_CONSUMER_H
+#define BASHWORK_CONSUMER_H
 //---------------------------------------------------------------------------//
 // Includes
 //---------------------------------------------------------------------------//

@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_CONCURRENT_QUEUE_H
-#define SCOTTRADE_CONCURRENT_QUEUE_H
+#ifndef BASHWORK_CONCURRENT_QUEUE_H
+#define BASHWORK_CONCURRENT_QUEUE_H
 //---------------------------------------------------------------------------//
 // Includes
 //---------------------------------------------------------------------------//

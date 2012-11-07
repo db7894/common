@@ -5,8 +5,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_STOPWATCH_H
-#define SCOTTRADE_STOPWATCH_H
+#ifndef BASHWORK_STOPWATCH_H
+#define BASHWORK_STOPWATCH_H
 //----------------------------------------------------------------------------//
 // Includes
 //----------------------------------------------------------------------------//

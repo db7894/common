@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_PUBLISHER_H
-#define SCOTTRADE_PUBLISHER_H
+#ifndef BASHWORK_PUBLISHER_H
+#define BASHWORK_PUBLISHER_H
 //---------------------------------------------------------------------------//
 // Includes
 //---------------------------------------------------------------------------//

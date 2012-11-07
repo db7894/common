@@ -13,8 +13,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_REGISTRY_DETAIL_H
-#define SCOTTRADE_REGISTRY_DETAIL_H
+#ifndef REGISTRY_DETAIL_H
+#define REGISTRY_DETAIL_H
 
 #include <winreg.h>
 #include <boost/lexical_cast.hpp>
@@ -28,7 +28,7 @@ namespace detail
 // Constants
 //---------------------------------------------------------------------------//
 static const HKEY REGISTRY_ROOT			= HKEY_LOCAL_MACHINE;
-static const char* SCOTTRADE_ROOT		= "Software\\Scottrade\\";
+static const char* BASHWORK_ROOT		= "Software\\Bashwork\\";
 static const int MAX_REGISTRY_STRING	= 255;
 
 /**
@@ -38,7 +38,7 @@ static const int MAX_REGISTRY_STRING	= 255;
  */
 static inline HKEY registry_open(const char* key)
 {
-	std::string total = std::string(SCOTTRADE_ROOT) + std::string(key);
+	std::string total = std::string(BASHWORK_ROOT) + std::string(key);
 	HKEY handle = NULL;
 	
 	RegOpenKeyExA(REGISTRY_ROOT, total.data(), 0, KEY_READ, &handle); 
@@ -52,7 +52,7 @@ static inline HKEY registry_open(const char* key)
  */
 static inline HKEY registry_create(const char* key)
 {
-	std::string total = std::string(SCOTTRADE_ROOT) + std::string(key);
+	std::string total = std::string(BASHWORK_ROOT) + std::string(key);
 	HKEY handle = NULL;
 
 	/* if key doesn't exist, we create it */

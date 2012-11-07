@@ -4,8 +4,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_SUBSCRIBER_H
-#define SCOTTRADE_SUBSCRIBER_H
+#ifndef BASHWORK_SUBSCRIBER_H
+#define BASHWORK_SUBSCRIBER_H
 //---------------------------------------------------------------------------//
 // Includes
 //---------------------------------------------------------------------------//

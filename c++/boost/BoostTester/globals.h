@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_GLOBALS_H
-#define SCOTTRADE_GLOBALS_H
+#ifndef BASHWORK_GLOBALS_H
+#define BASHWORK_GLOBALS_H
 //---------------------------------------------------------------------------//
 // Includes
 //---------------------------------------------------------------------------//

@@ -5,8 +5,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_REGISTRY_H
-#define SCOTTRADE_REGISTRY_H
+#ifndef BASHWORK_REGISTRY_H
+#define BASHWORK_REGISTRY_H
 //----------------------------------------------------------------------------//
 // Includes
 //----------------------------------------------------------------------------//

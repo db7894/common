@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_TESTER_STDFX_H
-#define SCOTTRADE_TESTER_STDFX_H
+#ifndef BASHWORK_TESTER_STDFX_H
+#define BASHWORK_TESTER_STDFX_H
 
 //---------------------------------------------------------------------------//
 // Global Includes

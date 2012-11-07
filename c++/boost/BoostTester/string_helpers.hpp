@@ -5,8 +5,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_STRING_HELPERS_H
-#define SCOTTRADE_STRING_HELPERS_H
+#ifndef BASHWORK_STRING_HELPERS_H
+#define BASHWORK_STRING_HELPERS_H
 //----------------------------------------------------------------------------//
 // Includes
 //----------------------------------------------------------------------------//

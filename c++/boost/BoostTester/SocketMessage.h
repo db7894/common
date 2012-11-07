@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_SOCKET_MESSAGE_H
-#define SCOTTRADE_SOCKET_MESSAGE_H
+#ifndef BASHWORK_SOCKET_MESSAGE_H
+#define BASHWORK_SOCKET_MESSAGE_H
 //---------------------------------------------------------------------------//
 // Includes
 //---------------------------------------------------------------------------//

@@ -1,6 +1,6 @@
 /**
  * @file Packet.h
- * @brief Definitions for scottrade packets
+ * @brief Definitions for base packets
  */
 #pragma once
 
@@ -11,7 +11,7 @@
 //---------------------------------------------------------------------------//
 
 /**
- * @brief Scottrade chosen packet header
+ * @brief Base chosen packet header
  */
 struct MessageHeader
 {

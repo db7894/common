@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="Scottrade"
+	Name="Bashwork"
 	ProjectGUID="{71B022C0-2621-4C77-B53B-631CD174E0F3}"
 	RootNamespace="BoostTester"
 	Keyword="Win32Proj"

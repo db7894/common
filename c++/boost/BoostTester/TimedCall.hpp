@@ -5,8 +5,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_TIMED_CALL_H
-#define SCOTTRADE_TIMED_CALL_H
+#ifndef BASHWORK_TIMED_CALL_H
+#define BASHWORK_TIMED_CALL_H
 
 //----------------------------------------------------------------------------//
 // Includes

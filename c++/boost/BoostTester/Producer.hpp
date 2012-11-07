@@ -4,8 +4,8 @@
  */
 #pragma once
 
-#ifndef SCOTTRADE_PRODUCER_H
-#define SCOTTRADE_PRODUCER_H
+#ifndef BASHWORK_PRODUCER_H
+#define BASHWORK_PRODUCER_H
 //---------------------------------------------------------------------------//
 // Includes
 //---------------------------------------------------------------------------//
