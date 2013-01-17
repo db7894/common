@@ -1,5 +1,33 @@
-import hashlib
-import bisect
+'''
+Consistent Hash Circle
+------------------------------------------------------------
+
+This is a simple implementation of David Karger's idea of hashing
+to an imagined circle in order to spread a key distribution and to
+add and remove nodes without affecting existing clients. In order
+for this to happen, both the client and server keys are hashed
+modulous a fixed size and the correct node is the closest match on the
+client side. To prevent hot spots, "virtual" locations can be added
+on the circle by hashing again with a replication count.
+
+The choice of the partition key is particularlly important so that
+hot spots are not created. For example, say a user has a marketplace
+id, a customer id, and an application id. If the partition was just
+on marketplace id, then the US node would be hot. If the key was just
+the application id, then the most popular mobile phone node would be
+hot. It makes sense to blend these keys into composite keys so that
+there is a good mixture in the circle::
+
+    circle = ConsistentHash(replicas=10)
+    for node in nodes:
+        circle.add_node(node)
+
+    key  = "{}:{}:{}".format(mid, aid, cid)
+    node = circle.get_node(key)
+    return node
+'''
+from hashlib import sha256
+from bisect import bisect_right, insort_right
 
 
 class ConsistentHash(object):
@@ -13,10 +41,10 @@ class ConsistentHash(object):
         :param replicas: The number of virtual replicas to use
         :param hasher: The hash method to use
         '''
-        self.index = list()
-        self.nodes = dict()
+        self.index = list() # sorted hash keys
+        self.nodes = dict() # hash-key => node
         self.replicas = max(1, replicas)
-        self.hasher = hasher or (lambda x: hashlib.sha256(x).digest())
+        self.hasher = hasher or (lambda x: sha256(x).digest())
 
     def add_node(self, node):
         ''' Given a node, add it to the circle
@@ -26,7 +54,7 @@ class ConsistentHash(object):
         for i in range(self.replicas):
             key = self.hasher("{}:{}".format(node, i))
             self.nodes[key] = node
-            bisect.insort(self.index, key)
+            insort_right(self.index, key)
 
     def del_node(self, node):
         ''' Given a node, deleted it from the circle
@@ -51,7 +79,7 @@ class ConsistentHash(object):
         if key in self.nodes:
             return self.nodes[key]
 
-        end = bisect.bisect_right(self.index, key)
+        end = bisect_right(self.index, key)
         end = 0 if end >= len(self.index) else end
         return self.nodes[self.index[end]]
 
@@ -61,15 +89,28 @@ class ConsistentHash(object):
 # ------------------------------------------------------------
 if __name__ == "__main__":
     from collections import defaultdict
-    import os
+    from os import urandom
 
+    c = 10
     s = 100000
     m = ConsistentHash()
-    for i in range(10):
+    for i in range(c):
         m.add_node("cache{}.host.com".format(i))
 
     hits = defaultdict(int)
     for i in range(s):
-        hits[m.get_node(os.urandom(15))] += 1
+        hits[m.get_node(urandom(15))] += 1
+    hits = dict((k, v/float(s)) for k,v in hits.items())
     for k,v in hits.items():
-        print "{}\t{}".format(k, v * 1.0 / s)
+        print "{}\t{}".format(k, v)
+
+    mean = sum(hits.values()) / c
+    vary = sum((v - mean)**2 for v in hits.values()) / c 
+    stdv = vary**.5
+
+    print "-" * 30
+    print "mean\t\t{}".format(mean)
+    print "variance\t{}".format(vary)
+    print "std-deviation\t{}".format(stdv)
+
+
