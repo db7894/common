@@ -33,3 +33,16 @@ def permutations(xs):
         perms = [p[:i] + x + p[i:] for p in perms
                                    for i in range(0, len(p) + 1)]
     return perms
+
+def team_matching(players):
+    ps, pt = sorted(players, reverse=True), len(players) / 2
+    xs, xc = [], 0
+    ys, yc = [], 0
+    for p in ps:
+        if xc < yc and len(xs) < pt:
+            xs.append(p)
+            xc += p
+        else:
+            ys.append(p)
+            yc += p
+    return (xs, xc), (ys, yc)
