@@ -11,7 +11,11 @@ object SqsrouterBuild extends Build {
       organization := "org.bashwork",
       version := "1.0",
       scalaVersion := "2.9.2",
-      libraryDependencies += "com.amazonaws" % "aws-java-sdk" % "1.3.32"
+      resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+      libraryDependencies ++= Seq(
+        "com.amazonaws" % "aws-java-sdk" % "1.3.32",
+        "com.typesafe.akka" % "akka-actor" % "2.0.5"
+      )
     )
   )
 }
