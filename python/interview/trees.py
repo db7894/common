@@ -7,6 +7,10 @@ class Tree(object):
         self.left  = left
         self.right = right
 
+    def __repr__(self):
+        return "{}<-{}->{}".format(str(self.left), self.value, str(self.right))
+    __str__ = __repr__
+
 def is_binary_search_tree(tree):
     ''' Checks if a binary tree is a valid binary
     search tree.
@@ -101,3 +105,14 @@ def array_to_tree(array):
         m = (l + h) / 2
         return Tree(array[m], convert(l, m - 1), convert(m + 1, h))
     return convert(0, len(array) - 1)
+
+def invert_tree(tree):
+    def invert(node, left, right):
+        if not node: return []
+        if node.left or node.right:
+            roots  = invert(node.left, None, node)
+            roots += invert(node.right, node, None)
+        else: roots = [node]
+        node.left, node.right = left, right
+        return roots
+    return invert(tree, None, None)
