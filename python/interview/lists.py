@@ -45,7 +45,7 @@ def reverse_list(xs):
         last, head = temp, last
     return head
 
-def unique_list(head):
+def make_unique_list(head):
     ''' Given a linked list, return the list
     as a unique list and also return the total
     size of the list as well as the number of

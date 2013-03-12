@@ -8,7 +8,7 @@ class Tree(object):
         self.right = right
 
     def __repr__(self):
-        return "{}<-{}->{}".format(str(self.left), self.value, str(self.right))
+        return str(tree_to_array(self))
     __str__ = __repr__
 
 def is_binary_search_tree(tree):
@@ -52,7 +52,7 @@ def print_zig_zag(root):
             if node.right: stackl.append(node.right)
             if node.left:  stackl.append(node.left)
 
-def is_equal_tree(treea, treeb):
+def are_trees_equal(treea, treeb):
     ''' Determine if two trees are equal.
     '''
     if not treea and not treeb: return True
@@ -61,7 +61,7 @@ def is_equal_tree(treea, treeb):
     return (is_equal_tree(treea.left,  treeb.left) and
             is_equal_tree(treea.right, treeb.right))
 
-def is_subtree(tree, node):
+def is_a_subtree(tree, node):
     ''' Given two trees, check if one is a subtree of
     the other.
     '''

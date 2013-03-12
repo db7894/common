@@ -1,4 +1,4 @@
-class Node(object):
+class Entry(object):
 
     def __init__(self, key, value, link=None):
         self.key   = key
@@ -24,7 +24,7 @@ class HashTable(object):
         if not key: raise KeyError("invalid key")
         idx = hash(key) % self.factor
         if not self.buckets[idx]:
-            self.buckets[idx] = Node(key, value)
+            self.buckets[idx] = Entry(key, value)
             self.length += 1
             return
 
@@ -34,7 +34,7 @@ class HashTable(object):
                 bucket.value = value
                 return
             prev, bucket = bucket, bucket.link
-        prev.link = Node(key, value)
+        prev.link = Entry(key, value)
         self.length += 1
     
     def remove(self, key):
