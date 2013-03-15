@@ -89,6 +89,7 @@ def nth_tree_value(tree, n):
 def tree_to_array(tree):
     ''' Given a binary tree, convert it into a sorted array.
     '''
+    if not tree: return []
     def convert(array, node):
         if node.left: convert(array, node.left)
         array.append(node.value)
@@ -100,11 +101,24 @@ def array_to_tree(array):
     ''' Given a sorted array, convert it into a
     minimal binary tree.
     '''
+    if not array: return Tree(None)
     def convert(l, h):
         if l > h: return None
         m = (l + h) / 2
         return Tree(array[m], convert(l, m - 1), convert(m + 1, h))
     return convert(0, len(array) - 1)
+
+def serialize_tree(tree):
+    ''' Given a serialized array convert it to a tree.
+    '''
+    from json import dumps
+    return dumps(tree_to_array(tree))
+
+def deserialize_tree(string):
+    ''' Given a serialized array convert it to a tree.
+    '''
+    from json import loads
+    return loads(array_to_tree(tree))
 
 def invert_tree(tree):
     def invert(node, left, right):
