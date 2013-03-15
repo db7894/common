@@ -1,0 +1,2 @@
+def quicksort(coll):
+    pass
