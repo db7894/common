@@ -18,11 +18,13 @@ def max_service_instances(log):
         
         start_time,end_time,user_id,instances
     '''
-    users = defaultdict(int) # range -> count
-    keys  = ['start', 'end', 'id', 'size']
+    import numpy as np
+    times = np.ndarray(60 * 60 * 24, int)
+    keys  = ['startup', 'shutdown', 'id', 'size']
     fmts  = [int, int, str, int]
     for entry in generate_entries(log, keys, fmts):
-        pass
+        times[entry.startup:entry.shutdown] += entry.size
+    return times.max()
 
 def get_most_active_user():
     ''' Given the following log file format, find the user
@@ -70,9 +72,6 @@ def get_users_at_time(log, query):
     fmts  = [int, int, str]
     for entry in generate_entries(log, keys, fmts):
         times[entry.login:entry.logoff] += 1
-
-    if isinstance(query, tuple): # range query
-        return times[query[0]:query[1]].sum()
     return times[query]
 
 def generate_log(count):
