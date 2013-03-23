@@ -12,6 +12,11 @@ class Node(object):
 
 def merge_sorted_lists(xs, ys):
     ''' Given two sorted lists, merge them
+
+    >>> xs = [1, 3, 5]
+    >>> ys = [2, 4, 6]
+    >>> merge_sorted_lists(xs, ys)
+    [1, 2, 3, 4, 5, 6]
     '''
     rs = []
     while len(xs) > 0 and len(ys) > 0:
@@ -20,6 +25,11 @@ def merge_sorted_lists(xs, ys):
 
 def merge_sorted_linked_lists(xs, ys):
     ''' Given two sorted linked lists, merge them
+
+    >>> xs = Node(1, Node(3, Node(5)))
+    >>> ys = Node(2, Node(4, Node(6)))
+    >>> merge_sorted_linked_lists(xs, ys)
+    1->2->3->4->5->6->None
     '''
     head = xs if xs.value < ys.value else ys
     curr = head
@@ -37,6 +47,10 @@ def merge_sorted_linked_lists(xs, ys):
 
 def reverse_list(xs):
     ''' Given a linked list, reverse it
+
+    >>> xs = Node(1, Node(2, Node(3, Node(4, Node(5)))))
+    >>> reverse_list(xs)
+    5->4->3->2->1->None
     '''
     last, head = xs, None
     while last:
@@ -50,6 +64,10 @@ def make_unique_list(head):
     as a unique list and also return the total
     size of the list as well as the number of
     duplicates
+
+    >>> xs = Node(1, Node(2, Node(1, Node(3, Node(4, Node(5, Node(3)))))))
+    >>> make_unique_list(xs)
+    (1->2->3->4->5->None, 5, 2)
     '''
     if not head: return (head, 0, 0)
     seen = set([head.value])
@@ -64,3 +82,7 @@ def make_unique_list(head):
             seen.add(curr.value)
             prev, curr = prev.link, curr.link
     return (head, size, dups)
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
