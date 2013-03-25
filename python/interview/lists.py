@@ -1,3 +1,5 @@
+from itertools import izip_longest
+
 class Node(object):
     ''' A simple linked list node element.
     '''
@@ -5,6 +7,20 @@ class Node(object):
     def __init__(self, value, link=None):
         self.value = value
         self.link  = link
+
+    def __iter__(self):
+        current = self
+        while current != None:
+            yield current
+            current = current.link
+
+    def next(self):
+        if not self.link:
+            raise StopIteration()
+        return self.link
+
+    def __hash__(self):
+        return hash(self.value)
 
     def __repr__(self):
         return "{}->{}".format(self.value, str(self.link))
@@ -61,6 +77,51 @@ def reverse_list(xs):
         last.link = head
         last, head = temp, last
     return head
+
+
+def find_merge_point_naive(xs, ys):
+    ''' Given two linked lists, find the node
+    at which they merge:
+
+    - O(xs + ys) time
+    - O(xs) space
+
+    >>> me = Node(6, Node(7))
+    >>> xs = Node(0, Node(1, Node(3, me)))
+    >>> ys = Node(2, Node(4, Node(5, me)))
+    >>> find_merge_point_naive(xs, ys)
+    6->7->None
+    '''
+    visited = set(xs)
+    for y in ys:
+        if y in visited: return y
+    return None
+
+
+def find_merge_point(xs, ys):
+    ''' Given two linked lists, find the node
+    at which they merge:
+
+    - O(max(xs,ys)) time
+    - O(max(xs,ys)) space
+    
+    Solutions:
+    - (sd2) add checkpoints and backtrack
+
+    >>> me = Node(6, Node(7))
+    >>> xs = Node(0, Node(1, Node(3, me)))
+    >>> ys = Node(2, Node(4, Node(5, me)))
+    >>> find_merge_point(xs, ys)
+    6->7->None
+    '''
+    visited = set()
+    for x, y in izip_longest(xs, ys):
+        if x == y: return x
+        if x in visited: return x
+        if y in visited: return y
+        if x: visited.add(x)
+        if y: visited.add(y)
+    return None
 
 
 def make_unique_list(head):
