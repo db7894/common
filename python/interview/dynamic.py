@@ -22,6 +22,7 @@ def rain_trap(heights):
     ds = [min(r,l) for r,l in zip(rs, reversed(list(ls)))]
     return sum(d - h for d,h in zip(ds, heights))
 
+
 def stock_market(prices):
     ''' Given a line of ticker prices, if you could go back
     to any point and buy one share of stock and sell it after
@@ -45,6 +46,7 @@ def stock_market(prices):
         cur_return = price - min_global[0]
         max_return = max(max_return, (cur_return, min_global[1], day))
     return max_return
+
 
 if __name__ == "__main__":
     import doctest

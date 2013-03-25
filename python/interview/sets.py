@@ -11,6 +11,7 @@ def are_chars_unique(string):
     '''
     return len(string) == len(set(string))
 
+
 def are_chars_unique_array(string):
     ''' Given a string, determine if all the characters
     in the string are unique using a lookup table.
@@ -38,6 +39,7 @@ def are_strings_anagrams(xs, ys):
     '''
     return sorted(xs) == sorted(ys)
 
+
 def are_strings_anagrams_array(xs, ys):
     ''' Given two strings, check if they are anagrams
     using a lookup table.
@@ -53,6 +55,7 @@ def are_strings_anagrams_array(xs, ys):
         ks[ord(xs[i])] += 1
         ks[ord(ys[i])] -= 1
     return all(n == 0 for n in ks)
+
 
 def get_all_anagrams(word, dictionary):
     ''' Given a dictionary of available words
@@ -70,6 +73,7 @@ def get_all_anagrams(word, dictionary):
     for entry in dictionary:
         anagrams[str(sorted(entry))].append(entry)
     return anagrams[str(sorted(word))]
+
     
 def subsets(xs):
     ''' Generate all the subsets of the supplied set.
@@ -82,6 +86,7 @@ def subsets(xs):
         subs.extend(temp)
     return subs
 
+
 def permutations(xs):
     ''' Generate all the permutations of the supplied set.
     '''
@@ -90,6 +95,7 @@ def permutations(xs):
         perms = [p[:i] + x + p[i:] for p in perms
                                    for i in range(0, len(p) + 1)]
     return perms
+
 
 def team_matching(players):
     ''' Given a collection of players and their rankings,
@@ -107,6 +113,7 @@ def team_matching(players):
             ys.append(p)
             yc += p
     return (xs, xc), (ys, yc)
+
 
 if __name__ == "__main__":
     import doctest

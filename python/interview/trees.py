@@ -11,6 +11,7 @@ class Tree(object):
         return str(tree_to_array(self))
     __str__ = __repr__
 
+
 def is_binary_search_tree(tree):
     ''' Checks if a binary tree is a valid binary
     search tree.
@@ -23,6 +24,7 @@ def is_binary_search_tree(tree):
                 check(node.right, node.value, maxv))
     return check(tree, None, None)
 
+
 def is_mirror_tree(treea, treeb):
     ''' Given two trees, check if they are mirrors
     of each other.
@@ -32,6 +34,7 @@ def is_mirror_tree(treea, treeb):
     if not treeb and not treea: return True
     return (is_mirror_tree(treea.left, treeb.right) and
             is_mirror_tree(treea.right, treeb.left))
+
 
 def print_zig_zag(root):
     ''' Given a binary tree, print it out in a
@@ -52,6 +55,7 @@ def print_zig_zag(root):
             if node.right: stackl.append(node.right)
             if node.left:  stackl.append(node.left)
 
+
 def are_trees_equal(treea, treeb):
     ''' Determine if two trees are equal.
     '''
@@ -60,6 +64,7 @@ def are_trees_equal(treea, treeb):
     if treea.value != treeb.value: return False
     return (is_equal_tree(treea.left,  treeb.left) and
             is_equal_tree(treea.right, treeb.right))
+
 
 def is_a_subtree(tree, node):
     ''' Given two trees, check if one is a subtree of
@@ -71,6 +76,7 @@ def is_a_subtree(tree, node):
         is_equal_tree(tree, node)): return True
     return (is_subtree(tree.left, node) or
             is_subtree(tree.right, node))
+
 
 def nth_tree_value(tree, n):
     ''' Return the nth value in order of the tree.
@@ -86,6 +92,7 @@ def nth_tree_value(tree, n):
             node = node.right
     return None
 
+
 def tree_to_array(tree):
     ''' Given a binary tree, convert it into a sorted array.
     '''
@@ -96,6 +103,7 @@ def tree_to_array(tree):
         if node.right: convert(array, node.right)
         return array
     return convert([], tree)
+
 
 def array_to_tree(array):
     ''' Given a sorted array, convert it into a
@@ -108,17 +116,20 @@ def array_to_tree(array):
         return Tree(array[m], convert(l, m - 1), convert(m + 1, h))
     return convert(0, len(array) - 1)
 
+
 def serialize_tree(tree):
     ''' Given a serialized array convert it to a tree.
     '''
     from json import dumps
     return dumps(tree_to_array(tree))
 
+
 def deserialize_tree(string):
     ''' Given a serialized array convert it to a tree.
     '''
     from json import loads
     return loads(array_to_tree(tree))
+
 
 def invert_tree(tree):
     def invert(node, left, right):
@@ -130,3 +141,8 @@ def invert_tree(tree):
         node.left, node.right = left, right
         return roots
     return invert(tree, None, None)
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

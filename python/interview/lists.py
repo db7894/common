@@ -10,6 +10,7 @@ class Node(object):
         return "{}->{}".format(self.value, str(self.link))
     __str__ = __repr__
 
+
 def merge_sorted_lists(xs, ys):
     ''' Given two sorted lists, merge them
 
@@ -22,6 +23,7 @@ def merge_sorted_lists(xs, ys):
     while len(xs) > 0 and len(ys) > 0:
         rs.append(xs.pop(0) if xs[0] < ys[0] else ys.pop(0))
     return rs + xs + ys
+
 
 def merge_sorted_linked_lists(xs, ys):
     ''' Given two sorted linked lists, merge them
@@ -45,6 +47,7 @@ def merge_sorted_linked_lists(xs, ys):
         curr = curr.link
     return head
 
+
 def reverse_list(xs):
     ''' Given a linked list, reverse it
 
@@ -58,6 +61,7 @@ def reverse_list(xs):
         last.link = head
         last, head = temp, last
     return head
+
 
 def make_unique_list(head):
     ''' Given a linked list, return the list
@@ -82,6 +86,7 @@ def make_unique_list(head):
             seen.add(curr.value)
             prev, curr = prev.link, curr.link
     return (head, size, dups)
+
 
 if __name__ == "__main__":
     import doctest

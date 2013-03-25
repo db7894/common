@@ -12,6 +12,7 @@ def generate_entries(log, keys, formats=None):
         values = (f(v) for f,v in zip(formats, values))
         yield Entry._make(values)
 
+
 def max_service_instances(log):
     ''' Given the following log file format, find the maximum
     concurrent service instances::
@@ -26,6 +27,7 @@ def max_service_instances(log):
         times[entry.startup:entry.shutdown] += entry.size
     return times.max()
 
+
 def get_most_active_user():
     ''' Given the following log file format, find the user
     with the most concurrent service instances::
@@ -37,6 +39,7 @@ def get_most_active_user():
     fmts  = [int, int, str, int]
     for entry in generate_entries(log, keys, fmts):
         pass
+
 
 def max_concurrent_users(log):
     ''' Given the following log file format, find the maximum
@@ -57,6 +60,7 @@ def max_concurrent_users(log):
         else: users.remove(entry.user)
     return total
 
+
 def get_users_at_time(log, query):
     ''' Given the following log file format, find the number
     of users logged on at the requested time (or range)::
@@ -74,6 +78,7 @@ def get_users_at_time(log, query):
         times[entry.login:entry.logoff] += 1
     return times[query]
 
+
 def generate_log(count):
     ''' Generate a log file with the specified
     number of entries
@@ -85,3 +90,8 @@ def generate_log(count):
         s,e = min(s,e), max(s, e)
         i = randint(0, 1000)
         yield "{},{},{}".format(s, e, i)
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
