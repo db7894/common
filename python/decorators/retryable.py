@@ -1,5 +1,8 @@
+'''
+'''
 import sys
 import time
+import types
 import itertools
 from random import random
 from functools import wraps
@@ -21,14 +24,84 @@ class TimeoutException(RetryException):
     '''
     pass
 
+# ------------------------------------------------------------
+# Policy Callables
+# ------------------------------------------------------------
+
+class Backoff(object):
+    ''' A collection of backoff policies that can be
+    applied to a retry policy.
+    '''
+
+    @staticmethod
+    def constant(delay):
+        ''' A retry policy that will delay always for
+        the same designated delay.
+        '''
+        def wrapper(retry):
+            retry.backoff = delay
+        return wrapper
+
+    @staticmethod
+    def linear(multiplier=1):
+        ''' A retry policy that will increaase the delay
+        timeout in a linear fashion.
+
+        :param multipler: An extra multiplier to apply
+        '''
+        def wrapper(retry):
+            def backoff(count, policy):
+                delay = policy.min_delay * count * multiplier
+                return min(delay, policy.max_delay)
+
+            if not retry.min_delay:
+                retry.min_delay = 0.1
+            retry.backoff = backoff
+        return wrapper
+
+    @staticmethod
+    def exponential(coefficient=1.5):
+        ''' A policy that will retry a call until the
+        result satisfies the inverse of the predicate.
+        '''
+        def wrapper(retry):
+            def backoff(count, policy):
+                delay = policy.min_delay * (coefficient ** (count - 1))
+                return min(delay, policy.max_delay)
+
+            if not retry.min_delay:
+                retry.min_delay = 0.1
+            retry.backoff = backoff
+        return wrapper
+
+
+class Jitter(object):
+    ''' A collection of jitter policies that can
+    be applied to a retry policy.
+    '''
+
+    @staticmethod
+    def random(coefficient=1):
+        ''' A policy that will delay a retry using
+        an amount of jitter to keep hosts unaligned.
+        '''
+        def wrapper(policy):
+            def method(delay):
+                scale = 1 - (coefficient * random())
+                return delay * scale
+
+            policy.jitter = jitter
+        return wrapper
 
 # ------------------------------------------------------------
-# Policies
+# Retry Policy
 # ------------------------------------------------------------
 
 class Policy(object):
+    ''' A context for maintaining the retry policy.
+    '''
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         ''' Initialize a new instance of the RetryPolicy
 
         :param predicate: A predicate to test the result with
@@ -37,16 +110,20 @@ class Policy(object):
         :param exception: A single exception to catch
         :param exceptions: A list of exceptions to catch
         '''
-        self.jitter     = kwargs.get('jitter', None)
-        self.backoff    = kwargs.get('backoff', 1)
+        self.jitter     = kwargs.get('jitter',    None)
+        self.backoff    = kwargs.get('backoff',   1)
         self.min_delay  = kwargs.get('min_delay', None)
         self.max_delay  = kwargs.get('max_delay', sys.maxint)
         self.predicate  = kwargs.get('predicate', None)
-        self.timeout    = kwargs.get('timeout', None)
-        self.retries    = kwargs.get('retries', None)
+        self.timeout    = kwargs.get('timeout',   None)
+        self.retries    = kwargs.get('retries',   None)
         if 'exception' in kwargs:
             self.exceptions = [kwargs.get('exception')]
         else: self.exceptions = kwargs.get('exceptions', None)
+
+        # apply un-named policy arguments
+        for policy in args:
+            if callable(policy): policy(self)
 
     @classmethod
     def forever(klass, **kwargs):
@@ -65,14 +142,6 @@ class Policy(object):
         return klass(**kwargs)
 
     @classmethod
-    def forever(klass, **kwargs):
-        ''' A policy that will retry a call forever or
-        until it succeeds
-        '''
-        kwargs['retries'] = None
-        return klass(**kwargs)
-
-    @classmethod
     def unless(klass, predicate, **kwargs):
         ''' A policy that will retry a call until the
         result satisfies the specified predicate.
@@ -81,25 +150,11 @@ class Policy(object):
         return klass(**kwargs)
 
     @classmethod
-    def exponential(klass, coefficient=1.5, **kwargs):
-        ''' A policy that will retry a call until the
-        result satisfies the inverse of the predicate.
-        '''
-        def backoff(count, policy):
-            delay = policy.min_delay * (coefficient ** (count - 1))
-            return min(delay, policy.max_delay)
-
-        if 'min-delay' not in kwargs:
-            kwargs['min_delay'] = 0.1
-        kwargs['backoff'] = backoff
-        return klass(**kwargs)
-
-    @classmethod
     def until(klass, predicate, **kwargs):
         ''' A policy that will retry a call until the
         result satisfies the inverse of the predicate.
         '''
-        kwargs['predicate'] = lambda x: !predicate(x)
+        kwargs['predicate'] = lambda x: not predicate(x)
         return klass(**kwargs)
 
     @classmethod
@@ -128,20 +183,8 @@ class Policy(object):
         kwargs['retries'] = count
         return klass(**kwargs)
 
-    @classmethod
-    def jitter(klass, coefficient, **kwargs):
-        ''' A policy that will delay a retry using
-        an amount of jitter to keep hosts unaligned.
-        '''
-        def method(delay):
-            scale = 1 - (coefficient * random())
-            return delay * scale
-
-        kwargs['jitter'] = jitter
-        return klass(**kwargs)
-
 # ------------------------------------------------------------
-# Implementation
+# Method Decorator
 # ------------------------------------------------------------
 
 class retry(object):
@@ -149,7 +192,7 @@ class retry(object):
     be retried based on the supplied critera.
     '''
     
-    def __init__(self, policy=Policy.forever):
+    def __init__(self, policy=Policy.forever()):
         ''' Initializes a new instance of the retry decorator.
         @param policy The retry policy to operate with
         '''
@@ -242,12 +285,36 @@ class retry(object):
                 self.handle_retries(count)
         return wrapper
 
+# ------------------------------------------------------------
+# Class Decorator
+# ------------------------------------------------------------
+
+class retry_meta(type):
+    ''' A class based meta class that decorates all
+    public methods with retryable policy::
+
+        class ExampleClass(object):
+            __metaclass__ = retry_meta
+            __policy__    = Policy.forever()
+    '''
+
+    def __new__(klass, name, bases, attrs):
+        ''' Apply the retryable method decorator to every
+        public method in the class.
+        '''
+        policy = attrs['__policy__']
+        for attr_name, attr_value in attrs.iteritems():
+            if (isinstance(attr_value, types.FunctionType)
+                and not attr_name.startswith('_')):
+                attrs[attr_name] = retry(policy)(attr_value)
+        return super(retry_meta, klass).__new__(klass, name, bases, attrs)
+
 if __name__ == "__main__":
     #@retry(Policy.forever())
     #@retry(Policy.times(10))
     #@retry(Policy.until(datetime.now() + timedelta(minutes=1)))
     #@retry(Policy.for_the_next(timedelta(minutes=1)))
-    #@retry(Policy.unless(lambda x: x % 2 == 0))
+    @retry(Policy.unless(lambda x: x % 2 == 0))
     def example():
         import random
         return random.randint(0, 100)
