@@ -11,10 +11,56 @@ class Tree(object):
         return str(tree_to_array(self))
     __str__ = __repr__
 
+def tree_dfs(tree):
+    ''' Given a tree, walk it in dfs left-to-right
+    '''
+    stack = [tree]
+    while stack:
+        current = stack.pop()
+        yield current
+        if current.right: stack.append(current.right)
+        if current.left: stack.append(current.left)
+
+def tree_dfs_reverse(tree):
+    ''' Given a tree, walk it in dfs right-to-left
+    '''
+    stack = [tree]
+    while stack:
+        current = stack.pop()
+        yield current
+        if current.left:  stack.append(current.left)
+        if current.right: stack.append(current.right)
+
+def tree_bfs(tree):
+    ''' Given a tree, walk it in bfs left-to-right
+    '''
+    queue = [tree]
+    while queue:
+        current = queue.pop()
+        yield current
+        if current.left:  queue.insert(0, current.left)
+        if current.right: queue.insert(0, current.right)
+
+def tree_bfs_reverse(tree):
+    ''' Given a tree, walk it in bfs right-to-left
+    '''
+    queue = [tree]
+    while queue:
+        current = queue.pop()
+        yield current
+        if current.right: queue.insert(0, current.right)
+        if current.left:  queue.insert(0, current.left)
 
 def is_binary_search_tree(tree):
     ''' Checks if a binary tree is a valid binary
     search tree.
+    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> is_binary_search_tree(tree)
+    True
+
+    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(9))), Tree(6))
+    >>> is_binary_search_tree(tree)
+    False
     '''
     def check(node, minv, maxv):
         if node == None: return True
@@ -28,6 +74,16 @@ def is_binary_search_tree(tree):
 def is_mirror_tree(treea, treeb):
     ''' Given two trees, check if they are mirrors
     of each other.
+
+    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> treeb = Tree(5, Tree(6), Tree(2, Tree(3, Tree(4), Tree(1))))
+    >>> is_mirror_tree(treea, treeb)
+    True
+
+    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> is_mirror_tree(treea, treeb)
+    False
     '''
     if not treea and treeb: return False
     if not treeb and treea: return False
@@ -58,12 +114,22 @@ def print_zig_zag(root):
 
 def are_trees_equal(treea, treeb):
     ''' Determine if two trees are equal.
+
+    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> are_trees_equal(treea, treeb)
+    True
+
+    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(9))), Tree(6))
+    >>> are_trees_equal(treea, treeb)
+    False
     '''
     if not treea and not treeb: return True
     if not treea  or not treeb: return False
     if treea.value != treeb.value: return False
-    return (is_equal_tree(treea.left,  treeb.left) and
-            is_equal_tree(treea.right, treeb.right))
+    return (are_trees_equal(treea.left,  treeb.left) and
+            are_trees_equal(treea.right, treeb.right))
 
 def find_path(tree, node):
     ''' Given a tree, find a path from the root
@@ -74,20 +140,14 @@ def find_path(tree, node):
     >>> find_path(tree, node).pop().value
     4
     '''
-    curr  = None
-    trail = {}
-    path  = []
-    stack = [tree]
-    while stack:
-        curr = stack.pop()
-        if curr.value == node.value:
+    current  = None # current node in the tree
+    trail    = {}   # parent node adjacency graph
+    path     = []   # the resulting path to the node
+    for current in tree_dfs(tree):
+        if not current or (current.value == node.value):
             break
-        if curr.right:
-            stack.append(curr.right)
-            trail[current.right] = curr
-        if curr.left:
-            stack.append(curr.left)
-            trail[current.left] = curr
+        trail[current.right] = current
+        trail[current.left]  = current
 
     while current:
         path.insert(0, current)
@@ -115,17 +175,30 @@ def find_common_ancestor(tree, nodea, nodeb):
 def is_a_subtree(tree, node):
     ''' Given two trees, check if one is a subtree of
     the other.
+
+    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> treeb = Tree(2, Tree(1), Tree(3, right=Tree(4)))
+    >>> is_a_subtree(treea, treeb)
+    True
+
+    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> treeb = Tree(6, Tree(5, Tree(7)))
+    >>> is_a_subtree(treea, treeb)
+    False
     '''
     if not tree: return False
     if not node: return True
     if (tree.value == node.value and
-        is_equal_tree(tree, node)): return True
-    return (is_subtree(tree.left, node) or
-            is_subtree(tree.right, node))
-
+        are_trees_equal(tree, node)): return True
+    return (is_a_subtree(tree.left, node) or
+            is_a_subtree(tree.right, node))
 
 def nth_tree_value(tree, n):
     ''' Return the nth value in order of the tree.
+
+    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> nth_tree_value(tree, 4)
+    4
     '''
     stack, node = [], tree
     while node or stack:
@@ -141,6 +214,9 @@ def nth_tree_value(tree, n):
 
 def tree_to_array(tree):
     ''' Given a binary tree, convert it into a sorted array.
+    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> tree_to_array(tree)
+    [1, 2, 3, 4, 5, 6]
     '''
     if not tree: return []
     def convert(array, node):
@@ -154,6 +230,9 @@ def tree_to_array(tree):
 def array_to_tree(array):
     ''' Given a sorted array, convert it into a
     minimal binary tree.
+    >>> array = [1, 2, 3, 4, 5, 6]
+    >>> array_to_tree(array)
+    [1, 2, 3, 4, 5, 6]
     '''
     if not array: return Tree(None)
     def convert(l, h):
@@ -176,7 +255,6 @@ def deserialize_tree(string):
     from json import loads
     return loads(array_to_tree(tree))
 
-
 def invert_tree(tree):
     def invert(node, left, right):
         if not node: return []
@@ -187,7 +265,6 @@ def invert_tree(tree):
         node.left, node.right = left, right
         return roots
     return invert(tree, None, None)
-
 
 if __name__ == "__main__":
     import doctest
