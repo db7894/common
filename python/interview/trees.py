@@ -13,6 +13,10 @@ class Tree(object):
 
 def tree_dfs(tree):
     ''' Given a tree, walk it in dfs left-to-right
+
+    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> [n.value for n in tree_dfs(tree)]
+    [5, 2, 1, 3, 4, 6]
     '''
     stack = [tree]
     while stack:
@@ -23,6 +27,10 @@ def tree_dfs(tree):
 
 def tree_dfs_reverse(tree):
     ''' Given a tree, walk it in dfs right-to-left
+
+    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> [n.value for n in tree_dfs_reverse(tree)]
+    [5, 6, 2, 3, 4, 1]
     '''
     stack = [tree]
     while stack:
@@ -33,6 +41,10 @@ def tree_dfs_reverse(tree):
 
 def tree_bfs(tree):
     ''' Given a tree, walk it in bfs left-to-right
+
+    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> [n.value for n in tree_bfs(tree)]
+    [5, 2, 6, 1, 3, 4]
     '''
     queue = [tree]
     while queue:
@@ -43,6 +55,10 @@ def tree_bfs(tree):
 
 def tree_bfs_reverse(tree):
     ''' Given a tree, walk it in bfs right-to-left
+
+    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> [n.value for n in tree_bfs_reverse(tree)]
+    [5, 6, 2, 3, 1, 4]
     '''
     queue = [tree]
     while queue:
@@ -76,7 +92,7 @@ def is_mirror_tree(treea, treeb):
     of each other.
 
     >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> treeb = Tree(5, Tree(6), Tree(2, Tree(3, Tree(4), Tree(1))))
+    >>> treeb = Tree(5, Tree(6), Tree(2, Tree(3, Tree(4)), Tree(1)))
     >>> is_mirror_tree(treea, treeb)
     True
 
@@ -88,9 +104,9 @@ def is_mirror_tree(treea, treeb):
     if not treea and treeb: return False
     if not treeb and treea: return False
     if not treeb and not treea: return True
-    return (is_mirror_tree(treea.left, treeb.right) and
+    return (treea.value == treeb.value and
+            is_mirror_tree(treea.left, treeb.right) and
             is_mirror_tree(treea.right, treeb.left))
-
 
 def print_zig_zag(root):
     ''' Given a binary tree, print it out in a
@@ -171,6 +187,25 @@ def find_common_ancestor(tree, nodea, nodeb):
         if a.value != b.value: break
         match = a
     return match
+
+def lca(tree, nodea, nodeb):
+    ''' Given two trees, check if one is a subtree of
+    the other.
+
+    >>> tree  = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> nodea = Tree(4)
+    >>> nodeb = Tree(1)
+    >>> lca(tree, nodea, nodeb).value
+    2
+    '''
+    if not tree: return None               # no LCA
+    if tree.value == nodea.value: return tree
+    if tree.value == nodeb.value: return tree
+    left  = lca(tree.left,  nodea, nodeb)  # search left side for LCA
+    right = lca(tree.right, nodea, nodeb)  # search right side for LCA
+    if left and right: return tree         # we are at LCA pivot
+    if left: return left                   # found left, now search up
+    return right                           # found right, now search up
 
 def is_a_subtree(tree, node):
     ''' Given two trees, check if one is a subtree of
