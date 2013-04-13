@@ -65,6 +65,52 @@ def are_trees_equal(treea, treeb):
     return (is_equal_tree(treea.left,  treeb.left) and
             is_equal_tree(treea.right, treeb.right))
 
+def find_path(tree, node):
+    ''' Given a tree, find a path from the root
+    node to the given node element.
+
+    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> node = Tree(4)
+    >>> find_path(tree, node).pop().value
+    4
+    '''
+    curr  = None
+    trail = {}
+    path  = []
+    stack = [tree]
+    while stack:
+        curr = stack.pop()
+        if curr.value == node.value:
+            break
+        if curr.right:
+            stack.append(curr.right)
+            trail[current.right] = curr
+        if curr.left:
+            stack.append(curr.left)
+            trail[current.left] = curr
+
+    while current:
+        path.insert(0, current)
+        current = trail.get(current, None)
+    return path
+
+def find_common_ancestor(tree, nodea, nodeb):
+    ''' Given two trees, check if one is a subtree of
+    the other.
+
+    >>> tree  = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> nodea = Tree(4)
+    >>> nodeb = Tree(1)
+    >>> find_common_ancestor(tree, nodea, nodeb).value
+    2
+    '''
+    patha = find_path(tree, nodea)
+    pathb = find_path(tree, nodeb)
+    match = None
+    for a, b in zip(patha, pathb):
+        if a.value != b.value: break
+        match = a
+    return match
 
 def is_a_subtree(tree, node):
     ''' Given two trees, check if one is a subtree of
