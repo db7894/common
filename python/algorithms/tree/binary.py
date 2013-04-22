@@ -224,7 +224,7 @@ def dfs_postorder_recur(tree):
 #------------------------------------------------------------
 def dfs_preorder_prev(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
+    >>> tree = BinaryNode.create_prev(range(10))
     >>> node = dfs_preorder_prev(tree)
     >>> list(node)
     [5, 2, 1, 0, 4, 3, 8, 7, 6, 9]
@@ -234,7 +234,7 @@ def dfs_preorder_prev(tree):
     '''
     curr, prev = tree, None
     while curr: 
-        if prev == curr.prev:       # down to the left
+        if prev == curr.prev:       # going down
             yield curr
             prev, curr = curr, curr.left or curr.right or curr.prev
         elif prev == curr.left:     # up from the left
@@ -244,7 +244,7 @@ def dfs_preorder_prev(tree):
 
 def dfs_inorder_prev(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
+    >>> tree = BinaryNode.create_prev(range(10))
     >>> node = dfs_inorder_prev(tree)
     >>> list(node)
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -254,7 +254,8 @@ def dfs_inorder_prev(tree):
     '''
     curr, prev = tree, None
     while curr: 
-        if prev == curr.prev:       # down to the left
+        if prev == curr.prev:       # going down
+            if not curr.left: yield curr
             prev, curr = curr, curr.left or curr.right or curr.prev
         elif prev == curr.left:     # up from the left
             yield curr
@@ -264,7 +265,8 @@ def dfs_inorder_prev(tree):
 
 def dfs_postorder_prev(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
+
+    >>> tree = BinaryNode.create_prev(range(10))
     >>> node = dfs_postorder_prev(tree)
     >>> list(node)
     [0, 1, 3, 4, 2, 6, 7, 9, 8, 5]
@@ -274,9 +276,11 @@ def dfs_postorder_prev(tree):
     '''
     curr, prev = tree, None
     while curr: 
-        if prev == curr.prev:       # down to the left
+        if prev == curr.prev:       # going down
+            if not curr.left: yield curr
             prev, curr = curr, curr.left or curr.right or curr.prev
         elif prev == curr.left:     # up from the left
+            if not curr.right: yield curr
             prev, curr = curr, curr.right or curr.prev
         elif prev == curr.right:    # up from the right
             yield curr
