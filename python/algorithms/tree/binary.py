@@ -15,15 +15,107 @@ class BinaryNode(object):
         self.left  = left
         self.right = right
 
-    def __eq__(self, other): return other and (other.value == self.value)
-    def __ne__(self, other): return other and (other.value != self.value)
-    def __lt__(self, other): return other and (other.value  < self.value)
-    def __le__(self, other): return other and (other.value <= self.value)
-    def __gt__(self, other): return other and (other.value  > self.value)
-    def __ge__(self, other): return other and (other.value >= self.value)
-    def __hash__(self):      return hash(self.value)
-    def __repr__(self):      return str(self.value)
-    def __str__(self):       return str(self.value)
+    def __eq__(self, other):   return other and (other.value == self.value)
+    def __ne__(self, other):   return other and (other.value != self.value)
+    def __lt__(self, other):   return other and (other.value  < self.value)
+    def __le__(self, other):   return other and (other.value <= self.value)
+    def __gt__(self, other):   return other and (other.value  > self.value)
+    def __ge__(self, other):   return other and (other.value >= self.value)
+    def __hash__(self):        return hash(self.value)
+    def __repr__(self):        return str(self.value)
+    def __str__(self):         return str(self.value)
+    def __contains__(self, v): return self.contains(v)
+
+    def height(self):
+        ''' Given a tree, return its current max height
+
+        :returns: The max height of the tree
+        '''
+        left  = 1 + self.left.height()  if self.left  else 0
+        right = 1 + self.right.height() if self.right else 0
+        return max(left, right)
+
+    def is_balanced(self):
+        ''' Given a tree, check if it is balanced.  A tree
+        is balanced if the heights of each of its subtrees
+        differ by at most one degree.
+
+        :returns: True if balanced, False otherwise
+        '''
+        left  = self.left.height()  if self.left  else 0
+        right = self.right.height() if self.right else 0
+        if abs(left - right) > 1: return False
+        return ((self.left.is_balanced() if self.left else True)
+            and (self.right.is_balanced() if self.right else True))
+
+    def min(self):
+        ''' Given a binary tree, find the minimum value
+
+        :returns: The smallest value in a tree
+        '''
+        curr = self
+        while curr.left: curr = curr.left
+        return curr
+
+    def max(self):
+        ''' Given a binary tree, find the largest value
+
+        :returns: The largest value in the tree
+        '''
+        curr = self
+        while curr.right: curr = curr.right
+        return curr
+
+    def contains(self, value):
+        ''' Check if the supplied value is in the tree
+
+        :param value: The value to check existance for
+        '''
+        curr = self
+        while curr:
+            if curr.value == value: return True
+            if curr.value  > value: curr = curr.left
+            if curr.value  < value: curr = curr.right
+        return False
+
+    def add(self, value):
+        ''' Insert the supplied point into the tree
+
+        :param value: The value to insert into the tree
+        '''
+        curr, node = self, type(self)(value)
+        while curr:
+            if curr.value == value: break
+            if curr.value > value:
+                if curr.left: curr = curr.left
+                else: curr.left = node
+            if curr.value < value:
+                if curr.right: curr = curr.right
+                else: curr.right = node
+
+    def remove(self, value):
+        ''' Remove the supplied point from the tree
+
+        :param value: The value to remove into the tree
+        '''
+        def insert(p, c, n):
+            if p.left  == c: p.left  = n
+            if p.right == c: p.right = n
+
+        prev, curr = None, self
+        while curr:
+            if curr.value == value:                              # found who to remove
+                if curr.left and curr.right:                     # node has left and right children
+                    node = curr.left.max()                       # find max predecessor
+                    curr.remove(node)                            # remove hoisted node
+                    node.left  = curr.left                       # take over left child
+                    node.right = curr.right                      # take over right child
+                    insert(prev, curr, node)                     # insert to the parent
+                elif curr.left:  insert(prev, curr, curr.left)   # only left children
+                elif curr.right: insert(prev, curr, curr.right)  # only right children
+                else: insert(prev, curr, None)                   # no children
+            if curr.value > value: prev, curr = curr, curr.left  # search left
+            if curr.value < value: prev, curr = curr, curr.right # search right
 
     @classmethod
     def create(klass, xs):
@@ -286,6 +378,72 @@ def dfs_postorder_prev(tree):
             yield curr
             prev, curr = curr, curr.prev
 
+#------------------------------------------------------------
+# recursive tree operations
+#------------------------------------------------------------
+def tree_contains_recur(tree, value):
+    ''' A recursive implemplememtation to check if a value is
+    in a tree.
+    >>> tree = BinaryNode.create(range(10))
+    >>> tree_contains_recur(tree, 5)
+    True
+    >>> tree_contains_recur(tree, 10)
+    False
+
+    :param tree: The tree to check if a value is in
+    :param value: The value to check if in the tree
+    :returns: True if in the tree, False otherwise
+    '''
+    if tree == None: return False
+    return ((tree.value == value)
+        or tree_contains_recur(tree.left, value)
+        or tree_contains_recur(tree.right, value))
+
+def tree_insert_recur(tree, value):
+    ''' A recursive implemplememtation to check if a value is
+    in a tree.
+    >>> tree = BinaryNode.create(range(5))
+    >>> tree_insert_recur(tree, 5)
+    >>> node = dfs_inorder_iter(tree)
+    >>> list(node)
+    [0, 1, 2, 3, 4, 5]
+
+    :param tree: The tree to check if a value is in
+    :param value: The value to check if in the tree
+    :returns: True if in the tree, False otherwise
+    '''
+    if tree.value > value:
+        if tree.left: tree_insert_recur(tree.left, value)
+        else: tree.left = type(tree)(value)
+    elif tree.value < value:
+        if tree.right: tree_insert_recur(tree.right, value)
+        else: tree.right = type(tree)(value)
+    else: pass # value already in the tree
+
+def tree_insert_immut(tree, value):
+    ''' A recursive implemplememtation to check if a value is
+    in a tree.
+    >>> tree = BinaryNode.create(range(5))
+    >>> tree = tree_insert_immut(tree, 5)
+    >>> node = dfs_inorder_iter(tree)
+    >>> list(node)
+    [0, 1, 2, 3, 4, 5]
+
+    :param tree: The tree to check if a value is in
+    :param value: The value to check if in the tree
+    :returns: True if in the tree, False otherwise
+    '''
+    node = type(tree)
+    if not tree: return BinaryNode(value)
+    if tree.value == value: return tree
+    if tree.value  < value:
+        return node(tree.value, tree.left, tree_insert_immut(tree.right, value))
+    if tree.value  > value:
+        return node(tree.value, tree_insert_immut(tree.left, value), tree.right)
+
+#------------------------------------------------------------
+# test runner
+#------------------------------------------------------------
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
