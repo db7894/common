@@ -1,3 +1,4 @@
+
 class BinaryNode(object):
     ''' A simple binary node that can be used to create
     binary trees. It implements all the comparable magic methods
