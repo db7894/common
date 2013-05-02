@@ -1,20 +1,30 @@
+import math
+
 #------------------------------------------------------------
 # helper methods
 #------------------------------------------------------------
-def generate_bit_count_table():
+def generate_bit_count_table(size):
     ''' Generates a bit count table of 0x00..0xFF
     '''
-    t = [0x00 for _ in xrange(256)]
-    for i in xrange(256):
+    t = [0x00 for _ in xrange(size)]
+    for i in xrange(size):
         t[i] = (i & 1) + t[i / 2]
     return t
 
 
-def generate_bit_mask_table():
+def generate_bit_index_table(size):
+    ''' Generates a bit range table that can
+    be used to mask off the specified bit
+    given the supplied index.
+    '''
+    return [1 << i for i in xrange(size)]
+
+
+def generate_bit_mask_table(size):
     ''' Generates a bit mask table of 0x00..0xFF
     '''
-    t = [0x01 for _ in xrange(16)]
-    for i in xrange(1, 16):
+    t = [0x01 for _ in xrange(size)]
+    for i in xrange(1, size):
         t[i] = (1 << i) | t[i - 1]
     return [0xFF] + t
 
@@ -30,33 +40,51 @@ class BitArray(object):
     implemented in terms of the bit operations.
     '''
 
-    __msk_to_cnt = generate_bit_count_table()
-    __idx_to_bit = [1 << i for i in xrange(16)]
-    __idx_to_msk = generate_bit_mask_table()
+    __msk_to_cnt = generate_bit_count_table(256)
+    __off_to_bit = generate_bit_index_table(64)
+    __off_to_msk = generate_bit_mask_table(64)
 
-    def __init__(self, size=64, block=8, array=None):
+    def __init__(self, size=64, block=64, array=None):
         ''' Initialize a new instance of the bit array
 
         :param size: The initial size of the bit array (default 64 bits)
         :param block: The size of each array block (default byte)
         :param array: The initial array values (default None)
         '''
-        self.block = min(8, block)             # need at least a byte
-        self.array = array or [self.__cls] * (min(self.block, size) // self.block)
-        self.__set = (2 << self.block - 1) - 1 # 0xff..ff
-        self.__cls = 0x00                      # 0x00..00
+        self.__blk = max(8, block)             # need at least a byte
+        self.__set = (2 << self.__blk - 1) - 1 # 0xff..ff
+        self.__cls = 0x00L                     # 0x00..00
+        self.__bpw = int(math.log(self.__blk, 2))
+        self.array = array or [self.__cls] * (max(self.__blk, size) // self.__blk)
 
     #------------------------------------------------------------
-    # maintainence methods
+    # internal helpers
     #------------------------------------------------------------
-    def compact(self):
+    def __word_index(self, bit):
+        if bit < 0:
+            raise IndexError("bit position < 0: %d" % bit)
+        return bit >> self.__bpw, bit % self.__blk
+
+    def __check_range(self, start, end):
+        if start < 0: raise IndexError("start position < 0: %d" % start)
+        if end < 0: raise IndexError("end position < 0: %d" % end)
+        if start > end: raise IndexError("start[%d] > end[%d]" % (start, end))
+
+    def __expand_array(self, size):
+        if size >= len(self.array):
+            size = max(len(self.array), size + 1 - len(self.array))
+            self.array.extend([self.__cls] * size)
+
+    def __compact(self):
         ''' Compact the underlying array removing the tail
         end cleared bits.
         '''
-        if self.__cls in self.array:
-            idx = self.array.index(self.__cls)
-            self.array = self.array[:idx]
-        else: pass # already compacted
+        idx = len(self.array)
+        if self.array[idx - 1]: return    # cannot be compacted
+        for word in reversed(self.array): # we expand to the right
+            if word: break; idx -= 1      # until we find a non 0x00
+        if idx != len(self.array):        # if we need to shrink
+            self.array = self.array[:idx] # then shrink the right side
 
     #------------------------------------------------------------
     # information methods
@@ -68,7 +96,8 @@ class BitArray(object):
         '''
         for idx, bits in enumerate(self.array):
             if bits:
-                return (bits & -bits) + idx * self.block
+                bit = int(math.log(bits & -bits, 2))
+                return bit + (idx * self.__blk)
         return None # no bits are set
 
     def last_set_bit(self):
@@ -79,7 +108,8 @@ class BitArray(object):
         for idx in reversed(xrange(len(self.array))):
             bits = self.array[idx]
             if bits:
-                return (bits & -bits) + idx * self.block
+                bit = math.log(bits & -bits, 2)
+                return bit + (idx * self.__blk)
         return None # no bits are set
 
     def first_clear_bit(self):
@@ -89,7 +119,8 @@ class BitArray(object):
         '''
         for idx, bits in enumerate(self.array):
             if bits != self.__set:
-                return (bits & -bits) + idx * self.block
+                bit = int(math.log(~bits & bits + 1, 2))
+                return bit + (idx * self.__blk)
         return None # no bits are cleared
 
     def cardinality(self):
@@ -115,7 +146,7 @@ class BitArray(object):
 
         :returns: The current bit length
         '''
-        return self.last_set_bit() or 0
+        return self.last_set_bit() or 0L
 
     def length_of_bytes(self):
         ''' Returns the length of the currently
@@ -131,7 +162,7 @@ class BitArray(object):
 
         :returns: The current buffer length
         '''
-        return len(self.array) * self.block
+        return len(self.array) * self.__blk
 
     #------------------------------------------------------------
     # set methods
@@ -142,10 +173,9 @@ class BitArray(object):
 
         :param pos: The position to set the value for
         '''
-        idx, off = divmod(pos, self.block)
-        if idx > len(self.array):
-            self.array.extend([self.__cls] * (idx - len(self.array)))
-        self.array[idx] |= self.__masks[off]
+        idx, off = self.__word_index(pos)
+        self.__expand_array(idx)
+        self.array[idx] |= self.__off_to_bit[off]
 
     def set_range(self, start, end):
         ''' Set the value at the specified bit
@@ -154,9 +184,9 @@ class BitArray(object):
         :param start: The position to start from
         :param end: The position to end at
         '''
-        sidx, soff = divmod(start, self.block)
-        eidx, eoff = divmod(end, self.block)
-        if eidx > len(self.array):
+        sidx, soff = divmod(start, self.__blk)
+        eidx, eoff = divmod(end, self.__blk)
+        if eidx >= len(self.array):
             self.array.extend([self.__set] * (eidx - len(self.array)))
         self.array[idx] |= self.__masks[off]
         #TODO
@@ -175,10 +205,10 @@ class BitArray(object):
 
         :param pos: The position to set the value for
         '''
-        idx, off = divmod(pos, self.block)
-        if idx > len(self.array):
-            self.array.extend([self.__cls] * (idx - len(self.array)))
-        self.array[idx] &= ~self.__masks[off] & self.__set
+        idx, off = self.__word_index(pos)
+        self.__expand_array(idx)
+        self.array[idx] &= ~self.__off_to_bit[off] & self.__set
+        self.__compact()
 
     def clear_range(self, start, end):
         ''' Sets the value of the bits in range to 0.
@@ -188,14 +218,14 @@ class BitArray(object):
         '''
         sidx, soff = divmod(start, self.block)
         eidx, eoff = divmod(end, self.block)
-        if eidx > len(self.array):
-            self.array.extend([self.__cls] * (eidx - len(self.array)))
+        if eidx >= len(self.array):
+            self.array.extend([self.__cls] * (eidx + 1 - len(self.array)))
         #TODO
 
     def clear_all(self):
         ''' Sets the value of all the underlying bits to 0.
         '''
-        self.array = [self.__cls] * len(self.array)
+        self.array = [self.__cls] # already compacted
 
     #------------------------------------------------------------
     # flip methods
@@ -206,10 +236,10 @@ class BitArray(object):
 
         :param pos: The position to flip the value for
         '''
-        idx, off = divmod(pos, self.block)
-        if idx > len(self.array):
-            self.array.extend([self.__cls] * (idx - len(self.array)))
-        self.array[idx] ^= self.__masks[off]
+        idx, off = self.__word_index(pos)
+        self.__expand_array(idx)
+        self.array[idx] ^= self.__off_to_bit[off]
+        self.__compact()
 
     def flip_range(self, start, end):
         ''' Flip the values in the specified bit range.
@@ -217,14 +247,30 @@ class BitArray(object):
         :param start: The position to start from
         :param end: The position to end at
         '''
-        pass
+        self.__check_range(start, end)
+        sidx, soff = self.__word_index(start)
+        eidx, eoff = self.__word_index(end)
+        self.__expand_array(eidx)
+
+        smask = self.__off_to_msk[soff]            # mask for the first word
+        smask = ~smask & self.__set                # mask for the first word
+        emask = self.__off_to_msk[eoff]            # mask for the final word
+        #print hex(smask), hex(emask)
+        if sidx != eidx:                           # multiply multiple words
+            self.array[sidx] ^= smask              # modify first word
+            for idx in xrange(sidx + 1, eidx):     # skip first and last word
+                self.array[idx] ^= self.__set      # modify all bits in between
+            self.array[eidx] ^= emask              # modify last word
+        else: self.array[sidx] ^= (smask & emask)  # modify single word
+        self.__compact()
         #TODO
 
     def flip_all(self):
         ''' Flip the value of all the underlying bits.
         '''
         for idx in xrange(len(self.array)):
-            self.array[idx] = ~self.array[idx] & self.__set
+            self.array[idx] ^= self.__set
+        self.__compact()
 
     #------------------------------------------------------------
     # get methods
@@ -236,10 +282,9 @@ class BitArray(object):
         :param pos: The position to get the value for
         :returns: True if the value is set, false otherwise
         '''
-        idx, off = divmod(pos, self.block)
-        if idx > len(self.array): return self.__cls
-        v = self.array[idx] & self.__masks[off]
-        return (v != self.__cls)
+        idx, off = self.__word_index(pos)
+        val = self.array[idx] & self.__masks[off]
+        return (val != self.__cls)
 
     def get_range(self, start, end):
         ''' Get the value at the specified bit
@@ -251,7 +296,7 @@ class BitArray(object):
         '''
         sidx, soff = divmod(start, self.block)
         eidx, eoff = divmod(end, self.block)
-        if sidx > len(self.array): return None
+        if sidx >= len(self.array): return None
         res = self.array[sidx] & self.__idx_to_msk[soff]
         res >>= soff
         end = min(len(self.array), eidx if not eoff else eidx - 1)
@@ -266,19 +311,35 @@ class BitArray(object):
     #------------------------------------------------------------
     # format methods
     #------------------------------------------------------------
-    def to_hex_string(self):
+    def to_byte_string(self):
         ''' Return the bit array represented as a hex string
 
         :returns: The bit array represented as a hex string
         '''
-        return '0x' + ''.join("{0:02X}".format(x) for x in self.array)
+        return '0x' + ''.join("{0:016X}".format(x) for x in
+            reversed(self.array))
 
     def to_bit_string(self):
         ''' Return the bit array represented as a bit string
 
         :returns: The bit array represented as a bit string
         '''
-        return '0b' + ''.join("{0:08b}".format(x) for x in self.array)
+        return '0b' + ''.join("{0:064b}".format(x) for x in
+            reversed(self.array))
+
+    def to_byte_list(self):
+        ''' Return the bit array represented as a hex string
+
+        :returns: The bit array represented as a hex string
+        '''
+        return list(self.array)
+
+    def to_bit_list(self):
+        ''' Return the bit array represented as a bit string
+
+        :returns: The bit array represented as a bit string
+        '''
+        return list(iter_by_bit())
 
     def iter_by_byte(self):
         ''' Return the bit array represented as a hex string
@@ -304,7 +365,7 @@ class BitArray(object):
     def __hash__(self):           return hash(self.array)
     def __repr__(self):           return self.to_bit_string()
     def __str__(self):            return self.to_bit_string()
-    def __len_(self):             return self.length_of_bits()
+    def __len__(self):            return self.length_of_bits()
     def __eq__(self, other):      return other and (other.array == self.array)
     def __ne__(self, other):      return other and (other.array != self.array)
     def __lt__(self, other):      return other and (other.array  < self.array)
