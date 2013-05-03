@@ -108,9 +108,10 @@ class BitArray(object):
         for idx in reversed(xrange(len(self.array))):
             bits = self.array[idx]
             if bits:
-                bit = math.log(bits & -bits, 2)
+                bit = int(math.log(bits & -bits, 2))
                 return bit + (idx * self.__blk)
         return None # no bits are set
+        # TODO
 
     def first_clear_bit(self):
         ''' Return the index of the first cleared bit.
@@ -128,7 +129,7 @@ class BitArray(object):
 
         :returns: The number of set bits in the bit array.
         '''
-        return sum(self.__counts[x] for x in self.array)
+        return sum(self.__msk_to_cnt[x] for x in self.array)
 
     def parity(self):
         ''' Return the parity of the bit array.
@@ -138,7 +139,7 @@ class BitArray(object):
 
         :returns: The parity of the bit array
         '''
-        return self.cardinality() & 0x1
+        return self.array[0] & 0x1
 
     def length_of_bits(self):
         ''' Returns the length of the currently used
@@ -146,7 +147,8 @@ class BitArray(object):
 
         :returns: The current bit length
         '''
-        return self.last_set_bit() or 0L
+        bit = self.last_set_bit()
+        return bit + 1 if bit else 0
 
     def length_of_bytes(self):
         ''' Returns the length of the currently
@@ -362,9 +364,9 @@ class BitArray(object):
     def __reversed__(self):       return reversed(self.iter_by_bit())
     def __contains__(self, byte): return byte in self.array
     def __nonzero__(self):        return any(self.array)
-    def __hash__(self):           return hash(self.array)
-    def __repr__(self):           return self.to_bit_string()
-    def __str__(self):            return self.to_bit_string()
+    def __hash__(self):           return hash(str(self.array))
+    def __repr__(self):           return self.to_byte_string()
+    def __str__(self):            return self.to_byte_string()
     def __len__(self):            return self.length_of_bits()
     def __eq__(self, other):      return other and (other.array == self.array)
     def __ne__(self, other):      return other and (other.array != self.array)
@@ -372,9 +374,9 @@ class BitArray(object):
     def __le__(self, other):      return other and (other.array <= self.array)
     def __gt__(self, other):      return other and (other.array  > self.array)
     def __ge__(self, other):      return other and (other.array >= self.array)
-    def __and__(self, other):     return other and BitVector(self.block, [x & y for x,y in zip(self.array, other.array)]) 
-    def __xor__(self, other):     return other and BitVector(self.block, [x ^ y for x,y in zip(self.array, other.array)]) 
-    def __or__(self, other):      return other and BitVector(self.block, [x | y for x,y in zip(self.array, other.array)]) 
-    def __invert__(self):         return BitVector(self.block, [~x & self.__set for x in self.array]) 
-    def __neg__(self):            return BitVector(self.block, [-x & self.__set for x in self.array]) 
+    def __and__(self, other):     return other and BitArray(self.__blk, array=[x & y for x,y in zip(self.array, other.array)]) 
+    def __xor__(self, other):     return other and BitArray(self.__blk, array=[x ^ y for x,y in zip(self.array, other.array)]) 
+    def __or__(self, other):      return other and BitArray(self.__blk, array=[x | y for x,y in zip(self.array, other.array)]) 
+    def __invert__(self):         return BitArray(self.__blk, array=[~x & self.__set for x in self.array]) 
+    def __neg__(self):            return BitArray(self.__blk, array=[-x & self.__set for x in self.array]) 
     def __pos__(self):            return self

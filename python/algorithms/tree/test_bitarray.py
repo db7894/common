@@ -13,6 +13,30 @@ class BitArrayTest(unittest.TestCase):
     #    ''' Test that the bit array is inited correctly '''
     #    self.assertEqual(8, BitArray(block=4).block)
 
+    def test_magic_methods(self):
+        ''' Test that the magic methods work correctly '''
+        barray = BitArray(array=[0x12, 0x34])
+        narray = BitArray(array=[0x34, 0x12])
+        self.assertTrue(0x12 in barray)
+        self.assertTrue(0x56 not in barray)
+        self.assertEqual(-2861452931799617962, hash(barray))
+        #self.assertEqual(20, len(barray))
+        self.assertTrue(barray == barray)
+        self.assertTrue(barray != narray)
+        self.assertTrue(barray >= barray)
+        self.assertTrue(barray <= barray)
+        self.assertTrue(barray >  narray)
+        self.assertTrue(narray <  barray)
+        self.assertEqual(narray & barray, BitArray(array=[0x10, 0x10]))
+        self.assertEqual(narray ^ barray, BitArray(array=[0x26, 0x26]))
+        self.assertEqual(narray | barray, BitArray(array=[0x36, 0x36]))
+        self.assertEqual(-barray, BitArray(array=[0xFFFFFFFFFFFFFFEE, 0xFFFFFFFFFFFFFFCC]))
+        self.assertEqual(~barray, BitArray(array=[0xFFFFFFFFFFFFFFED, 0xFFFFFFFFFFFFFFCB]))
+        self.assertEqual(+barray, BitArray(array=[0x12, 0x34]))
+
+    #------------------------------------------------------------
+    # test information operations
+    #------------------------------------------------------------
     def test_first_set_bit(self):
         ''' Test that the first_set_bit works correctly '''
         cases = {
@@ -49,6 +73,28 @@ class BitArrayTest(unittest.TestCase):
             barray = BitArray(array=[array])
             self.assertEqual(expected, barray.last_set_bit())
 
+    def test_cardinality(self):
+        ''' Test that the cardinality works correctly '''
+        cases = {
+            0x1F: 5,
+            0x3F: 6,
+            0x7F: 7,
+            0xFF: 8,
+        }
+        for array, expected in cases.items():
+            barray = BitArray(array=[array])
+            self.assertEqual(expected, barray.cardinality())
+
+    def test_parity(self):
+        ''' Test that the parity works correctly '''
+        cases = {
+            0x1: 1,
+            0x0: 0,
+        }
+        for array, expected in cases.items():
+            barray = BitArray(array=[array])
+            self.assertEqual(expected, barray.parity())
+
     def test_compact(self):
         ''' Test that the bit array is compacted correctly '''
         array = BitArray()
@@ -57,6 +103,28 @@ class BitArrayTest(unittest.TestCase):
         self.assertEqual(128, array.length_of_bits())
         array.flip(127)
         self.assertEqual(0,  array.length_of_bits())
+
+    #------------------------------------------------------------
+    # test length operations
+    #------------------------------------------------------------
+    def test_length_of_bits(self):
+        ''' Test that the length_of_bits works correctly '''
+        for size in range(1, 10):
+            barray = BitArray(array=[0x01] * size)
+            expected = 1 + (size - 1) * 64
+            self.assertEqual(expected, barray.length_of_bits())
+
+    def test_length_of_bytes(self):
+        ''' Test that the length_of_bytes works correctly '''
+        for size in range(1, 10):
+            barray = BitArray(array=[0x01]*size)
+            self.assertEqual(size, barray.length_of_bytes())
+
+    def test_length_of_buffer(self):
+        ''' Test that the length_of_buffer works correctly '''
+        for size in range(1, 10):
+            barray = BitArray(array=[0x01]*size)
+            self.assertEqual(size * 64, barray.length_of_buffer())
 
     #------------------------------------------------------------
     # test flip operations
