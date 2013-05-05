@@ -1,0 +1,82 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{96227912-671C-4927-90AB-81969E55C752}"
+	ProjectSection(SolutionItems) = preProject
+		..\CommonAssemblyInfo.cs = ..\CommonAssemblyInfo.cs
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoCounters", "..\Source\Monitoring\AutoCounters\AutoCounters.csproj", "{FE5E92A0-D340-4FE5-85B1-3BBC2FF0AA63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyleCopRules", "..\Source\Tools\StyleCopRules\StyleCopRules.csproj", "{0D91DFC7-9574-44B7-969D-16AD805427B5}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "StyleCopRulesInstaller", "..\Source\Tools\StyleCopRulesInstaller\StyleCopRulesInstaller.vdproj", "{369E58FC-20FC-4813-91D8-6F52A2B12F1C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FxCopRules", "..\Source\Tools\FxCopRules\FxCopRules.csproj", "{7FAB4741-05A8-419C-9021-F66C53CE02B3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{5D23B276-9028-49B6-8E03-1C5256ECBD28}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Quality", "Quality", "{8BD917E9-9BD8-4426-8669-DCA8207D6AC8}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 4
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://fttmfndation001.bashwork.com:8080/tfs/defaultcollection
+		SccProjectUniqueName0 = ..\\Source\\Monitoring\\AutoCounters\\AutoCounters.csproj
+		SccProjectTopLevelParentUniqueName0 = SharedAssemblies.Tools.sln
+		SccProjectName0 = ../Source/Monitoring/AutoCounters
+		SccAuxPath0 = http://fttmfndation001.bashwork.com:8080/tfs/defaultcollection
+		SccLocalPath0 = ..\\Source\\Monitoring\\AutoCounters
+		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName1 = ..\\Source\\Tools\\StyleCopRules\\StyleCopRules.csproj
+		SccProjectTopLevelParentUniqueName1 = SharedAssemblies.Tools.sln
+		SccProjectName1 = ../Source/Tools/StyleCopRules
+		SccAuxPath1 = http://fttmfndation001.bashwork.com:8080/tfs/defaultcollection
+		SccLocalPath1 = ..\\Source\\Tools\\StyleCopRules
+		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName2 = ..\\Source\\Tools\\StyleCopRulesInstaller\\StyleCopRulesInstaller.vdproj
+		SccProjectTopLevelParentUniqueName2 = SharedAssemblies.Tools.sln
+		SccProjectName2 = ../Source/Tools/StyleCopRulesInstaller
+		SccAuxPath2 = http://fttmfndation001.bashwork.com:8080/tfs/defaultcollection
+		SccLocalPath2 = ..\\Source\\Tools\\StyleCopRulesInstaller
+		SccProvider2 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName3 = ..\\Source\\Tools\\FxCopRules\\FxCopRules.csproj
+		SccProjectTopLevelParentUniqueName3 = SharedAssemblies.Tools.sln
+		SccProjectName3 = ../Source/Tools/FxCopRules
+		SccAuxPath3 = http://fttmfndation001.bashwork.com:8080/tfs/defaultcollection
+		SccLocalPath3 = ..\\Source\\Tools\\FxCopRules
+		SccProvider3 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE5E92A0-D340-4FE5-85B1-3BBC2FF0AA63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE5E92A0-D340-4FE5-85B1-3BBC2FF0AA63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE5E92A0-D340-4FE5-85B1-3BBC2FF0AA63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE5E92A0-D340-4FE5-85B1-3BBC2FF0AA63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D91DFC7-9574-44B7-969D-16AD805427B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D91DFC7-9574-44B7-969D-16AD805427B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D91DFC7-9574-44B7-969D-16AD805427B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D91DFC7-9574-44B7-969D-16AD805427B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{369E58FC-20FC-4813-91D8-6F52A2B12F1C}.Debug|Any CPU.ActiveCfg = Debug
+		{369E58FC-20FC-4813-91D8-6F52A2B12F1C}.Debug|Any CPU.Build.0 = Debug
+		{369E58FC-20FC-4813-91D8-6F52A2B12F1C}.Release|Any CPU.ActiveCfg = Release
+		{369E58FC-20FC-4813-91D8-6F52A2B12F1C}.Release|Any CPU.Build.0 = Release
+		{7FAB4741-05A8-419C-9021-F66C53CE02B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FAB4741-05A8-419C-9021-F66C53CE02B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FAB4741-05A8-419C-9021-F66C53CE02B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FAB4741-05A8-419C-9021-F66C53CE02B3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FE5E92A0-D340-4FE5-85B1-3BBC2FF0AA63} = {5D23B276-9028-49B6-8E03-1C5256ECBD28}
+		{7FAB4741-05A8-419C-9021-F66C53CE02B3} = {8BD917E9-9BD8-4426-8669-DCA8207D6AC8}
+		{0D91DFC7-9574-44B7-969D-16AD805427B5} = {8BD917E9-9BD8-4426-8669-DCA8207D6AC8}
+		{369E58FC-20FC-4813-91D8-6F52A2B12F1C} = {8BD917E9-9BD8-4426-8669-DCA8207D6AC8}
+	EndGlobalSection
+EndGlobal

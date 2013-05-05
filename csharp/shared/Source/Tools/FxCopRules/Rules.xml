@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Rules>
+	<Rule TypeName="NoMoreThanSevenParametersToMethod" Category="Bashwork.Design" CheckId="ST100">
+		<Name>NoMoreThanSevenParametersToMethod</Name>
+		<Description>Methods that contain more than seven parameters are typically too dense and need refactoring.</Description>
+		<Owner>Bashwork</Owner>
+		<Url>http://devcodedoc001.bashwork.com</Url>
+		<FixCategories>Breaking</FixCategories>
+		<Email>james.michael.hare@gmail.com</Email>
+		<Resolution>Method {0} must have no more than {1} arguments.</Resolution>
+		<MessageLevel Certainty="75">Warning</MessageLevel>		
+	</Rule>
+	<Rule TypeName="AvoidBoxingAndUnboxing" Category="Bashwork.Design" CheckId="ST101">
+		<Name>AvoidBoxingAndUnboxing</Name>
+		<Description>Boxing and unboxing are performance drains on high-performance applications.</Description>
+		<Owner>Bashwork</Owner>
+		<Url>http://devcodedoc001.bashwork.com</Url>
+		<FixCategories>Breaking</FixCategories>
+		<Email>james.michael.hare@gmail.com</Email>
+		<Resolution>Method {0} contains boxing/unboxing.</Resolution>
+		<MessageLevel Certainty="75">Warning</MessageLevel>
+	</Rule>
+</Rules>

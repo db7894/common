@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{99DCA343-5B1D-48B9-8A98-32E85C4484D5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Bashwork.General.Validation.Tests</RootNamespace>
+    <AssemblyName>Bashwork.General.Validation.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
+      <Visible>False</Visible>
+    </CodeAnalysisDependentAssemblyPaths>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="PredicateContextTests.cs" />
+    <Compile Include="PropertyCollectionContextTests.cs" />
+    <Compile Include="ValidationExceptionTests.cs" />
+    <Compile Include="ValidationSpeedTests.cs" />
+    <Compile Include="ValidationResultTests.cs" />
+    <Compile Include="ValidationCollectionContextTests.cs" />
+    <Compile Include="Internal\AssertEx.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Types\ExampleClassType.cs" />
+    <Compile Include="ValidationContextExtensionsTests.cs" />
+    <Compile Include="Rules\BetweenValidationTests.cs" />
+    <Compile Include="Rules\BoolValidationTests.cs" />
+    <Compile Include="Rules\CharacterValidationTests.cs" />
+    <Compile Include="Rules\ContainsAllElementsValidationTests.cs" />
+    <Compile Include="Rules\ContainsAnyElementsValidationTests.cs" />
+    <Compile Include="Rules\ContainsElementValidationTests.cs" />
+    <Compile Include="Rules\DateTimeValidationTests.cs" />
+    <Compile Include="Rules\DoubleValidationTests.cs" />
+    <Compile Include="Rules\EqualsOneOfValidationTests.cs" />
+    <Compile Include="Rules\EqualToValidationTests.cs" />
+    <Compile Include="Rules\GreaterThanValidationTests.cs" />
+    <Compile Include="Rules\IgnoreValidationTests.cs" />
+    <Compile Include="Rules\IntegerValidationTests.cs" />
+    <Compile Include="Rules\IsNotNullValidationTests.cs" />
+    <Compile Include="Rules\IsValidFormValidationTests.cs" />
+    <Compile Include="Rules\LengthValidationTests.cs" />
+    <Compile Include="Rules\LessThanValidationTests.cs" />
+    <Compile Include="Rules\RegularExpressionValidationTests.cs" />
+    <Compile Include="Rules\StringValidationTests.cs" />
+    <Compile Include="Rules\UniqueCollectionValidationTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Validation\Validation.csproj">
+      <Project>{3197603D-61C7-4C17-AF28-A81CD13EB043}</Project>
+      <Name>Validation</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

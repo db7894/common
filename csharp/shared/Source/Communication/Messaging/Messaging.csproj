@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{16DE8DE6-5D9C-4140-84D5-3CB72FC4AE24}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SharedAssemblies.Communication.Messaging</RootNamespace>
+    <AssemblyName>SharedAssemblies.Communication.Messaging</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>http://localhost/SharedAssemblies.Communication.Messaging/</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\..\Build\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\..\Build\Debug\SharedAssemblies.Communication.Messaging.XML</DocumentationFile>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\..\Build\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\..\Build\Release\SharedAssemblies.Communication.Messaging.XML</DocumentationFile>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\..\VisualStudio\SharedAssemblies.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="fmq-csharp-native, Version=1.0.3171.23790, Culture=neutral, PublicKeyToken=bcd8137312021232">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Libraries\Fiorano\fmq-csharp-native.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Libraries\log4net\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\CommonAssemblyInfo.cs">
+      <Link>CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="AbstractProvider\AbstractConnection.cs" />
+    <Compile Include="AbstractProvider\AbstractMessagingConnection.cs" />
+    <Compile Include="AbstractProvider\AbstractMessagingProviderContext.cs" />
+    <Compile Include="AbstractProvider\AbstractMessageSender.cs" />
+    <Compile Include="AbstractProvider\AbstractMessageReceiver.cs" />
+    <Compile Include="AbstractProvider\BufferedMessageHandlerStrategy.cs" />
+    <Compile Include="AbstractProvider\BufferedSenderStrategy.cs" />
+    <Compile Include="ConnectionFailureBehavior.cs" />
+    <Compile Include="FioranoProvider\FioranoContext.cs" />
+    <Compile Include="FioranoProvider\FioranoExceptionListener.cs" />
+    <Compile Include="FioranoProvider\FioranoMessageAdapter.cs" />
+    <Compile Include="FioranoProvider\FioranoMessageListener.cs" />
+    <Compile Include="FioranoProvider\FioranoSender.cs" />
+    <Compile Include="FioranoProvider\FioranoTopicStrategy.cs" />
+    <Compile Include="FioranoProvider\IFioranoStrategy.cs" />
+    <Compile Include="FioranoProvider\FioranoQueueStrategy.cs" />
+    <Compile Include="FioranoProvider\FioranoReceiver.cs" />
+    <Compile Include="AbstractProvider\ISenderStrategy.cs" />
+    <Compile Include="AbstractProvider\StatisticsSender.cs" />
+    <Compile Include="AbstractProvider\UnBufferedMessageHandlerStrategy.cs" />
+    <Compile Include="AbstractProvider\IMessageHandlerStrategy.cs" />
+    <Compile Include="AbstractProvider\UnBufferedSenderStrategy.cs" />
+    <Compile Include="IConnection.cs" />
+    <Compile Include="IMessageReader.cs" />
+    <Compile Include="IMessagingConnection.cs" />
+    <Compile Include="ReceiverType.cs" />
+    <Compile Include="SenderType.cs" />
+    <Compile Include="IMessagingProviderContext.cs" />
+    <Compile Include="MockProvider\MockContext.cs" />
+    <Compile Include="MockProvider\MockMessagingMap.cs" />
+    <Compile Include="MockProvider\MockProviderException.cs" />
+    <Compile Include="MockProvider\MockSenderBehavior.cs" />
+    <Compile Include="MockProvider\MockSenderMessageQueue.cs" />
+    <Compile Include="MockProvider\MockSender.cs" />
+    <Compile Include="MockProvider\MockReceiver.cs" />
+    <Compile Include="MockProvider\MockReceiverBehavior.cs" />
+    <Compile Include="MockProvider\MockReceiverMessageQueue.cs" />
+    <Compile Include="NullProvider\NullContext.cs" />
+    <Compile Include="NullProvider\NullSender.cs" />
+    <Compile Include="NullProvider\NullReceiver.cs" />
+    <Compile Include="ReceiverProperties.cs" />
+    <Compile Include="IMessageSender.cs" />
+    <Compile Include="IMessageReceiver.cs" />
+    <Compile Include="Message.cs" />
+    <Compile Include="MessagingException.cs" />
+    <Compile Include="MessagingFactory.cs" />
+    <Compile Include="ProviderProperties.cs" />
+    <Compile Include="ProviderType.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SenderProperties.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core.csproj">
+      <Project>{0324ABF7-8A99-466B-9E83-4B3A867D5DF8}</Project>
+      <Name>Core %28Core\Core%29</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\General\Threading\Threading.csproj">
+      <Project>{292456E3-A6FB-403B-A4F5-BC7BA7F841EF}</Project>
+      <Name>Threading</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\VisualStudio\SharedAssemblies.snk">
+      <Link>SharedAssemblies.snk</Link>
+    </None>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

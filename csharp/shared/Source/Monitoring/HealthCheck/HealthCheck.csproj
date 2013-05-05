@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9EBF9459-B83B-43E0-A8DE-AECA008E1F73}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SharedAssemblies.Monitoring.HealthCheck</RootNamespace>
+    <AssemblyName>SharedAssemblies.Monitoring.HealthCheck</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\..\Build\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>..\..\..\Build\Debug\SharedAssemblies.Monitoring.HealthCheck.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\..\Build\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\..\Build\Release\SharedAssemblies.Monitoring.HealthCheck.xml</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\..\VisualStudio\SharedAssemblies.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Libraries\log4net\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\CommonAssemblyInfo.cs">
+      <Link>CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Contracts\Health\IHealthCheck.cs" />
+    <Compile Include="Contracts\Web\Health\GetApplicationHealthResponseFactory.cs" />
+    <Compile Include="Contracts\Web\Health\GetApplicationVersionsResponse.cs" />
+    <Compile Include="Contracts\Web\Health\GetApplicationConfigurationResponse.cs" />
+    <Compile Include="Contracts\Web\Health\ApplicationConfiguration.cs" />
+    <Compile Include="Contracts\Web\Health\HealthTestResultFactory.cs" />
+    <Compile Include="Contracts\Web\ResponseResult.cs" />
+    <Compile Include="Contracts\Web\OperationResult.cs" />
+    <Compile Include="Contracts\Web\BaseServiceRequest.cs" />
+    <Compile Include="Contracts\Web\BaseServiceResponse.cs" />
+    <Compile Include="Contracts\Web\Health\GetApplicationHealthResponse.cs" />
+    <Compile Include="Contracts\Web\Health\HealthTestResult.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Contracts\Web\Health\IHealthServiceContract.cs" />
+    <Compile Include="Utilities\Health\AbstractHealthService.cs" />
+    <Compile Include="Utilities\Health\CachedHealthServiceCheck.cs" />
+    <Compile Include="Utilities\Health\DatabaseHealthConfig.cs" />
+    <Compile Include="Utilities\Health\GenericHealthCheck.cs" />
+    <Compile Include="Utilities\Health\HealthConfigUtility.cs" />
+    <Compile Include="Utilities\Health\HealthCheckUtility.cs" />
+    <Compile Include="Utilities\Health\HealthVersionUtility.cs" />
+    <Compile Include="Utilities\Health\ServiceHealthConfig.cs" />
+    <Compile Include="Utilities\Health\SqlDatabaseHealthCheck.cs" />
+    <Compile Include="Utilities\Logging\Log4NetPrettyXmlListener.cs" />
+    <Compile Include="Utilities\Logging\Log4NetTextTraceListener.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\VisualStudio\SharedAssemblies.snk">
+      <Link>SharedAssemblies.snk</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core.csproj">
+      <Project>{0324ABF7-8A99-466B-9E83-4B3A867D5DF8}</Project>
+      <Name>Core %28Core\Core%29</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\General\Database\Database.csproj">
+      <Project>{50A2DDC0-6A26-4C7C-A1DD-F719BC938180}</Project>
+      <Name>Database</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SourceAnalyzer Name="Bashwork Ordering Rules">
+	<Description>
+		Custom ordering rules for Bashwork C# coding standards.
+	</Description>
+	<Rules>
+		<Rule Name="ChildElementsMustFollowOrder" CheckId="ST1001">
+			<Context>When at the same scope level, {0} must be declared before {1}.</Context>
+			<Description>
+				To improve maintainability, the elements of any unit should be declared in a consistent order.
+				This is covered in C# Coding Standards 2.5.2 and 2.5.3.
+			</Description>
+		</Rule>
+	</Rules>
+</SourceAnalyzer>

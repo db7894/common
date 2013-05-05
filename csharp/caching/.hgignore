@@ -1,0 +1,7 @@
+syntax: glob
+Build/
+obj/
+bin/
+*.suo
+*.swp
+VisualStudio/TestResults/

@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Extra Build Rules --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+	<Import Project="$(MSBuildExtensionsPath)\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks"/>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Build Properties --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <PropertyGroup>
+        <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+		<ProgramFiles>$(MSBuildExtensionsPath)\..</ProgramFiles>
+        <RootDirectory>$(MSBuildProjectDirectory)\..</RootDirectory>
+        <ProjectDirectory>$(RootDirectory)\ProjectSolution</ProjectDirectory>
+        <DocDirectory>$(RootDirectory)\Documentation</DocDirectory>
+        <BuildDirectory>$(RootDirectory)\Build</BuildDirectory>
+        <OutputDirectory>$(BuildDirectory)\$(Configuration)</OutputDirectory>
+        <TestDirectory>$(BuildDirectory)\Testing</TestDirectory>
+        <MainAssembly>Bashwork.Banking.Service.dll</MainAssembly>
+        <ProjectName>BankingService</ProjectName>
+    </PropertyGroup>
+ 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Clean Task --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <Target Name="Clean">
+        <ItemGroup>
+            <BuildDirs Include="$(RootDirectory)\**\obj\" />
+            <BuildDirs Include="$(RootDirectory)\**\bin\" />
+            <BuildDirs Include="$(BuildDirectory)" />
+            <BuildDirs Include="$(ProjectDirectory)\TestResults" />
+        </ItemGroup>
+        <ItemGroup>
+            <BuildFiles Include="$(RootDirectory)\**\obj\**\*.*" />
+            <BuildFiles Include="$(RootDirectory)\**\bin\**\*.*" />
+            <BuildFiles Include="$(RootDirectory)\**\*.suo" />
+            <BuildFiles Include="$(RootDirectory)\**\*.Cache" />
+            <BuildFiles Include="$(RootDirectory)\**\*.user" />
+        </ItemGroup>
+        <Delete Files="@(BuildFiles)" />
+        <RemoveDir Directories="@(BuildDirs)" />
+    </Target>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Build Task --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <Target Name="Build">
+        <MSBuild Projects="$(ProjectDirectory)\$(ProjectName).sln"
+			Properties="Configuration=$(Configuration)"/>
+		<MSBuild.ExtensionPack.Multimedia.Sound TaskAction="Play" SystemSound="Exclamation"/>
+    </Target>
+    <Target Name="CleanBuild" DependsOnTargets="Clean">
+		<CallTarget Targets="Build" />
+	</Target>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Run Tests Task --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <Target Name="Test">
+		<MSBuild.ExtensionPack.Framework.DateAndTime TaskAction="Get" Format="-dd-MMM-yy">
+			<Output TaskParameter="Result" PropertyName="CurrentTime"/>
+        </MSBuild.ExtensionPack.Framework.DateAndTime>
+        <ItemGroup>
+            <TestArgs Include="/nologo" />
+            <!--TestArgs Include="/noresults" /-->
+            <TestArgs Include="/resultsfile:$(TestDirectory)\Results$(CurrentTime).trx" />
+            <TestArgs Include="/testmetadata:$(ProjectDirectory)\$(ProjectName).vsmdi" />
+            <TestArgs Include="/testlist:complete" />
+        </ItemGroup>
+        <PropertyGroup>
+            <Tester>"$(DevEnvDir)\mstest.exe"</Tester>
+        </PropertyGroup>
+		<Exec Command="$(Tester) @(TestArgs, ' ')">
+            <Output TaskParameter="ExitCode" PropertyName="ExitCode"/>
+		</Exec>
+        <Error Text="Tests execution failed" Condition="'$(ExitCode)' != 0" />
+    </Target>
+    <Target Name="CleanTest" DependsOnTargets="CleanBuild">
+		<CallTarget Targets="Test" />
+	</Target>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Run Code Quality Task --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <Target Name="Quality">
+        <ItemGroup>
+            <StyleCopFiles Include="$(RootDirectory)\**\*.cs" />
+        </ItemGroup>
+		<MSBuild.ExtensionPack.CodeQuality.StyleCop TaskAction="Scan"
+			SourceFiles="@(StyleCopFiles)" ShowOutput="true"
+			ForceFullAnalysis="true" CacheResults="false"
+			logFile="$(BuildDirectory)\stylecop.txt"
+			SettingsFile="$(ProgramFiles)\Microsoft StyleCop 4.4.0.14\Settings.StyleCop">
+            <Output TaskParameter="Succeeded" PropertyName="AllPassed"/>
+            <Output TaskParameter="ViolationCount" PropertyName="Violations"/>
+            <Output TaskParameter="FailedFiles" ItemName="Failures"/>
+        </MSBuild.ExtensionPack.CodeQuality.StyleCop>
+        <Message Text="Succeeded: $(AllPassed), Violations: $(Violations)"/>
+        <Message Text="%(Failures.Identity) - Failed on Line %(Failures.LineNumber). %(Failures.CheckId): %(Failures.Message)"/>
+    </Target>
+    <Target Name="CleanQuality" DependsOnTargets="CleanBuild">
+		<CallTarget Targets="Quality" />
+	</Target>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Build Package Task --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <Target Name="Package">
+        <ItemGroup>
+            <ZipFiles Include="$(OutputDirectory)\*.dll" />
+            <ZipFiles Include="$(OutputDirectory)\web.config" />
+        </ItemGroup>
+		<MSBuild.ExtensionPack.Framework.DateAndTime TaskAction="Get" Format="-dd-MMM-yy">
+			<Output TaskParameter="Result" PropertyName="CurrentTime"/>
+        </MSBuild.ExtensionPack.Framework.DateAndTime>
+		<MSBuild.ExtensionPack.Compression.DNZip TaskAction="Create" CompressFiles="@(ZipFiles)"
+			ZipFileName="$(BuildDirectory)\$(ProjectName)$(CurrentTime).zip"/>
+    </Target>
+    <Target Name="CleanPackage" DependsOnTargets="CleanBuild">
+		<CallTarget Targets="Package" />
+	</Target>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Build Documentation Task --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <Target Name="Documents">
+        <PropertyGroup>
+            <Runner>"$(ProgramFiles)\NDoc3\bin\NDoc3Console.exe"</Runner>
+        </PropertyGroup>
+		<Exec command='$(Runner) -project=$(ProjectDirectory)\$(ProjectName).ndoc' />
+		<Exec WorkingDirectory="$(DocDirectory)" command='"make.bat" html' />
+    </Target>
+    <Target Name="CleanDocuments" DependsOnTargets="CleanBuild">
+		<CallTarget Targets="Documents" />
+	</Target>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Host Service Task --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <Target Name="Run">
+        <ItemGroup>
+            <RunArgs Include="/service:$(MainAssembly)" />
+            <RunArgs Include="/config:web.config" />
+            <RunArgs Include="/client:WcfTestClient.exe" />
+        </ItemGroup>
+        <PropertyGroup>
+            <Runner>"$(ProgramFiles)\Microsoft Visual Studio 10.0\Common7\IDE\WcfSvcHost.exe"</Runner>
+        </PropertyGroup>
+        <Message Text="Starting the $(ProjectName)" />
+		<Exec Command="c:\Windows\explorer https://mgmtnet.bashwork.com/dana/home/infranet.cgi"
+			IgnoreExitCode='true'/>
+		<Exec WorkingDirectory="$(OutputDirectory)" Command="$(Runner) @(RunArgs, ' ')" />
+    </Target>
+    <Target Name="CleanRun" DependsOnTargets="CleanBuild">
+		<CallTarget Targets="Run" />
+	</Target>
+
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <!-- Open Service Logs Task --> 
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+    <Target Name="Log">
+		<MSBuild.ExtensionPack.Framework.DateAndTime TaskAction="Get" Format="yyyy-MM-dd">
+			<Output TaskParameter="Result" PropertyName="CurrentTime"/>
+        </MSBuild.ExtensionPack.Framework.DateAndTime>
+        <ItemGroup>
+            <LogFiles Include="c:\Inetpub\Logs\$(ProjectName)\*$(CurrentTime).log" />
+        </ItemGroup>
+		<MSBuild.ExtensionPack.Framework.AsyncExec Command="c:\Windows\notepad %(LogFiles.Identity)" />
+	</Target>
+
+</Project>
+
