@@ -89,6 +89,7 @@ class BitArray(object):
     #------------------------------------------------------------
     # information methods
     #------------------------------------------------------------
+    @property
     def first_set_bit(self):
         ''' Return the index of the next set bit.
 
@@ -100,19 +101,20 @@ class BitArray(object):
                 return bit + (idx * self.__blk)
         return None # no bits are set
 
+    @property
     def last_set_bit(self):
         ''' Return the index of the last set bit.
 
         :returns: The index of the last set bit.
         '''
         for idx in reversed(xrange(len(self.array))):
-            bits = self.array[idx]
+            cnt, bits = -1, self.array[idx]
             if bits:
-                bit = int(math.log(bits & -bits, 2))
-                return bit + (idx * self.__blk)
+                while bits: cnt, bits = cnt + 1, bits >> 1
+                return cnt + (idx * self.__blk)
         return None # no bits are set
-        # TODO
 
+    @property
     def first_clear_bit(self):
         ''' Return the index of the first cleared bit.
 
@@ -124,6 +126,7 @@ class BitArray(object):
                 return bit + (idx * self.__blk)
         return None # no bits are cleared
 
+    @property
     def cardinality(self):
         ''' Returns the cardinality of the bit array.
 
@@ -131,6 +134,7 @@ class BitArray(object):
         '''
         return sum(self.__msk_to_cnt[x] for x in self.array)
 
+    @property
     def parity(self):
         ''' Return the parity of the bit array.
 
@@ -141,15 +145,17 @@ class BitArray(object):
         '''
         return self.array[0] & 0x1
 
+    @property
     def length_of_bits(self):
         ''' Returns the length of the currently used
         bit space (the last set bit)
 
         :returns: The current bit length
         '''
-        bit = self.last_set_bit()
-        return bit + 1 if bit else 0
+        bit = self.last_set_bit
+        return 0 if bit == None else bit + 1
 
+    @property
     def length_of_bytes(self):
         ''' Returns the length of the currently
         allocated number of bytes.
@@ -158,6 +164,7 @@ class BitArray(object):
         '''
         return len(self.array)
 
+    @property
     def length_of_buffer(self):
         ''' Returns the length of the currently
         allocated buffer.
@@ -285,7 +292,7 @@ class BitArray(object):
         :returns: True if the value is set, false otherwise
         '''
         idx, off = self.__word_index(pos)
-        val = self.array[idx] & self.__masks[off]
+        val = self.array[idx] & self.__off_to_msk[off]
         return (val != self.__cls)
 
     def get_range(self, start, end):
@@ -341,7 +348,7 @@ class BitArray(object):
 
         :returns: The bit array represented as a bit string
         '''
-        return list(iter_by_bit())
+        return list(self.iter_by_bit())
 
     def iter_by_byte(self):
         ''' Return the bit array represented as a hex string
@@ -355,19 +362,19 @@ class BitArray(object):
 
         :returns: The bit array represented as a bit string
         '''
-        for i in len(self): yield self.get(i)
+        for i in range(len(self)): yield self.get(i)
 
     #------------------------------------------------------------
     # magic methods
     #------------------------------------------------------------
     def __iter__(self):           return self.iter_by_bit()
-    def __reversed__(self):       return reversed(self.iter_by_bit())
+    def __reversed__(self):       return reversed(self.to_bit_list())
     def __contains__(self, byte): return byte in self.array
     def __nonzero__(self):        return any(self.array)
     def __hash__(self):           return hash(str(self.array))
     def __repr__(self):           return self.to_byte_string()
     def __str__(self):            return self.to_byte_string()
-    def __len__(self):            return self.length_of_bits()
+    def __len__(self):            return self.length_of_bits
     def __eq__(self, other):      return other and (other.array == self.array)
     def __ne__(self, other):      return other and (other.array != self.array)
     def __lt__(self, other):      return other and (other.array  < self.array)

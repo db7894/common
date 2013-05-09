@@ -20,16 +20,20 @@ class BitArrayTest(unittest.TestCase):
         self.assertTrue(0x12 in barray)
         self.assertTrue(0x56 not in barray)
         self.assertEqual(-2861452931799617962, hash(barray))
-        #self.assertEqual(20, len(barray))
-        self.assertTrue(barray == barray)
-        self.assertTrue(barray != narray)
-        self.assertTrue(barray >= barray)
-        self.assertTrue(barray <= barray)
-        self.assertTrue(barray >  narray)
-        self.assertTrue(narray <  barray)
-        self.assertEqual(narray & barray, BitArray(array=[0x10, 0x10]))
-        self.assertEqual(narray ^ barray, BitArray(array=[0x26, 0x26]))
-        self.assertEqual(narray | barray, BitArray(array=[0x36, 0x36]))
+        self.assertEqual(70, len(barray))
+        self.assertEqual(list(iter(barray)), barray.to_bit_list())
+        self.assertEqual(list(reversed(barray)), list(reversed(barray.to_bit_list())))
+        self.assertTrue(barray  == barray)
+        self.assertFalse(barray == narray)
+        self.assertTrue(barray  != narray)
+        self.assertFalse(barray != barray)
+        self.assertTrue(barray  >= barray)
+        self.assertTrue(barray  <= barray)
+        self.assertTrue(barray   > narray)
+        self.assertTrue(narray   < barray)
+        self.assertEqual(narray  & barray, BitArray(array=[0x10, 0x10]))
+        self.assertEqual(narray  ^ barray, BitArray(array=[0x26, 0x26]))
+        self.assertEqual(narray  | barray, BitArray(array=[0x36, 0x36]))
         self.assertEqual(-barray, BitArray(array=[0xFFFFFFFFFFFFFFEE, 0xFFFFFFFFFFFFFFCC]))
         self.assertEqual(~barray, BitArray(array=[0xFFFFFFFFFFFFFFED, 0xFFFFFFFFFFFFFFCB]))
         self.assertEqual(+barray, BitArray(array=[0x12, 0x34]))
@@ -47,7 +51,7 @@ class BitArrayTest(unittest.TestCase):
         }
         for array, expected in cases.items():
             barray = BitArray(array=[array])
-            self.assertEqual(expected, barray.first_set_bit())
+            self.assertEqual(expected, barray.first_set_bit)
 
     def test_first_clear_bit(self):
         ''' Test that the first_clear_bit works correctly '''
@@ -59,11 +63,12 @@ class BitArrayTest(unittest.TestCase):
         }
         for array, expected in cases.items():
             barray = BitArray(array=[array])
-            self.assertEqual(expected, barray.first_clear_bit())
+            self.assertEqual(expected, barray.first_clear_bit)
 
     def test_last_set_bit(self):
         ''' Test that the last_set_bit works correctly '''
         cases = {
+            0x00: None,
             0x1F: 4,
             0x2F: 5,
             0x4F: 6,
@@ -71,7 +76,7 @@ class BitArrayTest(unittest.TestCase):
         }
         for array, expected in cases.items():
             barray = BitArray(array=[array])
-            self.assertEqual(expected, barray.last_set_bit())
+            self.assertEqual(expected, barray.last_set_bit)
 
     def test_cardinality(self):
         ''' Test that the cardinality works correctly '''
@@ -83,7 +88,7 @@ class BitArrayTest(unittest.TestCase):
         }
         for array, expected in cases.items():
             barray = BitArray(array=[array])
-            self.assertEqual(expected, barray.cardinality())
+            self.assertEqual(expected, barray.cardinality)
 
     def test_parity(self):
         ''' Test that the parity works correctly '''
@@ -93,16 +98,16 @@ class BitArrayTest(unittest.TestCase):
         }
         for array, expected in cases.items():
             barray = BitArray(array=[array])
-            self.assertEqual(expected, barray.parity())
+            self.assertEqual(expected, barray.parity)
 
     def test_compact(self):
         ''' Test that the bit array is compacted correctly '''
         array = BitArray()
         array.flip(127)
         #print array.to_byte_string()
-        self.assertEqual(128, array.length_of_bits())
+        self.assertEqual(128, array.length_of_bits)
         array.flip(127)
-        self.assertEqual(0,  array.length_of_bits())
+        self.assertEqual(0,  array.length_of_bits)
 
     #------------------------------------------------------------
     # test length operations
@@ -112,19 +117,19 @@ class BitArrayTest(unittest.TestCase):
         for size in range(1, 10):
             barray = BitArray(array=[0x01] * size)
             expected = 1 + (size - 1) * 64
-            self.assertEqual(expected, barray.length_of_bits())
+            self.assertEqual(expected, barray.length_of_bits)
 
     def test_length_of_bytes(self):
         ''' Test that the length_of_bytes works correctly '''
         for size in range(1, 10):
             barray = BitArray(array=[0x01]*size)
-            self.assertEqual(size, barray.length_of_bytes())
+            self.assertEqual(size, barray.length_of_bytes)
 
     def test_length_of_buffer(self):
         ''' Test that the length_of_buffer works correctly '''
         for size in range(1, 10):
             barray = BitArray(array=[0x01]*size)
-            self.assertEqual(size * 64, barray.length_of_buffer())
+            self.assertEqual(size * 64, barray.length_of_buffer)
 
     #------------------------------------------------------------
     # test flip operations
