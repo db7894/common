@@ -89,6 +89,10 @@ def subsets(xs):
 
 def permutations(xs):
     ''' Generate all the permutations of the supplied set.
+
+    >>> word = "abc"
+    >>> permutations(word)
+    ['cba', 'bca', 'bac', 'cab', 'acb', 'abc']
     '''
     perms = [xs.__class__()]
     for x in xs:
@@ -96,6 +100,19 @@ def permutations(xs):
                                    for i in range(0, len(p) + 1)]
     return perms
 
+def permutations_r(xs):
+    ''' Generate all the permutations of the supplied set
+    using recursion.
+
+    >>> word = "abc"
+    >>> list(permutations_r(word))
+    ['abc', 'bac', 'bca', 'acb', 'cab', 'cba']
+    '''
+    if len(xs) > 1:
+        for perm in permutations_r(xs[1:]):
+            for i in range(len(xs)):
+                yield perm[:i] + xs[0:1] + perm[i:]
+    else: yield xs
 
 def team_matching(players):
     ''' Given a collection of players and their rankings,
