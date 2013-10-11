@@ -79,6 +79,81 @@ def get_users_at_time(log, query):
     return times[query]
 
 
+def get_users_at_time_II(log, query):
+    ''' Given the following log file format, find the number
+    of users logged on at the requested time (or range)::
+        
+        login_time,logoff_time,user_id
+
+    Here we assume that the times will be stored as HH:MM:SS
+    or simply as a list of [hh, mm, ss]
+
+    TODO this needs a hueristic to decide which way to go:
+
+    * 12:00:00 - 12:30:00 (increase minutes)
+    * 12:59:59 -  1:00:01  (increase seconds)
+    * 12:00:01 -  1:59:59  (increase hours)
+    '''
+    Node = namedtuple('Node', ['value', 'childs'])
+    fact = lambda: node(0, defaultdict(fact))
+    root = Node(0, defaultdict(fact))
+
+    keys  = ['login', 'logoff', 'user']
+    fmts  = [int, int, str]
+    for entry in generate_entries(log, keys, fmts):
+        # update hour counts
+        hourr, hourl = entry.logoff[0], entry.login[0]
+        hourd = hourr - hourl
+        if hourd == 24: root.value += 1
+        elif hourd > 0:
+            for i in range(hourl, hourr + 1):
+                root.childs[i].value += 1
+        else: root.childs[hourl].value += 1
+
+        # reduce minute counts
+        minr, minl = entry.logoff[1], entry.login[1]
+        for i in range(0, minl):
+            root.childs[hourl].childs[i].value -= 1
+        for i in range(minr, 60):
+            root.childs[hourr].childs[i].value -= 1
+
+        # reduce second counts
+        secr, secl = entry.logoff[2], entry.login[2]
+        for i in range(0, secl):
+            root.childs[hourl].childs[minl].childs[i].value -= 1
+        for i in range(secr, 60):
+            root.childs[hourr].childs[minr].childs[i].value -= 1
+
+    # sum down the tree for the query
+    times, count = root, 0
+    while times:
+        count += times.value
+        times = times.children.get(query.pop(), None)
+    return count
+
+
+def get_users_at_time_III(log, query):
+    ''' Given the following log file format, find the number
+    of users logged on at the requested time (or range)::
+        
+        login_time,logoff_time,user_id
+
+    Here we assume that the times will be converted to the
+    required resolution (in this case seconds).
+    '''
+    times = []
+    keys  = ['login', 'logoff', 'user']
+    fmts  = [int, int, str]
+    for entry in generate_entries(log, keys, fmts):
+        pass # store in hash
+
+    index, count = 0, 0
+    while query:
+        if query & 0x01: count += times[index]
+        index, query = index << 1, query >> 1
+    return count
+
+
 def generate_log(count):
     ''' Generate a log file with the specified
     number of entries

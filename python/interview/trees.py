@@ -147,6 +147,31 @@ def are_trees_equal(treea, treeb):
     return (are_trees_equal(treea.left,  treeb.left) and
             are_trees_equal(treea.right, treeb.right))
 
+
+def are_trees_equal_II(treea, treeb):
+    ''' Determine if two trees are equal.
+
+    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> are_trees_equal_II(treea, treeb)
+    True
+
+    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
+    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(9))), Tree(6))
+    >>> are_trees_equal_II(treea, treeb)
+    False
+    '''
+    stack = [(treea, treeb)]
+    while stack:
+        l, r = stack.pop()
+        if not l and not r: continue     # both are null leafs
+        if not l or  not r: return False # only one null leaf
+        if l.value != r.value: return False
+        stack.insert(0, (l.left, r.left))
+        stack.insert(0, (l.right, r.right))
+    return True
+
+
 def find_path(tree, node):
     ''' Given a tree, find a path from the root
     node to the given node element.
