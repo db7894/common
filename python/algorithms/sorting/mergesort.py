@@ -25,7 +25,7 @@ def sort(coll):
     ''' Given a collection, sort it using the merge
     sort method (sorted by reference).
 
-    O(n^2) performance
+    O(n log n) performance
     O(n)   storage
 
     :param coll: The collection to sort
