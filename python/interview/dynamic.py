@@ -22,6 +22,46 @@ def rain_trap(heights):
     ds = [min(r,l) for r,l in zip(rs, reversed(list(ls)))]
     return sum(d - h for d,h in zip(ds, heights))
 
+def sub_strings(string, words):
+    ''' Given a string composed of substrings, generate
+    the list of substrings that exist in the word list.
+
+    >>> words = [line.strip() for line in open('/usr/share/dict/words', 'r')]
+    >>> words = set(words)
+    >>> word = "thisfriendbestshould"
+    >>> list(sub_strings(word, words))[-1]
+    'this friend best should '
+
+    :param string: The string to split in substrings
+    :param words: The word list to look up strings in
+    :returns: The substring pieces
+    '''
+    if not string: yield ''
+    for i in range(len(string) + 1):
+        head = string[:i]
+        if head in words:
+            for rest in sub_strings(string[i:], words):
+                yield head + " " + rest
+
+def longest_word_from_dict(pieces, words):
+    ''' Given a list of word pieces (say the elements from
+    the periodic table), what is the longest word from the
+    supplied dictionary that we can create.
+
+    >>> words  = [line.strip() for line in open('/usr/share/dict/words', 'r')]
+    >>> words  = sorted(words, key=lambda w: len(w), reverse=True)
+    >>> pieces = [line.split(',')[2].lower() for line in open('/opt/datasets/elements.csv', 'r')][1:]
+    >>> longest_word_from_dict(pieces, words)
+    'nonrepresentationalism -> n o n re p re se n ta ti o n al i sm '
+
+    :param pieces: The word pieces that we can construct with
+    :param words: The words that we are trying to create
+    :returns: The first (longest) word we can create or None
+    '''
+    for word in words:
+        for head in sub_strings(word, pieces):
+            return word + " -> " + head
+    return None
 
 def stock_market(prices):
     ''' Given a line of ticker prices, if you could go back
