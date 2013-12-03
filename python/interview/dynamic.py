@@ -1,4 +1,7 @@
 import sys
+import random
+from collections import defaultdict
+
 
 def rain_trap(heights):
     ''' Given a collection of building heights, figure
@@ -63,6 +66,42 @@ def longest_word_from_dict(pieces, words):
             return word + " -> " + head
     return None
 
+def scrambled_dictionary(scramble, words):
+    '''
+    '''
+    def clean(prev, curr, succ):
+        if len(curr) == 1: return curr
+        curr = [c for c in curr if c > prev[ 0]]
+        curr = [c for c in curr if c < succ[-1]]
+        return curr
+
+    # change to DFS
+    initial, terminal = ['\x00'], ['\xff']
+    possible = [words[''.join(sorted(w))] for w in scramble]
+    while sum(len(w) for w in possible) > len(possible):
+        for i in range(0, len(possible)):
+            prev = possible[i - 1] if i - 1 > -1 else initial
+            succ = possible[i + 1] if i + 1 < len(possible) else terminal
+            possible[i] = clean(prev, possible[i], succ)
+    return possible
+
+def scrambled_dictionary_II(scramble, words):
+    '''
+    '''
+    for word in scramble:
+        sort = ''.join(sorted(w))
+        yield words[sort].pop(0)
+
+words = [line.strip() for line in open('/usr/share/dict/words', 'r')]
+#words = ['act', 'cat', 'tac']
+scram = [''.join(random.sample(w, len(w))) for w in words]
+dicts = defaultdict(list)
+for word in words:
+    sword = ''.join(sorted(word))
+    dicts[sword].append(word)
+    dicts[sword].sort()
+print list(scrambled_dictionary_II(scram, dicts))
+
 def stock_market(prices):
     ''' Given a line of ticker prices, if you could go back
     to any point and buy one share of stock and sell it after
@@ -90,4 +129,4 @@ def stock_market(prices):
 
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+    #doctest.testmod()
