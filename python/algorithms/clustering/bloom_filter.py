@@ -1,4 +1,8 @@
-class BaseBloomFilter(object):
+'''
+implement hashes
+http://burtleburtle.net/bob/hash/doobs.html
+'''
+class AbstractBloomFilter(object):
     '''
     Best choice of hash count is 4 for small differences
     and 3 for larger sizes with the crossover around 128.
@@ -8,15 +12,27 @@ class BaseBloomFilter(object):
     during unraveling.
     '''
     def __init__(self, **kwargs):
-        pass
+        self.hashers = []
 
-class SimpleBloomFilter(object):
+    def get_hash_keys(self, value):
+        '''
+        '''
+        for hasher in self.hashers:
+            yield hasher
+
+class BloomFilter(AbstractBloomFilter):
 
     def insert(self, value):
         '''
         '''
-        for bit in self.get_hashes(value):
-            self.bits |= bit
+        for bit in self.get_hash_keys(value):
+            self.bits[bit] = 0x1
+
+    def contains(self, value):
+        '''
+        '''
+        return all(self.bits[bit] for bit in self.get_hash_keys(value))
+
 
     def remove(self, value):
         ''' Removes the bits specified by the
@@ -29,8 +45,8 @@ class SimpleBloomFilter(object):
         for bit in self.get_hashes(value):
             self.bits &= bit
 
-class CountingBloomFilter(BaseBloomFilter):
+class CountingBloomFilter(AbstractBloomFilter):
     pass
 
-class InvertibleBloomFilter(BaseBloomFilter):
+class InvertibleBloomFilter(AbstractBloomFilter):
     pass

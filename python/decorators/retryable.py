@@ -94,6 +94,28 @@ class Jitter(object):
     '''
 
     @staticmethod
+    def uniform(spread=100):
+        ''' A policy that will delay a retry using
+        a uniforma spread (+/-) of jitter. This is
+        calculated as::
+
+            jitter = random.uniform(-spread, spread)
+            delay  = delay + jitter
+            sleep(delay)
+
+        :param spread: The uniform spread of jitter to add
+        :returns: An initialized jitter policy callable
+        '''
+        def wrapper(policy):
+            def method(delay):
+                scale = random.uniform(-spread, spread)
+                return delay + scale
+
+            seed() # just in case this is not done elsewhere
+            policy.jitter = jitter
+        return wrapper
+
+    @staticmethod
     def random(coefficient=1):
         ''' A policy that will delay a retry using
         a random amount of jitter. This is calculated
@@ -111,7 +133,7 @@ class Jitter(object):
                 scale = 1 - (coefficient * random())
                 return delay * scale
 
-            seed()
+            seed() # just in case this is not done elsewhere
             policy.jitter = jitter
         return wrapper
 
