@@ -54,10 +54,12 @@ def get_next_moves(maze, path):
 
 
 def maze_search(maze, start=(0, 0), finish=(-1,-1)):
-    '''
-    :param maze:
-    :param start:
-    :param finish:
+    ''' Given a maze, attempt to find a path from the starting
+    position to the ending position.
+
+    :param maze: The maze to find a path in
+    :param start: The starting position of the maze
+    :param finish: The ending position of the maze
     :returns: A generator of possible solutions
     '''
     queue = [[start]]
