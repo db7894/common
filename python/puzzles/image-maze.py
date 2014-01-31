@@ -12,8 +12,15 @@ Given a maze of images where you are started at a given position
 * you cannot exceed the bounds of the grid
 * you must land on the last space perfectly
 
-http://stackoverflow.com/questions/9413216/simple-digit-recognition-ocr-in-opencv-python
+.. note:: The next thing to do is the ocr(puzzle) -> encoding step
+   so I don't have to do it manually. This can help:
+
+   - http://stackoverflow.com/questions/9413216/simple-digit-recognition-ocr-in-opencv-python
 '''
+
+#------------------------------------------------------------
+# Solution
+#------------------------------------------------------------
 
 def get_next_moves(maze, path):
     ''' Given a maze and the current path in the maze,
@@ -66,8 +73,17 @@ def print_solution(maze, solution):
     print ' → '.join(string % (c, i) for c, i in zip(colors, images))
 
 #------------------------------------------------------------
-# constants
+# Puzzle OCR
 #------------------------------------------------------------
+
+def image_to_maze(path):
+    '''
+    '''
+
+#------------------------------------------------------------
+# Constants
+#------------------------------------------------------------
+
 COLORS = { 0x10: '34', 0x20: '31', 0x40: '35' }
 IMAGES = { 0x01:  '✹', 0x02:  '☾', 0x04:  '★' }
 MAZE   = [
@@ -82,6 +98,10 @@ MAZE   = [
     [ 0x24, 0x14, 0x12, 0x21, 0x14, 0x42, 0x44, 0x14, 0x21 ],
 ]
 X, Y = len(MAZE) - 1, len(MAZE[0]) - 1
+
+#------------------------------------------------------------
+# Main
+#------------------------------------------------------------
 
 if __name__ == '__main__':
     for solution in maze_search(MAZE, start=(X, Y)):
