@@ -14,10 +14,18 @@ such that the total is 21. The rules:
 '''
 import operator as O
 
+#------------------------------------------------------------
+# constants
+#------------------------------------------------------------
+
 OPERATIONS  = [O.add, O.sub, O.div, O.mul]
 OP_STRINGS  = {O.add: '+', O.sub: '-', O.div: '÷', O.mul: '×'}
 CARD_VALUES = { chr(48 + x):x for x in range(2, 10) }
 CARD_VALUES.update([('J', 10), ('Q', 10), ('K', 10), ('A', [1, 11])])
+
+#------------------------------------------------------------
+# utilities
+#------------------------------------------------------------
 
 def evaluate(hand, total=21):
     ''' Given a full hand of cards and the operations between
@@ -39,6 +47,29 @@ def evaluate(hand, total=21):
         if result < 0: return False
     return (result == total)
 
+def format_hand(hand):
+    ''' Given a hand of numbers and operations, format
+    it as a standard mathimatical expression.
+
+    :param hand: The hand to format and print out
+    :returns: The formatted mathimatical expression
+
+    >>> hand = [11, O.sub, 2, O.mul, 3, O.add, 4, O.sub, 10]
+    >>> format_hand(hand)
+    11 - 2 × 3 + 4 - 10 = 21
+    '''
+    message = []
+    for card in hand:
+        if callable(card):
+            message.append(OP_STRINGS[card])
+        else: message.append(str(card))
+    message.append('= 21')
+    return ' '.join(message)
+
+#------------------------------------------------------------
+# solution
+#------------------------------------------------------------
+
 def find_card_hands(cards):
     ''' Given a hand of cards, return all the valid
     solutions to the stated problem.
@@ -58,24 +89,9 @@ def find_card_hands(cards):
             for op in OPERATIONS:
                 queue.insert(0, hand + [op, card])
 
-def format_hand(hand):
-    ''' Given a hand of numbers and operations, format
-    it as a standard mathimatical expression.
-
-    :param hand: The hand to format and print out
-    :returns: The formatted mathimatical expression
-
-    >>> hand = [11, O.sub, 2, O.mul, 3, O.add, 4, O.sub, 10]
-    >>> format_hand(hand)
-    11 - 2 × 3 + 4 - 10 = 21
-    '''
-    message = []
-    for card in hand:
-        if callable(card):
-            message.append(OP_STRINGS[card])
-        else: message.append(str(card))
-    message.append('= 21')
-    return ' '.join(message)
+#------------------------------------------------------------
+# main
+#------------------------------------------------------------
 
 if __name__ == "__main__":
     for hand in find_card_hands([11,2,3,4,10]):

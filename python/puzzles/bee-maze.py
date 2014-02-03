@@ -115,6 +115,10 @@ MAZE  = [
 STEPS = sum(1 for row in MAZE for val in row if not val)
 X, Y  = len(MAZE) - 1, len(MAZE[0]) - 1
 
+#------------------------------------------------------------
+# main
+#------------------------------------------------------------
+
 if __name__ == '__main__':
     for solution in maze_search(MAZE, start=(1, 4), finish=(0, 4)):
         print_solution(MAZE, solution)

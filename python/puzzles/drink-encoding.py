@@ -5,25 +5,12 @@ has been replaced by one of five symbols each of which is
 associated with a collection of letter, convert them back
 to the original recipies.
 '''
-
-# ------------------------------------------------------------
-# utility methods
-# ------------------------------------------------------------
-def get_word_list(path='/usr/share/dict/words'):
-    ''' TODO make this call http://en.wikipedia.org/wiki/List_of_cocktails
-    and get the words directly.
-
-    :param path: The path to the file to open
-    :return: A generator for the words in the list
-    '''
-    with open(path, 'r') as handle:
-        for line in handle:
-            yield line.strip()
+from common import Words
 
 # ------------------------------------------------------------
 # constants
 # ------------------------------------------------------------
-WORDS   = set(get_word_list('drinks'))
+WORDS   = set(Words.get_word_list('drinks'))
 PREFIX  = set(word[:i] for word in WORDS for i in range(1, len(word) + 1))
 LETTERS = {
     1: 'bdfhklt',
