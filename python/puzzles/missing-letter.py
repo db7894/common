@@ -29,6 +29,7 @@ def get_possible_solutions(lookup, words):
 def find_final_solution(lookup, solutions):
     ''' Given an original word and the possible solutions,
     find a working solution for the missing word.
+    TODO anagram Trie
 
     :param original: The original word to find a solution for
     :param solutions: The possible solutions for the given word

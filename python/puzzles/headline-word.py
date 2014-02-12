@@ -22,6 +22,17 @@ def print_solution(clue, solution):
     '''
     print "%s -> %s" % (clue, solution)
 
+def prepare_clue(clue):
+    ''' Given a clue, remove all spaces and punctuation
+    making the word searchable with a trie.
+
+    :param clue: The clue to prepare
+    :returns: The prepared clue
+    '''
+    skipped = set(list(' .,!"\''))
+    letters = [l for l in clue if l not in skipped]
+    return ''.join(letters)
+
 # ------------------------------------------------------------
 # solution
 # ------------------------------------------------------------
@@ -47,10 +58,11 @@ def find_hidden_words(words, clue):
 # constants
 # ------------------------------------------------------------
 WORDS    = set(Words.get_word_list('celebrities'))
-HEADLINE = "celeb singer did pornos"
+HEADLINE1 = "celeb singer did pornos"
+HEADLINE2 = "stardom mythical for designer"
 
 if __name__ == "__main__":
-    clue  = HEADLINE.replace(' ', '')
+    clue  = prepare_clue(HEADLINE2)
     words = Trie()
     words.add_words(WORDS)
 
