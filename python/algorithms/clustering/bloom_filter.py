@@ -43,10 +43,54 @@ class BloomFilter(AbstractBloomFilter):
         :param value: The value to remove from the table
         '''
         for bit in self.get_hashes(value):
-            self.bits &= bit
+            self.bits[bit] &= bit
 
 class CountingBloomFilter(AbstractBloomFilter):
-    pass
+
+    def insert(self, value):
+        '''
+        '''
+        for bit in self.get_hash_keys(value):
+            self.bits[bit] += 1
+
+    def remove(self, value):
+        ''' Removes the bits specified by the
+        given input.
+
+        ..note:: This is not a safe operation!
+
+        :param value: The value to remove from the table
+        '''
+        for bit in self.get_hashes(value):
+            self.bits[bit] -= 1
 
 class InvertibleBloomFilter(AbstractBloomFilter):
-    pass
+
+    # [(count, key_sum, value_sum)] -> word per field
+
+    def get(self, key):
+        pass
+
+    def list(self):
+        pass
+
+    def insert(self, value):
+        '''
+        '''
+        for bit in self.get_hash_keys(value):
+            self.bits[bit] += 1
+
+    def remove(self, value):
+        ''' Removes the bits specified by the
+        given input.
+
+        ..note:: This is not a safe operation!
+
+        :param value: The value to remove from the table
+        '''
+        for bit in self.get_hashes(value):
+            self.bits[bit] -= 1
+
+# cardinality estimation based on 0s like bitcoin
+# send bloom and cardinality
+# service returns diff against their bloom filter

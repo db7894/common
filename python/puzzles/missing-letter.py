@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
-''' Given a collection of drink recipies where each letter
-has been replaced by one of five symbols each of which is
-associated with a collection of letter, convert them back
-to the original recipies.
+''' Given a collection of words where one letter has been
+removed and the remaining letters have been scrambled, find
+the original word and using the missing letters create and
+un-scramble the final word. The extra rules are:
+
+* There are hints to what the word can be, but these don't matter
+* There is only one overall solution, but many initial solutions
+* The final solution has something to do with the initial clues
 '''
 from collections import defaultdict
-from common import Trie, Words
+from common import Words
 
 def get_possible_solutions(lookup, words):
     ''' Given a lookup table and a collection of words,
@@ -22,29 +26,43 @@ def get_possible_solutions(lookup, words):
         results[word] = lookup[''.join(sorted(word))]
     return results
 
-def find_working_solution(lookup, solutions):
+def find_final_solution(lookup, solutions):
     ''' Given an original word and the possible solutions,
-    print them out.
+    find a working solution for the missing word.
 
     :param original: The original word to find a solution for
     :param solutions: The possible solutions for the given word
     '''
-    print "%s → %s" % (original, solutions)
+    possible = [('', [], [])]
+    for scramble in solutions:
+        current = []
+        for letters, words, scrambles in possible:
+            for letter, word in solutions[scramble]:
+                current.append((letters + letter, scrambles + [scramble], words + [word]))
+        possible = current
 
-def print_solution(original, solutions):
+    for letters, words, scramble in possible:
+        letters = ''.join(sorted(letters))
+        if letters in lookup:
+            print lookup[letters]
+            #yield zip(scramble, letters, words), lookup[letters]
+    return []
+
+def print_solution(solution):
     ''' Given an original word and the possible solutions,
     print them out.
 
-    :param original: The original word to find a solution for
-    :param solutions: The possible solutions for the given word
+    :param solutions: The final solutions for the problem
     '''
-    print "%s → %s" % (original, solutions)
+    for original, letter, solution in solution[0]:
+        print "%s + %s → %s" % (original, letter, solutions)
+    print '= %s' % solution[1]
 
 # ------------------------------------------------------------
 # constants
 # ------------------------------------------------------------
 WORDS    = set(Words.get_word_list())
-M_LOOKUP = Words.generate_missing_lookup(WORDS)
+#M_LOOKUP = Words.generate_missing_lookup(WORDS)
 W_LOOKUP = Words.generate_anagram_lookup(WORDS)
 MISSING  = [
     'sarong',
@@ -57,6 +75,9 @@ MISSING  = [
 ]
 
 if __name__ == "__main__":
-    solutions = get_possible_solutions(M_LOOKUP, MISSING):
-    find_working_solutions(W_LOOKUP, solutions)
-    #print_solution(original, solutions)
+    import pickle
+    #solutions = get_possible_solutions(M_LOOKUP, MISSING)
+    print "finished loading cache"
+    solutions = pickle.load(open('/tmp/solutions', 'rb'))
+    for solution in find_final_solution(W_LOOKUP, solutions):
+        print_solution(solution)

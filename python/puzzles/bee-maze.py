@@ -98,13 +98,44 @@ def print_solution(maze, solution):
         px, py = x, y
     print ' '.join(MOVES[move] for move in moves)
 
+def print_maze_solution(maze, solution):
+    ''' Given a solution, print it using the correct
+    formatting.
+
+    :param maze: The maze to get the points from
+    :param solution: The solution to print
+    '''
+    px, py = solution[0]
+    result = [[IMAGES[1] for _ in range(len(maze[0]))] for _ in range(len(maze))]
+    result[px][py] = IMAGES[START]
+    for x, y in solution[1:]:
+        if x != px and x > px: result[x][y] = MOVES[Direction.Down]
+        if x != px and x < px: result[x][y] = MOVES[Direction.Up]
+        if y != py and y > py: result[x][y] = MOVES[Direction.Right]
+        if y != py and y < py: result[x][y] = MOVES[Direction.Left]
+        px, py = x, y
+
+    for row in result:
+        print ''.join(value for value in row)
+
+def print_maze(maze, start, finish):
+    ''' Given a solution, print it using the correct
+    formatting.
+
+    :param maze: The maze to get the points from
+    '''
+    for rid, row in enumerate(maze):
+        line = []
+        for cid, val in enumerate(row):
+            line.append(IMAGES.get((rid, cid), IMAGES.get(maze[rid][cid])))
+        print ''.join(line)
 
 #------------------------------------------------------------
 # constants
 #------------------------------------------------------------
 
-MOVES = ['←', '↑', '→', '↓']
-MAZE  = [
+MOVES  = ['←', '↑', '→', '↓']
+MAZE1  = [
     [0,0,0,0,0,0],
     [0,1,0,0,0,0],
     [0,0,0,0,0,0],
@@ -112,13 +143,26 @@ MAZE  = [
     [0,0,0,0,0,0],
     [1,0,0,0,0,0],
 ]
-STEPS = sum(1 for row in MAZE for val in row if not val)
-X, Y  = len(MAZE) - 1, len(MAZE[0]) - 1
+MAZE2  = [
+    [0,0,0,0,1,0,0],
+    [0,0,1,0,0,0,0],
+    [0,0,0,0,0,1,0],
+    [0,0,0,0,0,0,0],
+    [1,0,1,0,0,0,1],
+    [0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0],
+]
+MAZE, START, FINISH = MAZE1, (1, 4), (0, 4)
+#MAZE, START, FINISH = MAZE2, (3, 4), (4, 3)
+IMAGES = { START: '☺', FINISH: '★', 0: '☐', 1: '☒' }
+STEPS  = sum(1 for row in MAZE for val in row if not val)
+X, Y   = len(MAZE) - 1, len(MAZE[0]) - 1
 
 #------------------------------------------------------------
 # main
 #------------------------------------------------------------
 
 if __name__ == '__main__':
-    for solution in maze_search(MAZE, start=(1, 4), finish=(0, 4)):
-        print_solution(MAZE, solution)
+    #print_maze(MAZE, START, FINISH)
+    for solution in maze_search(MAZE, START, FINISH):
+        print_maze_solution(MAZE, solution)

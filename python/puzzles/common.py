@@ -1,6 +1,41 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
+import os
+import functools
+import logging
 from collections import defaultdict
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
+def cache_result(path):
+    ''' Given a computationally intensive operation,
+    cache the result to file after it is completed and
+    check if the cached version exists before doing the
+    calculation again. If the cache exists, load and return
+    that.
+
+    :param path: The path to cache the result to
+    :returns: A cache decorated function
+    '''
+    def method_catch(method):
+        @functools.wraps(method)
+        def wrapper(*parameters):
+            if os.path.exists(path):
+                with open(path, 'rb') as handle:
+                    print "loading cache"
+                    return pickle.load(handle)
+
+            result = method(*parameters)
+
+            with open(path, 'wb') as handle:
+                pickle.dump(result, handle)
+            return result
+        return wrapper
+    return method_catch
+
 
 class Words(object):
     ''' A collection of utility methods to generate
@@ -19,6 +54,7 @@ class Words(object):
                 yield line.strip().lower()
 
     @staticmethod
+    @cache_result(path='/tmp/anagram-lookup.pickle')
     def generate_anagram_lookup(words):
         ''' Given a collection of words, generate a lookoup table
         of the words to find all anagrams.
@@ -26,12 +62,14 @@ class Words(object):
         :param words: The collection of words to build a lookup for
         :returns: The lookup table of sorted words
         '''
+
         lookup = defaultdict(list)
         for word in words:
             lookup[''.join(sorted(word))].append(word)
         return lookup
 
     @staticmethod
+    @cache_result(path='/tmp/missing-lookup.pickle')
     def generate_missing_lookup(words):
         ''' Given a collection of words, generate a lookoup table
         of all the words missing one letter that hash sorted to the
@@ -96,10 +134,12 @@ class Trie(object):
 
     VALUE = object()
 
-    def __init__(self):
+    def __init__(self, root=None):
         ''' Initialize a new instance of the trie
+
+        :param root: The current root to initialize with
         '''
-        self.root = dict()
+        self.root = root or dict()
 
     def add_words(self, words):
         ''' Add a collection of words to the Trie
@@ -136,6 +176,26 @@ class Trie(object):
             if not root: return False
         return root != None
 
+    def get_path(self, path):
+        ''' Get a new Trie up to the current path
+
+        :param path: The path to get a current path to
+        :returns: a new Trie instance of the given path, or None
+        '''
+        root = self.root
+        for letter in path:
+            root = root.get(letter, None)
+            if not root: return None
+        return Trie(root)
+
+    def has_a_word(self):
+        ''' Check if the current root level has a
+        word entered at its root level.
+
+        :returns: True if a word is at the root level, False otherwise
+        '''
+        return self.root and self.root.get(Trie.VALUE, False)
+
     def __contains__(self, word):
         ''' Test if the supplied word exists
         in the Trie (not the path up to a word).
@@ -151,18 +211,22 @@ class Trie(object):
 
 
 class Stack(object):
-    '''
+    ''' A simple wrapper around a python list ot
+    implement stack properties.
     '''
 
-    def __init__(self): self.store = []
+    def __init__(self, initial=None): self.store = initial or []
     def enqueue(self, value): self.store.append(value)
     def dequeue(self): return self.store.pop()
+    def is_empty(self): return len(self.store) != 0
 
 
 class Queue(object):
-    '''
+    ''' A simple wrapper around a python list ot
+    implement queue properties.
     '''
 
-    def __init__(self): self.store = []
+    def __init__(self, initial=None): self.store = initial or []
     def enqueue(self, value): self.store.insert(0, value)
     def dequeue(self): return self.store.pop()
+    def is_empty(self): return len(self.store) != 0
