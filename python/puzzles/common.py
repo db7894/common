@@ -133,6 +133,7 @@ class Trie(object):
     '''
 
     VALUE = object()
+    SKIP  = set(list(' ,.;:-\'"`'))
 
     def __init__(self, root=None):
         ''' Initialize a new instance of the trie
@@ -157,7 +158,7 @@ class Trie(object):
         '''
         root = self.root
         for letter in word:
-            if letter == ' ': continue
+            if letter in Trie.SKIP: continue
             if letter not in root:
                 root[letter] = dict()
             root = root[letter]
@@ -185,7 +186,7 @@ class Trie(object):
         root = self.root
         for letter in path:
             root = root.get(letter, None)
-            if not root: return None
+            if not root: return Trie(None)
         return Trie(root)
 
     def has_a_word(self):

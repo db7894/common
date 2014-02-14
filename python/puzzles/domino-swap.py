@@ -21,7 +21,9 @@ def print_solution(grid, solution):
     :param grid: The original grid of the problem
     :param solution: A solution to the original problem
     '''
-    print solution
+    layout = lambda row: ''.join(DICE[value] for value, group in row)
+    for grid_row, solved_row in zip(grid, solution):
+        print "%s -> %s" % (layout(grid_row), layout(solved_row))
 
 #------------------------------------------------------------
 # solution
@@ -29,16 +31,25 @@ def print_solution(grid, solution):
 def is_solution(grid):
     ''' Given a possible solution, see if it solves the problem.
 
+    >>> is_solution(GRID1)
+    False
+
+    >>> is_solution(GRID_SOLVED)
+    True
+
     :param grid: The grid to check if is a solution
     :returns: True if a solution, False otherwise
     '''
     solution = COUNTS
     X, Y = range(0, len(grid)), range(0, len(grid[0]))
     rows_solved = all(set(value for value,_ in row) == solution for row in grid)
-    cols_solved = all(set(grid[x][y] for x in X) == solution for y in Y)
+    cols_solved = all(set(grid[x][y][0] for x in X) == solution for y in Y)
     return rows_solved and cols_solved
 
 def get_next_moves(grid):
+    '''
+    '''
+    pass
 
 def find_solutions(grid):
     ''' Given a problem grid, attempt to find all the
@@ -52,21 +63,27 @@ def find_solutions(grid):
         curr, moves = queue.pop()
         if is_solution(curr):
             yield curr
-        else if len(moves) < 3:
-            for path, move in get_next_moves(curr)
+        elif len(moves) < 3:
+            for path, move in get_next_moves(curr):
                 queue.insert(0, (path, moves + move))
 
 #------------------------------------------------------------
 # constants
 #------------------------------------------------------------
-DICE = [unichr(9744)] + [unichr(9856 + i) for i in range(0, 6)]
-GRID1 =[
+DICE  = [unichr(9744)] + [unichr(9856 + i) for i in range(0, 6)]
+GRID1 = [
     [(4,1),(2,1),(2,8),(1,7)],
     [(3,2),(1,2),(4,8),(2,7)],
     [(4,3),(3,4),(1,4),(4,6)],
     [(3,3),(1,5),(2,5),(3,6)],
 ]
-GRID2 =[
+GRID_SOLVED = [ # for testing
+    [(4,1),(1,1),(2,2),(3,2)],
+    [(3,3),(2,4),(1,5),(4,7)],
+    [(2,3),(3,4),(4,5),(1,7)],
+    [(1,8),(4,8),(3,6),(2,6)],
+]
+GRID2 = [
     [(1,1),(2,1),(3,2),(4,2)],
     [(3,4),(3,5),(3,3),(4,3)],
     [(2,4),(1,5),(2,7),(4,8)],
@@ -81,5 +98,6 @@ COUNTS = set(value for row in GRID1 for value, group in row)
 #------------------------------------------------------------
 
 if __name__ == '__main__':
+    print_solution(GRID, GRID_SOLVED)
     for solution in find_solution(GRID):
         print_solution(GRID, solution)
