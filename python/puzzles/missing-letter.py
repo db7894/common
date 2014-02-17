@@ -10,7 +10,7 @@ un-scramble the final word. The extra rules are:
 * The final solution has something to do with the initial clues
 '''
 from collections import defaultdict
-from common import Words
+from common import Words, Trie
 
 def get_possible_solutions(lookup, words):
     ''' Given a lookup table and a collection of words,
@@ -63,7 +63,7 @@ def print_solution(solution):
 # constants
 # ------------------------------------------------------------
 WORDS    = set(Words.get_word_list())
-#M_LOOKUP = Words.generate_missing_lookup(WORDS)
+M_LOOKUP = Words.generate_missing_lookup(WORDS)
 W_LOOKUP = Words.generate_anagram_lookup(WORDS)
 MISSING  = [
     'sarong',
@@ -77,8 +77,9 @@ MISSING  = [
 
 if __name__ == "__main__":
     import pickle
-    #solutions = get_possible_solutions(M_LOOKUP, MISSING)
-    print "finished loading cache"
-    solutions = pickle.load(open('/tmp/solutions', 'rb'))
-    for solution in find_final_solution(W_LOOKUP, solutions):
+    anagram_trie = Trie()
+    anagram_trie.add_words(W_LOOKUP.keys())
+    solutions = get_possible_solutions(M_LOOKUP, MISSING)
+    #solutions = pickle.load(open('/tmp/solutions', 'rb'))
+    for solution in find_final_solution(W_LOOKUP, anagram_trie, solutions):
         print_solution(solution)
