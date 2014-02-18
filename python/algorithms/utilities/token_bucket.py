@@ -4,8 +4,6 @@ from threading import RLock
 class TokenBucket(object):
     ''' A simple method of rate limiting a task over some time.
     More information can be found here: http://en.wikipedia.org/wiki/Token_bucket
-
-    TODO implement strategies
     '''
 
     def __init__(self, tokens, rate, timer=None):
