@@ -1,5 +1,5 @@
 from binary import BinaryNode
-
+#TODO
 class KDNode(BinaryNode):
 
     def __init__(self, value, axis=0, left=None, right=None):
