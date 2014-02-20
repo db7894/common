@@ -92,8 +92,10 @@ def find_card_hands(cards):
 #------------------------------------------------------------
 # main
 #------------------------------------------------------------
+HAND = [11,2,3,4,10]
+HAND = [2,10,3,8,11]
 
 if __name__ == "__main__":
-    for hand in find_card_hands([11,2,3,4,10]):
+    for hand in find_card_hands(HAND):
         print format_hand(hand)
 
