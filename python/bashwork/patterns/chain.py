@@ -1,7 +1,3 @@
-import sys
-
-#------------------------------------------------------------
-#============================================================
 class ChainOfResponsibility(object):
     ''' A simple implementation of the chain of
     responsibility (in a more functional style)
@@ -27,10 +23,15 @@ class ChainOfResponsibility(object):
         results = [chain(command) for chain in self.chains]
         return all(results)
 
-    @staticmethod
-    def _test():
-        chain = ChainOfResponsibility()
-        chain.add_chain(lambda m: sys.stdout.write(m) or True)
-        chain.add_chain(lambda m: sys.stderr.write(m) or True)
-        chain.handle_any("error\n")
-        chain.handle_all("error\n")
+#------------------------------------------------------------
+# Test
+#------------------------------------------------------------
+
+if __name__ == "__main__":
+    import sys
+
+    chain = ChainOfResponsibility()
+    chain.add_chain(lambda m: sys.stdout.write(m) or True)
+    chain.add_chain(lambda m: sys.stderr.write(m) or True)
+    chain.handle_any("error\n")
+    chain.handle_all("error\n")

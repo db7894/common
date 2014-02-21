@@ -1,44 +1,41 @@
-'''
-https://github.com/networkx/networkx/tree/master/networkx/algorithms
-'''
+#!/usr/bin/env python
+# -*- coding: latin-1 -*-
+from collections import defaultdict
+
 class Graph(object):
-    ''' A basic graph
+    ''' A simple directed graph
     '''
 
-    def __init__(self, **attrs):
-        ''' Initializes a new instance of the graph. All
-        keywords specified will be added as properties on
-        the graph.
+    def __init__(self, nodes=set(), **attrs):
+        ''' Initialize a new instance of the graph
+
+        :param nodes: The initial collection of nodes
         '''
-        self.nodes = {}
-        self.edges = {}
-        self.attrs = {}
+        self.nodes = nodes
+        self.edges = defaultdict(list)
+        self.attrs = {} # TODO edge and node attributes
         self.attrs.update(attrs)
 
     def add_node(self, node, **attrs):
+        ''' Adds a new node to the graph with the
+        supplied attributes.
+
+        :param node: The node to add to the graph
         '''
-        '''
-        if node not in self.nodes:
-            self.nodes[node] = {}
-            self.edges[node] = {}
-        self.nodes[node].update(attrs)
+        self.nodes.add(node)
+        #if node not in self.nodes:
+        #    self.nodes[node] = {}
+        #    self.edges[node] = {}
+        #self.nodes[node].update(attrs)
 
     def add_nodes(self, nodes, **attrs):
-        '''
+        ''' Adds the supplied nodes to the graph with the
+        supplied attributes.
+
+        :param nodes: The nodes to add to the graph
         '''
         for node in nodes:
             self.add_node(node, **attrs)
-
-    def remove_node(self, node):
-        '''
-        '''
-        pass
-
-    def remove_nodes(self, nodes):
-        '''
-        '''
-        for node in nodes:
-            self.remove_node(node)
 
     def add_edges(self, node, *nodes):
         ''' Adds a directed edge between the first
@@ -67,18 +64,11 @@ class Graph(object):
         '''
         return self.edges[node]
 
-    def __key(self):           return (self.nodes, self.edges, self.attrs)
+    def __key(self):           return (self.nodes, self.edges)
     def __len__(self):         return len(self.nodes)
     def __eq__(self, other):   return other and (other.__key() == self.__key())
     def __ne__(self, other):   return other and (other.__key() != self.__key())
-    def __hash__(self):        return hash(self.__key())
     def __repr__(self):        return self.attr.get('name', '')
     def __str__(self):         return self.attr.get('name', '')
+    def __hash__(self):        return hash(self.__key())
     def __contains__(self, v): return (v in self.nodes)
-
-#------------------------------------------------------------
-# test runner
-#------------------------------------------------------------
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

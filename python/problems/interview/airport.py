@@ -77,9 +77,13 @@ def airport_routes_recursive(src, dst):
     loop([src], dst, r)
     return r
 
+#------------------------------------------------------------
+# main
+#------------------------------------------------------------
 
-Airport.initialize()
-#print Airport.connections.items()
-src = Airport.getAirport('sea')
-dst = Airport.getAirport('jfk')
-print airport_routes(src, dst)
+if __name__ == "__main__":
+    Airport.initialize()
+    #print Airport.connections.items()
+    src = Airport.getAirport('sea')
+    dst = Airport.getAirport('jfk')
+    print airport_routes(src, dst)
