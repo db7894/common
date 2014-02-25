@@ -1,4 +1,5 @@
-from binary import BinaryNode
+from bashwork.structure.tree.binary import BinaryNode
+
 #TODO
 class KDNode(BinaryNode):
 

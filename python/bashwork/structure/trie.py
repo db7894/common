@@ -38,6 +38,23 @@ class Trie(object):
             root = root[letter]
         root[Trie.VALUE] = value or len(word)
 
+    def compact(self):
+        ''' Compact the Trie to remove any empty
+        nodes.
+
+        TODO
+        '''
+        pass
+
+    def remove_word(self, word):
+        ''' Remove a single word to the Trie and
+        prune any empty paths.
+
+        :param word: The word to add to the trie
+        '''
+        #TODO
+        pass
+
     def has_path(self, path):
         ''' Test if the supplied path exists in
         the Trie.

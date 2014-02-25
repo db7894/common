@@ -4,7 +4,11 @@ import math
 # helper methods
 #------------------------------------------------------------
 def generate_bit_count_table(size):
-    ''' Generates a bit count table of 0x00..0xFF
+    ''' Generates a table such that each index is the count
+    of bits for that the given offset.
+
+    :param size: The number of bits to create the table for
+    :returns: The initialized bit count table
     '''
     t = [0x00 for _ in xrange(size)]
     for i in xrange(size):
@@ -16,17 +20,39 @@ def generate_bit_index_table(size):
     ''' Generates a bit range table that can
     be used to mask off the specified bit
     given the supplied index.
+
+    :param size: The number of bits to create masks for
+    :returns: The initialized bit mask table
     '''
     return [1 << i for i in xrange(size)]
 
 
-def generate_bit_mask_table(size):
-    ''' Generates a bit mask table of 0x00..0xFF
+def generate_lower_bit_mask_table(size):
+    ''' Generates a bit mask table that can be used
+    to mask off the all the bits below the given bit
+    count.
+
+    :param size: The number of bits to create masks for
+    :returns: The initialized bit mask table
     '''
     t = [0x01 for _ in xrange(size)]
     for i in xrange(1, size):
         t[i] = (1 << i) | t[i - 1]
-    return [0xFF] + t
+    return t
+
+def generate_higher_bit_mask_table(size):
+    ''' Generates a bit mask table that can be used
+    to mask off the all the bits above the given bit
+    count (inclusive).
+
+    :param size: The number of bits to create masks for
+    :returns: The initialized bit mask table
+    '''
+
+    t = [~0x00 for _ in xrange(size)]
+    for i in xrange(1, size):
+        t[i] = t[i - 1] << 1
+    return t
 
 
 #------------------------------------------------------------
@@ -42,10 +68,15 @@ class BitArray(object):
 
     __msk_to_cnt = generate_bit_count_table(256)
     __off_to_bit = generate_bit_index_table(64)
-    __off_to_msk = generate_bit_mask_table(64)
+    __off_to_msk = generate_lower_bit_mask_table(64)
+    __on_to_msk  = generate_higher_bit_mask_table(64)
 
     def __init__(self, size=64, block=64, array=None):
         ''' Initialize a new instance of the bit array
+
+        If array is applied, the values are read from right to
+        left, so the array value `[0x12, 0x34]` will be the hex
+        string `0x1234`.
 
         :param size: The initial size of the bit array (default 64 bits)
         :param block: The size of each array block (default byte)
@@ -55,7 +86,10 @@ class BitArray(object):
         self.__set = (2 << self.__blk - 1) - 1 # 0xff..ff
         self.__cls = 0x00L                     # 0x00..00
         self.__bpw = int(math.log(self.__blk, 2))
-        self.array = array or [self.__cls] * (max(self.__blk, size) // self.__blk)
+        self.array = [self.__cls] * (max(self.__blk, size) // self.__blk)
+        if array: self.array = list(reversed(array))
+        self.__bit_str_fmt = "{0:0%db}" % (self.__blk)
+        self.__byt_str_fmt = "{0:0%dX}" % (self.__blk // 4)
 
     #------------------------------------------------------------
     # internal helpers
@@ -193,11 +227,11 @@ class BitArray(object):
         :param start: The position to start from
         :param end: The position to end at
         '''
-        sidx, soff = divmod(start, self.__blk)
-        eidx, eoff = divmod(end, self.__blk)
+        sidx, soff = self.__word_index(start)
+        eidx, eoff = self.__word_index(end)
         if eidx >= len(self.array):
             self.array.extend([self.__set] * (eidx - len(self.array)))
-        self.array[idx] |= self.__masks[off]
+        self.array[idx] |= self.__masks[soff]
         #TODO
 
     def set_all(self):
@@ -225,8 +259,8 @@ class BitArray(object):
         :param start: The position to start from
         :param end: The position to end at
         '''
-        sidx, soff = divmod(start, self.block)
-        eidx, eoff = divmod(end, self.block)
+        sidx, soff = self.__word_index(start)
+        eidx, eoff = self.__word_index(end)
         if eidx >= len(self.array):
             self.array.extend([self.__cls] * (eidx + 1 - len(self.array)))
         #TODO
@@ -303,19 +337,23 @@ class BitArray(object):
         :param end: The position to end at
         :returns: The bit values in the specified range.
         '''
-        sidx, soff = divmod(start, self.block)
-        eidx, eoff = divmod(end, self.block)
-        if sidx >= len(self.array): return None
-        res = self.array[sidx] & self.__idx_to_msk[soff]
-        res >>= soff
-        end = min(len(self.array), eidx if not eoff else eidx - 1)
-        for idx in xrange(sidx + 1, end):
-            res  |= (self.array[idx] << soff)
-            soff += self.block
-        if eoff:
-            res |= ((self.array[eidx] & self.__idx_to_msk[eoff]) << soff)
-        return res
-        #TODO
+        self.__check_range(start, end)
+        sidx, soff = self.__word_index(start)
+        eidx, eoff = self.__word_index(end)
+
+        bits = self.array[sidx] & self.__on_to_msk[soff]
+        bits = bits >> soff
+        eidx = min(len(self.array), eidx)
+        coff = self.__blk - soff
+
+        for idx in xrange(sidx + 1, eidx):
+            bits |= (self.array[idx] << coff)
+            coff += self.__blk
+
+        bite  = self.array[eidx] & self.__off_to_msk[eoff]
+        import pdb;pdb.set_trace()
+        bits |= bite >> (eoff)
+        return bits
 
     #------------------------------------------------------------
     # format methods
@@ -325,7 +363,7 @@ class BitArray(object):
 
         :returns: The bit array represented as a hex string
         '''
-        return '0x' + ''.join("{0:016X}".format(x) for x in
+        return '0x' + ''.join(self.__byt_str_fmt.format(x) for x in
             reversed(self.array))
 
     def to_bit_string(self):
@@ -333,7 +371,7 @@ class BitArray(object):
 
         :returns: The bit array represented as a bit string
         '''
-        return '0b' + ''.join("{0:064b}".format(x) for x in
+        return '0b' + ''.join(self.__bit_str_fmt.format(x) for x in
             reversed(self.array))
 
     def to_byte_list(self):

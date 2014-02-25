@@ -14,6 +14,8 @@ from distance import manhattan_distance as distance
 # - 
 #------------------------------------------------------------#
 def random_initialize(database, k):
+    '''
+    '''
     length = len(database)
     values = [database[randint(0, length] for range(k)]
     return [Entry(id, value) for (id, value) in enumerate(values)]

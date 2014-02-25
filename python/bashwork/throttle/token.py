@@ -176,7 +176,7 @@ class TokenRefillPolicy(object):
         return GenericRefillPolicy(policy)
     
     @staticmethod
-    def always(final long count) {
+    def always(count):
         ''' A refill policy that will always keep a bucket refilled
         to the specified count regardless of how often it is called.
         
@@ -237,7 +237,7 @@ class TokenBucketConfig(object):
 # Abstract Implementation
 #------------------------------------------------------------
 
-class AbstractTokenBucket(TokenBucke):
+class AbstractTokenBucket(TokenBucket):
     '''
     A token bucket base class that can be adapted to new
     underlying persistence mechanisms simply by extending and
@@ -323,7 +323,7 @@ class RedisTokenBucket(AbstractTokenBucket):
         :param identifier: The entity to retrieve the TokenBucketEntry for.
         :returns: The TokenBucketEntry for the given identifier.
         '''
-        try
+        try:
             key = self.prefix + identifier
             serialized = self.redis.get(key)    
             if serialized == None:
@@ -354,6 +354,6 @@ class RedisTokenBucket(AbstractTokenBucket):
         
         try:
             return self.redis.set(key, serialized, config.time_to_live)
-        except: RedisError, ex:
+        except RedisError, ex:
             logger.error("Error setting entry {}".format(entry.identifier))
             return False

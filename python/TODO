@@ -1,5 +1,6 @@
 * count min sketch, hyperloglog
 * fix exports
 * tests
+* finish cleanup
 * finish code stubs
 * externalize puzzle data source
