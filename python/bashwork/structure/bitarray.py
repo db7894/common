@@ -82,10 +82,10 @@ class BitArray(object):
         :param block: The size of each array block (default byte)
         :param array: The initial array values (default None)
         '''
-        self.__blk = max(8, block)             # need at least a byte
-        self.__set = (2 << self.__blk - 1) - 1 # 0xff..ff
-        self.__cls = 0x00L                     # 0x00..00
-        self.__bpw = int(math.log(self.__blk, 2))
+        self.__blk = max(8, block)                # need at least a byte
+        self.__set = (2 << self.__blk - 1) - 1    # 0xff..ff
+        self.__cls = 0x00L                        # 0x00..00
+        self.__bpw = int(math.log(self.__blk, 2)) # bit_count(self.__blk)
         self.array = [self.__cls] * (max(self.__blk, size) // self.__blk)
         if array: self.array = list(reversed(array))
         self.__bit_str_fmt = "{0:0%db}" % (self.__blk)
@@ -339,7 +339,7 @@ class BitArray(object):
         '''
         self.__check_range(start, end)
         sidx, soff = self.__word_index(start)
-        eidx, eoff = self.__word_index(end)
+        eidx, eoff = self.__word_index(end - start - 1) + 1
 
         bits = self.array[sidx] & self.__on_to_msk[soff]
         bits = bits >> soff

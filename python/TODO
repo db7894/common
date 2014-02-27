@@ -4,3 +4,5 @@
 * finish cleanup
 * finish code stubs
 * externalize puzzle data source
+* game branch and bound
+* graph: http://jung.sourceforge.net/doc/api/index.html

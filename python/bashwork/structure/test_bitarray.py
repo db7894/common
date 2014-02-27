@@ -9,9 +9,12 @@ class BitArrayTest(unittest.TestCase):
     ''' Code to validate that the bitarray implementation is correct.
     '''
 
-    #def test_init(self):
-    #    ''' Test that the bit array is inited correctly '''
-    #    self.assertEqual(8, BitArray(block=4).block)
+    def test_init(self):
+        ''' Test that the bit array is inited correctly '''
+        self.assertEqual(64, BitArray(block=4).length_of_buffer)
+        self.assertEqual(64, BitArray(block=8).length_of_buffer)
+        self.assertEqual(8,  BitArray(block=4, size=1).length_of_buffer)
+        self.assertEqual(16, BitArray(block=8, size=16).length_of_buffer)
 
     def test_magic_methods(self):
         ''' Test that the magic methods work correctly '''
