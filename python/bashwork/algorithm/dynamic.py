@@ -16,6 +16,7 @@ def rain_trap(heights):
     :returns: The amount of water trapped
     '''
     def running_max(xs):
+        ''' reduce(lambda ns, n: ns + [max(ns[-1], n)], xs, [-1])[1:] '''
         rmax = -sys.maxint
         for x in xs:
             rmax = max(rmax, x)
