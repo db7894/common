@@ -148,6 +148,31 @@ def make_unique_list(head):
             prev, curr = prev.link, curr.link
     return (head, size, dups)
 
+def order_edge_nodes(nodes):
+    ''' Given a collection of tuples that represent
+    the edges in a graph, order them into a their
+    linear linked order.
+
+    >>> order_edge_nodes([(1,3), (4,5), (5,1), (3,8)])
+    [(4, 5), (5, 1), (1, 3), (3, 8)]
+
+    :param nodes: The nodes to order correctly
+    :returns: The linear linked order of the nodes
+    '''
+    def graph_visitor(graph, node, target):
+        while node in graph:
+            target(node, graph.get(node))
+            node = graph.get(node)
+
+    graphl, graphr = {}, {}
+    for l, r in nodes:
+        graphl[l], graphr[r] = r, l
+
+    links = [(nodes[0][0], nodes[0][1])]
+    graph_visitor(graphr, nodes[0][0], lambda l,r: links.insert(0, (r,l)))
+    graph_visitor(graphl, nodes[0][1], lambda r,l: links.append((r,l)))
+    return links
+
 
 if __name__ == "__main__":
     import doctest

@@ -120,6 +120,80 @@ class gen_with_history(object):
     def __iter__(self):
         return self
 
+def gen_zip(*streams):
+    ''' given a collection of streams
+    stream by applying a regular expression
+    and only passing the matches.
+
+    :param stream: a stream of data
+    :param regex: the regular expression to match with
+    :returns: the entries that match the expression
+    '''
+    streams = map(iter, streams)
+    while streams:
+        yield tuple(map(next, streams))
+
+def gen_drop_while(stream, predicate):
+    ''' Given a stream of data, skip over the supplied
+    data until the predicate is false.
+
+    :param stream: A stream of entries to filter
+    :param predicate: A predicate to test the entries with
+    :returns: All the elements after the drop predicate
+    '''
+    for entry in stream:
+        if not predicate(stream):
+            break
+
+    for entry in stream:
+        yield entry
+
+def gen_take_while(stream, predicate):
+    ''' Given a stream of data, take all the supplied
+    elements until the predicate is false.
+
+    :param stream: A stream of entries to filter
+    :param predicate: A predicate to test the entries with
+    :returns: All the elements until the predicate is false
+    '''
+    for entry in stream:
+        if not predicate(stream):
+            break
+        yield entry
+
+def gen_count(start, step=1):
+    ''' Generate an infinite count of numbers
+    with the supplied step size starting at the
+    supplied starting point.
+
+    :param start: The point to start counting at
+    :param step: The step size of the count
+    :returns: A generator of increasing count
+    '''
+    while True:
+        try:
+            yield start
+            start += step
+        except GeneratorExit: pass
+
+def gen_cycle(stream):
+    ''' Given a stream, return all the elements of
+    the stream and then when it is exhausted, repeat
+    the stream indefinately.
+
+    :param stream: The stream to repeat
+    :returns: An infinite stream of the suppied elements
+    '''
+    saved = []
+    for entry in stream:
+        yield entry
+        saved.append(entry):
+    while True:
+        try:
+            for entry in saved:
+                yield entry
+        except GeneratorExit: pass
+
 #------------------------------------------------------------
 # file generators
 #------------------------------------------------------------
@@ -197,19 +271,23 @@ def gen_filter(stream, predicate):
             yield entry
 
 def gen_filter_regex(stream, pattern):
-    ''' Given a steream strings, filter the
+    ''' given a stream strings, filter the
     stream by applying a regular expression
     and only passing the matches.
 
-    :param stream: A stream of data
-    :param regex: The regular expression to match with
-    :returns: The entries that match the expression
+    :param stream: a stream of data
+    :param regex: the regular expression to match with
+    :returns: the entries that match the expression
     '''
     pattern = re.compile(pattern)
     return gen_filter(stream, lambda e: pattern.search(e))
 
 def gen_file_follower(handle):
-    ''' Given a file handle
+    ''' Given a file handle, follow it and generate
+    new lines as the file changes.
+
+    :param handle: A handle to the supplied file
+    :returns: A generator to the changing file data
     '''
     handle.seek(0, 2)
     while True:
@@ -258,6 +336,18 @@ def gen_lines_from_path(path, pattern="*"):
 # format generators
 #------------------------------------------------------------
 
+def gen_map(stream, mapper):
+    ''' Given a stream of entries, map each entry through
+    the supplied transform step and return a generater of
+    the results.
+
+    :param stream: A generator to transform the entries of
+    :param mapper: The transformation function to apply
+    :returns: A generator of the transformed functions
+    '''
+    for entry in stream:
+        yield transform(entry)
+
 def gen_serialized(stream, serializer=pickle.dumps):
     ''' Given a stream of entries, generate a new stream
     with each entry serialized with the supplied serialization
@@ -272,8 +362,7 @@ def gen_serialized(stream, serializer=pickle.dumps):
     :param serializer: The utility to serialize with
     :returns: A stream of serialized entities
     '''
-    for entry in stream:
-        yield serializer(entry)
+    return gen_map(stream, serializer)
 
 def gen_deserialized(stream, deserializer=pickle.loads):
     ''' Given a stream of entries that are serialized, generate
@@ -284,9 +373,7 @@ def gen_deserialized(stream, deserializer=pickle.loads):
     :param deserializer: The utility to deserialize with
     :returns: A stream of deserialized entities
     '''
-    for entry in stream:
-        message = deserializer(entry)
-        yield message
+    return gen_map(stream, deserializer)
 
 def gen_deserialized_file(handle, deserializer=pickle.load):
     ''' Given a file handle of entries that are serialized, generate
@@ -346,9 +433,8 @@ def gen_dictionaries(stream, columns, formats=None):
     :returns: A stream of converted dict entries
     '''
     formats = formats or [str for i in range(len(columns))]
-    for values in stream:
-        entity = { c:f(v) for f,v,c in zip(formats, values, columns) }
-        yield entity
+    mapper  = lambda vs: { c:f(v) for f,v,c in zip(formats, vs, columns) }
+    return gen_map(stream, mapper)
 
 def gen_named_tuples(stream, columns, formats=None):
     ''' Given a stream of tuples, convert them into named
@@ -368,10 +454,9 @@ def gen_named_tuples(stream, columns, formats=None):
     :returns: A stream of converted entities
     '''
     formats = formats or [str for i in range(len(columns))]
-    Entry   = namedtuple('Entry', columns)
-    for values in stream:
-        values = (f(v) for f,v in zip(formats, values))
-        yield Entry._make(values)
+    entry   = namedtuple('Entry', columns)
+    maapper = lambda vs: entry._make(f(v) for f,v in zip(formats, vs))
+    return gen_map(stream, mapper)
 
 #------------------------------------------------------------
 # network generators
