@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
 from collections import defaultdict
+from copy import copy as clone
 
 class Graph(object):
     ''' A directed graph that allows adding properties on
@@ -105,3 +106,70 @@ class Graph(object):
     def __getitem__(self, k):    return self.attrs.get(k, None)
     def __setitem__(self, k, v): self.attrs[k] = v
     def __contains__(self, v):   return (v in self.nodes)
+
+
+def copy_graph(source, root):
+    ''' Given a source graph and an initial root node
+    to start exploring from, create and return a clone
+    of the graph.
+
+    :param source: The source graph to create a clone of
+    :param root: The root node to start exploration from
+    :returns: The cloned graph
+    '''
+    graph    = Graph()
+    node_map = {}
+    queue    = [root] 
+
+    def get_node_clone(node):
+        if node not in node_map:
+            node_map[node] = clone(node) 
+            graph.add_node(node_map[node])
+        return node_map[node]
+
+    while queue:
+        node = queue.pop()
+        for edge in source.get_edges(node):
+            graph.add_edge(get_node_clone(node), get_node_clone(edge))
+            queue.insert(0, get_node_clone(edge))
+    return graph
+
+class Color(object):
+    ''' An enumeration that defines the current
+    visited status of a node in a graph. These 
+    '''
+    White = 0
+    Gray  = 1
+    Black = 2
+
+class GraphVisitor(object):
+    def on_new_node(self, node): pass
+    def on_black_node(self, node): pass
+    def on_new_edge(self, node, edge): pass
+    def on_gray_edge(self, node, edge): pass
+    def on_black_edge(self, node, edge): pass
+    def on_finished(self): pass
+
+def graph_bfs_visiter(graph, root, visitor):
+    ''' Given a source graph and a root node
+    to start exploring from, perform a bfs
+    traversal of the graph while emitting events
+    to the supplied visitor.
+
+    :param graph: The graph to perform a traversal of
+    :param root: The root node to start exploring from
+    :param visitor: The visitor to send events to
+    '''
+    pass
+
+def graph_dfs_visiter(graph, root, visitor):
+    ''' Given a source graph and a root node
+    to start exploring from, perform a dfs
+    traversal of the graph while emitting events
+    to the supplied visitor.
+
+    :param graph: The graph to perform a traversal of
+    :param root: The root node to start exploring from
+    :param visitor: The visitor to send events to
+    '''
+    pass

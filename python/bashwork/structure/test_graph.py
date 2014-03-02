@@ -35,6 +35,20 @@ class GraphTest(unittest.TestCase):
         self.assertFalse(4 in graphb)
         self.assertEqual('weighted', grapha['type'])
 
+    def test_graph_copy(self):
+        source = Graph(['a', 'b', 'c', 'd', 'e'])
+        source.add_edge('a', 'b')
+        source.add_edge('a', 'c')
+        source.add_edge('b', 'c')
+        source.add_edge('b', 'd')
+        source.add_edge('b', 'e')
+        source.add_edge('d', 'e')
+        output = copy_graph(source, 'a')
+
+        expect = [ (s, d.keys()) for s,d in source.edges.items() if d.values()]
+        actual = [ (s, d.keys()) for s,d in output.edges.items() if d.values()]
+        self.assertEqual(expect, actual)
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#
