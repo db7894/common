@@ -1,3 +1,4 @@
+import sys
 from itertools import izip_longest
 
 class Node(object):
@@ -123,7 +124,6 @@ def find_merge_point(xs, ys):
         if y: visited.add(y)
     return None
 
-
 def make_unique_list(head):
     ''' Given a linked list, return the list
     as a unique list and also return the total
@@ -173,6 +173,26 @@ def order_edge_nodes(nodes):
     graph_visitor(graphl, nodes[0][1], lambda r,l: links.append((r,l)))
     return links
 
+def find_missing_number(numbers):
+    ''' Given a collection of integer elements, find the
+    missing element (in the set of 1..n).
+
+    >>> numbers = [1,2,3,4,5,6,8,9,10]
+    >>> find_missing_number(numbers)
+    7
+
+    :param numbers: The collection of numbers to search in
+    :returns: The missing number from the numbers list
+    '''
+    sumn, minn, maxn = 0, sys.maxint, -sys.maxint
+    for number in numbers:
+        sumn += number
+        minn = min(number, minn)
+        maxn = max(number, maxn)
+
+    size  = maxn - minn + 1 # n(n + 1) / 2: max_sum - min_sum
+    total = (size * (size + 1) / 2) - (minn * (minn - 1) / 2)
+    return total - sumn
 
 if __name__ == "__main__":
     import doctest
