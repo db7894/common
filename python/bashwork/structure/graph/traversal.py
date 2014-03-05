@@ -23,14 +23,71 @@ class BfsGraphVisitor(object):
     - predecessor recorder
     '''
 
-    def on_initialize_vertex(self, node): pass
-    def on_discover_vertex(self, node): pass
-    def on_examine_vertex(self, node): pass
-    def on_finish_vertex(self, node): pass
-    def on_tree_edge(self, node, edge): pass
-    def on_non_tree_edge(self, node, edge): pass
-    def on_gray_edge(self, node, edge): pass
-    def on_black_edge(self, node, edge): pass
+    def on_initialize_vertex(self, node):
+        ''' Invoked on every vertex before the start of
+        the search.
+
+        :param node: The node that is being initialized
+        '''
+        pass
+
+    def on_discover_vertex(self, node):
+        ''' Invoked on every vertex the first time they
+        are seen in the search.
+
+        :param node: The node that is being initialized
+        '''
+        pass
+
+    def on_examine_vertex(self, node):
+        ''' Invoked on every vertex before its edges are
+        to be examined.
+
+        :param node: The node that is being examined
+        '''
+        pass
+
+    def on_finish_vertex(self, node):
+        ''' Invoked on every vertex after its edges have
+        been examined.
+
+        :param node: The node that is being finished
+        '''
+        pass
+
+    def on_tree_edge(self, node, edge):
+        ''' Invoked if the supplied edge is a tree edge.
+
+        :param node: The source node of the edge
+        :param edge: The destination node of the edge
+        '''
+        pass
+
+    def on_non_tree_edge(self, node, edge):
+        ''' Invoked if the supplied edge is not a tree edge.
+
+        :param node: The source node of the edge
+        :param edge: The destination node of the edge
+        '''
+        pass
+
+    def on_gray_edge(self, node, edge):
+        ''' Invoked if the target vertex is colored gray
+        at the time of examination.
+
+        :param node: The source node of the edge
+        :param edge: The destination node of the edge
+        '''
+        pass
+
+    def on_black_edge(self, node, edge):
+        ''' Invoked if the target vertex is colored black
+        at the time of examination.
+
+        :param node: The source node of the edge
+        :param edge: The destination node of the edge
+        '''
+        pass
 
 def graph_bfs_visit(graph, root, visitor):
     ''' Given a source graph and a root node
