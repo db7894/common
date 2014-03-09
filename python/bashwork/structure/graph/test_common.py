@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 from bashwork.structure.graph import Graph
+from bashwork.structure.graph.common import copy_graph
 
 #---------------------------------------------------------------------------#
 # fixture

@@ -132,3 +132,15 @@ def copy_graph(source, root):
             graph.add_edge(get_node_clone(node), get_node_clone(edge))
             queue.insert(0, get_node_clone(edge))
     return graph
+
+class Color(object):
+    ''' An enumeration that defines the current
+    visited status of a node in a graph. These 
+
+    * White - The node has yet to be visited
+    * Gray  - The node has been seen, but not explored
+    * Black - The node has been fully explored
+    '''
+    White = 0
+    Gray  = 1
+    Black = 2

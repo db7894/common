@@ -187,7 +187,7 @@ def gen_cycle(stream):
     saved = []
     for entry in stream:
         yield entry
-        saved.append(entry):
+        saved.append(entry)
     while True:
         try:
             for entry in saved:
@@ -346,7 +346,7 @@ def gen_map(stream, mapper):
     :returns: A generator of the transformed functions
     '''
     for entry in stream:
-        yield transform(entry)
+        yield mapper(entry)
 
 def gen_serialized(stream, serializer=pickle.dumps):
     ''' Given a stream of entries, generate a new stream
@@ -695,7 +695,7 @@ def consumer_thread(target):
         consumer_broadcast(entries, [consumer])
     '''
     queue  = Queue.Queue()
-    thread = Thread(target=lambda q: target(gen_pull_via_queue(q)) args(queue,))
+    thread = Thread(target=lambda: target(gen_pull_via_queue(queue)))
     thread.start()
 
     try:

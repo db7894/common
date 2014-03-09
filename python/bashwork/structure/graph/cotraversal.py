@@ -130,6 +130,48 @@ def graph_dfs_visit(graph, root, visitor):
                 color[node] = Color.Black
                 visitor.send((Event.FinishVertex, node))
 
+def graph_topo_visit(graph, visitor):
+    ''' Given a source graph, perform a topological
+    traversal of the graph while emitting events
+    to the supplied visitor.
+
+    :param graph: The graph to perform a traversal of
+    :param visitor: The visitor to send events to
+    '''
+    color = {}
+
+    for node in graph.get_nodes():
+        color[node] = Color.White
+        visitor.send((Event.InitializeVertex, node))
+
+    for node in color.keys():
+        if color[root] != Color.White:
+            continue
+
+        stack = [ (node, iter(graph.get_edges(node))) ]
+        color[node] = Color.Gray
+        visitor.send((Event.DiscoverVertex, node))
+
+        while stack:
+            try:
+                node, edges = stack[-1]
+                edge = next(edges)
+                visitor.send((Event.ExamineVertex, node))
+                visitor.send((Event.ExamineEdge, node, edge))
+
+                if color[edge] == Color.White:
+                    color[edge] = Color.Gray
+                    stack.append((edge, iter(graph.get_edges(edge))))
+                    visitor.send((Event.TreeEdge, node, edge))
+                    visitor.send((Event.DiscoverVertex, edge))
+                elif color[edge] == Color.Gray:
+                    visitor.send((Event.BackEdge, node, edge))
+
+            except StopIteration:
+                node, _ = stack.pop()
+                color[node] = Color.Black
+                visitor.send((Event.FinishVertex, node))
+
 if __name__ == "__main__":
     from common import Graph
     def print_visitor(graph):
