@@ -14,23 +14,45 @@ def knapsack(capacity, items):
     :param items: The possible items to choose from
     :returns: A tuple of (total_value, [selected items])
     '''
-    lookup = [[0] * len(items) for _ in range(capacity)]
-    for itemid, item in enumerate(items):
-        for weight in range(1, capacity):
-            lookup[weight][itemid] = lookup[weight][itemid - 1]
+    lookup = [[0] * (len(items) + 1) for _ in range(capacity + 1)]
+    for index, item in enumerate(items, start=1):
+        for weight in range(1, capacity + 1):
+            lookup[weight][index] = lookup[weight][index - 1]
             if item.weight <= weight:
-                possible = item.value + lookup[weight - item.weight][itemid - 1]
-                lookup[weight][itemid] = max(lookup[weight][itemid], possible)
+                possible = item.value + lookup[weight - item.weight][index - 1]
+                lookup[weight][index] = max(lookup[weight][index], possible)
 
-    weight   = capacity - 1
-    value    = lookup[weight][len(items) - 1]
+    weight   = capacity 
+    value    = lookup[weight][len(items)]
     selected = []
 
-    for itemid in range(len(items) - 1, -1, -1):
-        if lookup[weight][itemid] != lookup[weight][itemid - 1]:
-            selected.append(items[itemid])
-            weight = items[itemid].weight
+    for index in range(len(items), -1, -1):
+        if lookup[weight][index] != lookup[weight][index - 1]:
+            selected.append(items[index - 1])
+            weight = items[index - 1].weight
     return value, selected
 
-from collections import namedtuple
-Item = namedtuple("Item", ['index', 'value', 'weight'])
+def greedy_knapsack(capacity, items):
+    ''' A trivial greedy algorithm for filling the knapsack
+    it takes items in-order until the knapsack is full. This
+    uses the value density (value / weight) as a heuristic.
+
+        class Item(object):
+            value : Int
+            weight: Int
+
+    :param capacity: The total capacity of the knapsack
+    :param items: The possible items to choose from
+    :returns: A tuple of (total_value, [selected items])
+    '''
+    value    = 0
+    weight   = 0
+    selected = []
+    by_value = sorted(items, key=lambda i: float(i.value) / i.weight, reverse=True)
+
+    for item in by_value:
+        if (weight + item.weight) <= capacity:
+            selected.append(item)
+            value  += item.value
+            weight += item.weight
+    return value, selected
