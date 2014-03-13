@@ -26,7 +26,7 @@ through the stream::
 '''
 import xml.sax
 import pickle
-from queue import Queue
+from Queue import Queue
 from threading import Thread
 
 def coroutine(method):
@@ -65,7 +65,7 @@ def push_filter(target, predicate):
     '''
     while True:
         entry = (yield)
-        if predicate(entry)
+        if predicate(entry):
             target.send(entry)
 
 @coroutine
@@ -140,7 +140,7 @@ def push_threaded(target):
     '''
     messages = Queue()
     def target_worker():
-        while True
+        while True:
             message = messages.get()
             if message is GeneratorExit:
                 target.close()
@@ -152,8 +152,8 @@ def push_threaded(target):
         while True:
             message = (yield)
             messages.put(message)
-        except GeneratorExit:
-            messages.put(GeneratorExit)
+    except GeneratorExit:
+        messages.put(GeneratorExit)
 
 @coroutine
 def push_via_handle(handle, serializer=pickle.dump):

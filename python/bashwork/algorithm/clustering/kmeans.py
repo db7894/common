@@ -17,7 +17,7 @@ def random_initialize(database, k):
     '''
     '''
     length = len(database)
-    values = [database[randint(0, length] for range(k)]
+    values = [database[randint(0, length)] for _ in range(k)]
     return [Entry(id, value) for (id, value) in enumerate(values)]
 
 #------------------------------------------------------------#
@@ -45,14 +45,14 @@ def compute_centroid(dataset):
     values = map(add, *data)
     return Entry(id, values)
 
-def kmeans(database, k, initialize=random_initialize,
-    terminate=count_terminate(10)):
+def kmeans(database, k, initialize=random_initialize, terminate=None):
 	''' Implementation of kmeans
 
 	@param database The training database
 	@param k The number of clusters to find
 	'''
     centroids = initialize(database, k)
+    terminate = terminate or count_terminate(10)
     while True:
         for entry in database:
             weights = [(distance(entry.values, c.values), c) for c in centroids]

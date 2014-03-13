@@ -2,7 +2,13 @@
 #  dna alignment
 #--------------------------------------------------------------------------------#
 def dna_align(this, that):
-    ''' acts = { 's':=, 'n':i_, 'm':j_, 'e':!= } '''
+    ''' Given two strings, find their best alignment::
+
+        acts = { 's':=, 'n':i_, 'm':j_, 'e':!= }
+
+    :param this: The first string to compare
+    :param that: The second string to compare
+    '''
     n, m = len(this) - 1, len(that) - 1
     acts, edits = {}, {}
     for i in range(n + 1): edits[i,0] = i
