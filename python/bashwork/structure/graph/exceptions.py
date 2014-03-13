@@ -1,2 +1,2 @@
 class GraphException(Exception): pass
-class GraphCycleExcepction(GraphException): pass
+class GraphCycleException(GraphException): pass
