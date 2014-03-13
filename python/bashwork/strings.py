@@ -1,3 +1,5 @@
+from collections import Counter
+
 def is_rotation(string, rotation):
     ''' Given two strings, check if one is a rotation
     of the other.
@@ -12,6 +14,39 @@ def is_rotation(string, rotation):
     if len(string) != len(rotation): return False
     return rotation in (string + string)
 
+def string_set_cover(letters, string):
+    ''' Given a set of letters and a string, find the
+    minimum range in the string that covers the set of
+    letters.
+
+    >>> letters = 'abcd'
+    >>> string  = 'axkekfbabxxxcdkeckdabyycd'
+    >>> string_set_cover(letters, string)
+    (5, 16)
+
+    :param letters: The set of letters to cover
+    :param string: The string to cover with the letter set
+    :returns: The smallest range of (index, length)
+    '''
+    letters  = set(letters)         # set to cover
+    counter  = Counter(string[0])   # letter counter state
+    answer   = (float('inf'), None) # current best answer
+    l, r     = (0, 0)               # left, right pointers
+    violated = set(letters)         # current violations
+
+    while r < len(string):
+        if not violated:
+            answer = min(answer, (r - l + 1, l))
+            counter.subtract(string[l])
+            if string[l] in letters and counter[string[l]] == 0:
+                violated.add(string[l])
+            l += 1
+        else:
+            r += 1
+            if r < len(string):
+                counter.update(string[r])
+                if string[r] in violated: violated.remove(string[r])
+    return answer
 
 def ransom_note(note, magazines):
     ''' Given a ransom note to write and a number of
