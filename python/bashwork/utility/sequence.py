@@ -4,8 +4,8 @@ from math import factorial as fact
 #------------------------------------------------------------
 # Simple Sequences
 #------------------------------------------------------------
-square_sequence       = lambda n, p, c: c**2
-cube_sequence         = lambda n, p, c: c**3
+square_sequence       = lambda n, p, c: n**2
+cube_sequence         = lambda n, p, c: n**3
 fibonacci_sequence    = lambda n, p, c: c + p
 triangle_sequence     = lambda n, p, c: (n * (n + 1)) / 2
 pentagon_sequence     = lambda n, p, c: ((3 * n**2) - n) / 2
@@ -56,6 +56,15 @@ def sequence_generator(sequence, prev=0, curr=1):
     for n in count(1):
         prev, curr = curr, sequence(n, prev, curr)
         yield n, curr
+
+def take_n_of_sequence(sequence, n=10):
+    ''' Given a sequence, take the first N values of
+    said sequence.
+
+    :param sequence: The sequence to print values from
+    :param n: The number of elements to print of the sequence
+    '''
+    return [v for _, v in islice(sequence, 0, n)]
 
 def print_n_of_sequence(sequence, n=10):
     ''' Given a sequence, print the first N values of

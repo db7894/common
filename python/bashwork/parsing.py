@@ -1,6 +1,6 @@
+import sys
 from collections import defaultdict
 from collections import namedtuple
-import sys
 
 def generate_entries(log, keys, formats=None):
     ''' A helper generator to process a log file
@@ -165,8 +165,3 @@ def generate_log(count):
         s,e = min(s,e), max(s, e)
         i = randint(0, 1000)
         yield "{},{},{}".format(s, e, i)
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

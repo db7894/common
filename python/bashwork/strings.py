@@ -4,10 +4,9 @@ def is_rotation(string, rotation):
     ''' Given two strings, check if one is a rotation
     of the other.
 
-    >>> is_rotation("helloworld", "worldhello")
-    True
-    >>> is_rotation("hello world", "world hello")
-    False
+    :param string: The original string to source from
+    :param rotation: The string to check as a rotation
+    :returns: True if it is a rotation, False otherwise
     '''
     if not string and not rotation: return True
     if not string or not rotation: return False
@@ -18,11 +17,6 @@ def string_set_cover(letters, string):
     ''' Given a set of letters and a string, find the
     minimum range in the string that covers the set of
     letters.
-
-    >>> letters = 'abcd'
-    >>> string  = 'axkekfbabxxxcdkeckdabyycd'
-    >>> string_set_cover(letters, string)
-    (5, 16)
 
     :param letters: The set of letters to cover
     :param string: The string to cover with the letter set
@@ -52,11 +46,6 @@ def ransom_note(note, magazines):
     ''' Given a ransom note to write and a number of
     magazines, check if we can use the magazines to
     write the note.
-
-    >>> note = "we have your computer"
-    >>> magazines = "comping a theater ticket wearing a very nice puntour"
-    >>> ransom_note(note, magazines)
-    True
 
     :params note: The note we need to write
     :params magazines: The letters we have available
