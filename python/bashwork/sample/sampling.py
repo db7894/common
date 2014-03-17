@@ -8,10 +8,6 @@ def popular_exact(coll, size):
     common elements in a single pass. This uses
     the SpaceSaving algorithm by Metwally.
 
-    >>> coll = [1,3,2,4,1,5,3,2,6,7,2,4,3,4]
-    >>> popular_exact(coll, 3)
-    [2, 3, 4]
-
     :param coll: The collection to sample
     :param size: The number of common elements to sample
     :returns: A collection of the most common elements
@@ -25,10 +21,6 @@ def popular(coll, size):
     ''' Given a collection, sample the N most
     common elements in a single pass. This uses
     the SpaceSaving algorithm by Metwally.
-
-    >>> coll = [1,3,2,4,1,5,3,2,6,7,2,4,3,4]
-    >>> popular(coll, 3)
-    [2, 3, 4]
 
     :param coll: The collection to sample
     :param size: The number of common elements to sample
@@ -51,12 +43,6 @@ def random(coll, size):
     ''' Given a collection, randomly sample with
     equal probability N elements.
 
-    >>> seed(0) # to force same results
-    >>> coll = range(0, 10)
-    >>> random(coll, 3)
-    [0, 6, 5]
-
-
     :param coll: The collection to sample
     :param size: The number of common elements to sample
     :returns: The randomly sampled elements of the collection
@@ -67,10 +53,3 @@ def random(coll, size):
         if choice < size:
             sample[choice] = element
     return sample
-
-#------------------------------------------------------------
-# test runner
-#------------------------------------------------------------
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

@@ -6,3 +6,5 @@
 * externalize puzzle data source
 * game branch and bound
 * graph: http://jung.sourceforge.net/doc/api/index.html
+* huffman coding http://en.wikipedia.org/wiki/Huffman_coding
+* gibbs sampling http://en.wikipedia.org/wiki/Gibbs_sampling

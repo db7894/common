@@ -18,7 +18,7 @@ def hmac_sign(key, message, method=hashlib.md5):
     key += chr(0) * (blocksize - len(key))
     o_key_pad = key.translate(TRANS_5C)
     i_key_pad = key.translate(TRANS_36)
-    return method(o_key_pad + method(i_key_pad + message).digest())
+    return method(o_key_pad + method(i_key_pad + message).digest()).digest()
 
 if __name__ == "__main__":
     import sys
