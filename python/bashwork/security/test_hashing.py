@@ -3,38 +3,62 @@ import unittest
 from bashwork.security.hashing import *
 
 class HashingTest(unittest.TestCase):
+    ''' Code to test the hashing abstraction library '''
 
-    def test_hashing_factory(self):
-        ''' test that all the hashing factory methods work '''
-        self.assertIsInstance(Hashing.md2()                , PythonHashFunction)
-        self.assertIsInstance(Hashing.md4()                , PythonHashFunction)
-        self.assertIsInstance(Hashing.md5()                , PythonHashFunction)
-        self.assertIsInstance(Hashing.sha1()               , PythonHashFunction)
-        self.assertIsInstance(Hashing.sha224()             , PythonHashFunction)
-        self.assertIsInstance(Hashing.sha256()             , PythonHashFunction)
-        self.assertIsInstance(Hashing.sha384()             , PythonHashFunction)
-        self.assertIsInstance(Hashing.sha512()             , PythonHashFunction)
-        self.assertIsInstance(Hashing.rmd160()             , PythonHashFunction)
-        self.assertIsInstance(Hashing.crc32()              , GenericHashFunction)
-        self.assertIsInstance(Hashing.adler32()            , GenericHashFunction)
-        self.assertIsInstance(Hashing.lookup3()            , PyHashHashFunction)
-        self.assertIsInstance(Hashing.fnv1_32()            , PyHashHashFunction)
-        self.assertIsInstance(Hashing.fnv1a_32()           , PyHashHashFunction)
-        self.assertIsInstance(Hashing.fnv1_64()            , PyHashHashFunction)
-        self.assertIsInstance(Hashing.fnv1a_64()           , PyHashHashFunction)
-        self.assertIsInstance(Hashing.murmur1_32()         , PyHashHashFunction)
-        self.assertIsInstance(Hashing.murmur1_aligned_32() , PyHashHashFunction)
-        self.assertIsInstance(Hashing.murmur2_32()         , PyHashHashFunction)
-        self.assertIsInstance(Hashing.murmur2a_32()        , PyHashHashFunction)
-        self.assertIsInstance(Hashing.murmur2_aligned_32() , PyHashHashFunction)
-        self.assertIsInstance(Hashing.murmur2_neutral_32() , PyHashHashFunction)
-        self.assertIsInstance(Hashing.murmur2_x64_64a()    , PyHashHashFunction)
-        self.assertIsInstance(Hashing.murmur2_x86_64b()    , PyHashHashFunction)
-        self.assertIsInstance(Hashing.murmur3_32()         , PyHashHashFunction)
-        self.assertIsInstance(Hashing.lookup3()            , PyHashHashFunction)
-        self.assertIsInstance(Hashing.lookup3_little()     , PyHashHashFunction)
-        self.assertIsInstance(Hashing.lookup3_big()        , PyHashHashFunction)
-        self.assertIsInstance(Hashing.super_fast_hash()    , PyHashHashFunction)
+    def test_hashing_factory_algorithms(self):
+        ''' test that all the hashing factory algorithms work '''
+        for algorithm in Hashing.algorithms():
+            function = Hashing.__dict__[algorithm].__get__(None, Hashing)
+            self.assertTrue(callable(function))
+            self.assertIsInstance(function(), HashFunction)
+
+    def test_python_hash_loop(self):
+        ''' test that the python hashing loop works correctly '''
+        method  = Hashing.md5()
+        hasher  = method.create()
+        hasher2 = hasher.update("something")
+        hashed  = hasher.get_hash()
+        quick   = method.hash("something")
+
+        self.assertEquals(hasher, hasher2)
+        self.assertEquals(hashed.digest, 'C{\x93\r\xb8K\x80y\xc2\xdd\x80Jq\x93k_')
+        self.assertEquals(hashed.digest, quick.digest)
+
+        self.assertIsInstance(method, HashFunction)
+        self.assertIsInstance(hasher, Hasher)
+        self.assertIsInstance(hashed, HashCode)
+
+    def test_pyhash_hash_loop(self):
+        ''' test that the pyhash loop works correctly '''
+        method  = Hashing.murmur3_32()
+        hasher  = method.create()
+        hasher2 = hasher.update("something")
+        hashed  = hasher.get_hash()
+        quick   = method.hash("something")
+
+        self.assertEquals(hasher, hasher2)
+        self.assertEquals(hashed.digest, 'U\x7f\xdf\xf6\x00\x00\x00\x00')
+        self.assertEquals(hashed.digest, quick.digest)
+
+        self.assertIsInstance(method, HashFunction)
+        self.assertIsInstance(hasher, Hasher)
+        self.assertIsInstance(hashed, HashCode)
+
+    def test_generic_hash_loop(self):
+        ''' test that the generic hash algorithm loop works correctly '''
+        method  = Hashing.crc32()
+        hasher  = method.create()
+        hasher2 = hasher.update("something")
+        hashed  = hasher.get_hash()
+        quick   = method.hash("something")
+
+        self.assertEquals(hasher, hasher2)
+        self.assertEquals(hashed.digest, '\xfb1\xda\t\x00\x00\x00\x00')
+        self.assertEquals(hashed.digest, quick.digest)
+
+        self.assertIsInstance(method, HashFunction)
+        self.assertIsInstance(hasher, Hasher)
+        self.assertIsInstance(hashed, HashCode)
 
 #---------------------------------------------------------------------------#
 # main

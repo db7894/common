@@ -1,5 +1,16 @@
+'''
+This is a hashing abstraction library which is roughly based
+on Google Guava's abstraction. This makes it easy to make
+pluggable hashing systems that all work the same throughout
+the system. As of now, the following are implemented:
+
+* python hashlib
+* pyhash methods
+* zlib hash methos
+'''
 import hashlib
 import zlib
+import base64
 import struct
 try:
     import pyhash
@@ -23,7 +34,7 @@ class HashCode(object):
 
         :param digest: The underlying digest of the hash
         '''
-        if isinstance(digest, long):
+        if isinstance(digest, (int, long)):
             self.digest = struct.pack("L", digest)
             self.digits = digest
         else:
@@ -73,7 +84,7 @@ class HashFunction(object):
         :param value: The value to get the hash of
         :returns: The final HashCode of the object
         '''
-        return create().update(value).get_hash()
+        return self.create().update(value).get_hash()
 
 class GenericHashFunction(HashFunction):
     ''' A wrapper factory for a simple hash function that
@@ -90,7 +101,7 @@ class GenericHashFunction(HashFunction):
         :param seed: The initial seed value for the hash
         '''
         self.function = function
-        self.seed = seed or 0
+        self.seed = 0 if seed == None else seed
 
     def create(self):
         ''' Create a new instance of the hash function
@@ -146,7 +157,7 @@ class PyHashHashFunction(HashFunction):
         else:
             self.name = name
             self.factory = pyhash.__dict__[name] # cached lookup
-        self.seed = seed or 0
+        self.seed = 0 if seed == None else seed
 
     def create(self):
         ''' Create a new instance of the hash function
@@ -196,7 +207,7 @@ class GenericHasher(Hasher):
         :param seed: The initial hash value to start with
         '''
         self.function = function
-        self.digest   = self.function(seed or 0)
+        self.digest   = seed
 
     def update(self, value):
         ''' Given a new value, update the underlying hash.
@@ -205,6 +216,7 @@ class GenericHasher(Hasher):
         :returns: The current instance to chain with
         '''
         self.digest = self.function(value, self.digest)
+        return self
 
     def get_hash(self):
         ''' Retrieve the current hash value
@@ -240,6 +252,7 @@ class PythonHasher(Hasher):
         :returns: The current instance to chain with
         '''
         self.hasher.update(value)
+        return self
 
     def copy(self):
         ''' Given a current hasher instance, return a copy
@@ -255,7 +268,7 @@ class PythonHasher(Hasher):
 
         :returns: A HashCode object containing the hash value
         '''
-        return HashCode(self.hashser.digest())
+        return HashCode(self.hasher.digest())
 
 class PyHashHasher(Hasher):
     ''' A wrapper for hashes from the pyhash library.
@@ -279,6 +292,7 @@ class PyHashHasher(Hasher):
         :returns: The current instance to chain with
         '''
         self.digest = self.function(value, seed=self.digest)
+        return self
 
     def get_hash(self):
         ''' Retrieve the current hash value
@@ -290,6 +304,19 @@ class PyHashHasher(Hasher):
 #------------------------------------------------------------
 # Hash Abstract Factory
 #------------------------------------------------------------
+def string_monoid(function):
+    ''' This is a simple wrapper to allow monoid behavior
+    for hashing algorithms that are not iterative without
+    keeping the current total string to hash. It works like::
+
+        hash(str(curr
+
+    :param function: The hashing function to wrap
+    :returns: A monadic wrapper for the supplied function
+    '''
+    def wrapper(curr, prev):
+        return function(str(curr) + prev)
+    return wrapper
 
 class Hashing(object):
     ''' A simple factory for creating all the available hashing
@@ -306,8 +333,11 @@ class Hashing(object):
     sha384             = staticmethod(lambda: PythonHashFunction('sha384'))
     sha512             = staticmethod(lambda: PythonHashFunction('sha512'))
     rmd160             = staticmethod(lambda: PythonHashFunction('rmd160'))
-    crc32              = staticmethod(lambda: GenericHashFunction(zlib.crc32))
-    adler32            = staticmethod(lambda: GenericHashFunction(zlib.adler32))
+    crc32              = staticmethod(lambda: GenericHashFunction(zlib.crc32, seed=0))
+    adler32            = staticmethod(lambda: GenericHashFunction(zlib.adler32, seed=0))
+    base64             = staticmethod(lambda: GenericHashFunction(string_monoid(base64.b64encode), seed=''))
+    base32             = staticmethod(lambda: GenericHashFunction(string_monoid(base64.b32encode), seed=''))
+    base16             = staticmethod(lambda: GenericHashFunction(string_monoid(base64.b16encode), seed=''))
     lookup3            = staticmethod(lambda: PyHashHashFunction('lookup3'))
     fnv1_32            = staticmethod(lambda: PyHashHashFunction('fnv1_32'))
     fnv1a_32           = staticmethod(lambda: PyHashHashFunction('fnv1a_32'))
