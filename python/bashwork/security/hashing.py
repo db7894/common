@@ -1,5 +1,5 @@
 import hashlib
-import binascii
+import zlib
 import struct
 try:
     import pyhash
@@ -14,6 +14,8 @@ class HashCode(object):
     that provides a number of magic methods and utility methods
     to work with the underlying digest.
     '''
+
+    __slots__ = ['digest', 'digits']
 
     def __init__(self, digest):
         ''' Create a new instane of a HashCode. It is assumed
@@ -109,14 +111,22 @@ class PythonHashFunction(HashFunction):
 
         :param name: The name of the hashing function to use
         '''
-        self.name = name
+        if callable(name):
+            self.name = name.__name__
+            self.factory = name
+        elif name in hashlib.algorithms:
+            self.name = name
+            self.factory = hashlib.__dict__[name] # cached lookup
+        else:
+            self.name = name
+            self.factory = lambda: hashlib.new(name)
 
     def create(self):
         ''' Create a new instance of the hash function
 
         :returns: An initialized PythonHashFunction object
         '''
-        return PythonHasher(hashlib.new(self.name))
+        return PythonHasher(self.factory())
 
 class PyHashHashFunction(HashFunction):
     ''' This is a wrapper for a single hash from the pyhash
@@ -130,9 +140,13 @@ class PyHashHashFunction(HashFunction):
         :param name: The name of the hashing function to use
         :param seed: The initial seed value for the hash
         '''
-        self.name = name
+        if callable(name):
+            self.name = name.__name__
+            self.factory = name
+        else:
+            self.name = name
+            self.factory = pyhash.__dict__[name] # cached lookup
         self.seed = seed or 0
-        self.factory = pyhash.__dict__[name] # cached lookup
 
     def create(self):
         ''' Create a new instance of the hash function
@@ -173,6 +187,8 @@ class GenericHasher(Hasher):
         hash = function(value2, hash)
     '''
 
+    __slots__ = ['function', 'digest']
+
     def __init__(self, function, seed=None):
         ''' Initialize a new instance of the GenericHasher
 
@@ -208,6 +224,8 @@ class PythonHasher(Hasher):
         hasher = PythonHasher(hashlib.md5())
     '''
 
+    __slots__ = ['hasher']
+
     def __init__(self, hasher):
         ''' Create a new instance of a PythonHasher
 
@@ -242,6 +260,8 @@ class PythonHasher(Hasher):
 class PyHashHasher(Hasher):
     ''' A wrapper for hashes from the pyhash library.
     '''
+
+    __slots__ = ['function', 'digest']
 
     def __init__(self, function, seed=None):
         ''' Initialize a new instance of the GenericHasher
@@ -286,7 +306,8 @@ class Hashing(object):
     sha384             = staticmethod(lambda: PythonHashFunction('sha384'))
     sha512             = staticmethod(lambda: PythonHashFunction('sha512'))
     rmd160             = staticmethod(lambda: PythonHashFunction('rmd160'))
-    crc32              = staticmethod(lambda: GenericHashFunction(binascii.crc32))
+    crc32              = staticmethod(lambda: GenericHashFunction(zlib.crc32))
+    adler32            = staticmethod(lambda: GenericHashFunction(zlib.adler32))
     lookup3            = staticmethod(lambda: PyHashHashFunction('lookup3'))
     fnv1_32            = staticmethod(lambda: PyHashHashFunction('fnv1_32'))
     fnv1a_32           = staticmethod(lambda: PyHashHashFunction('fnv1a_32'))
@@ -305,3 +326,13 @@ class Hashing(object):
     lookup3_little     = staticmethod(lambda: PyHashHashFunction('lookup3_little'))
     lookup3_big        = staticmethod(lambda: PyHashHashFunction('lookup3_big'))
     super_fast_hash    = staticmethod(lambda: PyHashHashFunction('super_fast_hash'))
+
+    @classmethod
+    def algorithms(klass):
+        ''' Lists all the currently available algorithms
+        to choose from.
+
+        :returns: A list of all the available algorithms
+        '''
+        return [method for method in dir(klass)
+            if not method.startswith('__') and method != "algorithms"]

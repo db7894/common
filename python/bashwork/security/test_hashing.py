@@ -16,6 +16,7 @@ class HashingTest(unittest.TestCase):
         self.assertIsInstance(Hashing.sha512()             , PythonHashFunction)
         self.assertIsInstance(Hashing.rmd160()             , PythonHashFunction)
         self.assertIsInstance(Hashing.crc32()              , GenericHashFunction)
+        self.assertIsInstance(Hashing.adler32()            , GenericHashFunction)
         self.assertIsInstance(Hashing.lookup3()            , PyHashHashFunction)
         self.assertIsInstance(Hashing.fnv1_32()            , PyHashHashFunction)
         self.assertIsInstance(Hashing.fnv1a_32()           , PyHashHashFunction)
