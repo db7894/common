@@ -1,18 +1,18 @@
 import heapq
 from sys import maxint
-from collections import defaultdict
+from collections import Counter
 from random import randint, seed
 
 def popular_exact(coll, size):
     ''' Given a collection, sample the N most
     common elements in a single pass. This uses
-    the SpaceSaving algorithm by Metwally.
+    a simple counter of all the values.
 
     :param coll: The collection to sample
     :param size: The number of common elements to sample
     :returns: A collection of the most common elements
     '''
-    sample = defaultdict(int)
+    sample = Counter()
     for elem in coll:
         sample[elem] += 1
     return heapq.nlargest(size, sample, key=lambda el:sample[el])

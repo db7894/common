@@ -17,6 +17,9 @@ def constant(value):
     '''
     return lambda _: value
 
+constant_true  = constant(True)
+constant_false = constant(False)
+
 def compose(f1, f2):
     ''' A function that takes two functions
     and composes them such that a new function of
