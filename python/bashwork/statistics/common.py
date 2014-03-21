@@ -7,10 +7,10 @@
 - conditional distribution P(a|b) = P(a,b) / P(b)
   - normalization trick
 '''
-import numpy as np
-import pandas as pd
 import random
 from collections import Counter
+import numpy as np
+import pandas as pd
 from bashwork.statistics.utilities import *
 
 class TruthTable(object):
@@ -44,17 +44,17 @@ class Distribution(object):
         :returns: An initialized distribution over those values
         '''
         counts = normalize(Counter(values))
-        return klass(counts, name)
+        counts = pd.Series(counts, name=name or 'X')
+        return klass(counts)
 
-    def __init__(self, table, name):
+    def __init__(self, table):
         ''' Initialize a new instance of the Distribution class
 
         :param table: A mapping of value to its probability
         :param name: The name of the distribution variable
         '''
-        self.table   = table
-        self.name    = name or 'X'
-        self.weights = { k: v for k, v in zip(self.table.keys(), np.cumsum(self.table.values())) }
+        self.table  = table
+        self.cumsum = self.table.cumsum()
 
     def sample(self, count=1):
         ''' Sample the existing distribution the supplied
@@ -63,13 +63,12 @@ class Distribution(object):
         :param count: The number of samples to retrieve (default 1)
         :returns: The requested number of samples
         '''
-        items = self.weights.items()
         rands = sorted(random.random() for _ in range(count))
         samid, ranid = 0, 0
         results = []
         while len(results) < count:
-            if rands[ranid] < items[samid][1]:
-                results.append(items[samid][0])
+            if rands[ranid] < self.cumsum[samid]:
+                results.append(self.cumsum.index[samid])
                 ranid += 1
             else: samid += 1
         return results[0] if count == 1 else results
@@ -80,8 +79,8 @@ class Distribution(object):
 
         :returns: True if the values sum to 1, else False
         '''
-        return (all(v >= 0 for v in self.table.values())
-           and (0.999 <= sum(self.table.values()) <= 1.0))
+        return ((self.table >= 0.0).all()
+           and (0.999 <= self.table.sum() <= 1.0))
 
     def get(self, *args, **kwargs):
         ''' Retrieve the probability of the specified conditions::
@@ -94,16 +93,17 @@ class Distribution(object):
         :param kwargs: The named variable to test (only matching name)
         :returns: The joint probability of the variables
         '''
-        keys = args
-        if self.name in kwargs: keys += (kwargs[self.name],)
-        return sum(self.table[k] for k in keys)
+        keys = list(args)
+        if self.table.name in kwargs:
+            keys.append(kwargs[self.table.name])
+        return self.table.ix[keys].sum()
 
     def __str__(self):
         ''' Output a table representing the probability
         distribution of this variable.
         '''
-        output = ['P({})'.format(self.name)]
-        for key, prob in self.table.items():
+        output = ['P({})'.format(self.table.name)]
+        for key, prob in self.table.iteritems():
             output.append('P({}) -> {:.2f}'.format(key, prob))
         return '\n'.join(output)
 
