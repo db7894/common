@@ -95,6 +95,7 @@ class Distribution(object):
         '''
         keys = list(args)
         if self.table.name in kwargs:
+            # fast way to att X=[1,2,3], X=(1,2,3)
             keys.append(kwargs[self.table.name])
         return self.table.ix[keys].sum()
 
@@ -108,6 +109,7 @@ class Distribution(object):
         return '\n'.join(output)
 
     __repr__ = __str__
+    __call__ = get
 
 class JointDistribution(object):
     '''

@@ -134,7 +134,7 @@ class BinaryNode(object):
         return tree
 
     @classmethod
-    def create_prev(klass, xs, prev=None):
+    def create_with_parents(klass, xs, prev=None):
         ''' Given an ordered list of values, create a binary tree
         that has parent links
 
@@ -146,8 +146,8 @@ class BinaryNode(object):
         m = len(xs) // 2
         tree       = klass(xs[m])
         tree.prev  = prev
-        tree.left  = klass.create_prev(xs[:m], tree)
-        tree.right = klass.create_prev(xs[m+1:], tree)
+        tree.left  = klass.create_with_parents(xs[:m], tree)
+        tree.right = klass.create_with_parents(xs[m+1:], tree)
         return tree
 
 #------------------------------------------------------------
@@ -155,10 +155,6 @@ class BinaryNode(object):
 #------------------------------------------------------------
 def dfs_preorder_iter(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
-    >>> node = dfs_preorder_iter(tree)
-    >>> list(node)
-    [5, 2, 1, 0, 4, 3, 8, 7, 6, 9]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -173,10 +169,6 @@ def dfs_preorder_iter(tree):
 
 def dfs_inorder_iter(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
-    >>> node = dfs_inorder_iter(tree)
-    >>> list(node)
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -193,10 +185,6 @@ def dfs_inorder_iter(tree):
 
 def dfs_postorder_iter(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
-    >>> node = dfs_postorder_iter(tree)
-    >>> list(node)
-    [0, 1, 3, 4, 2, 6, 7, 9, 8, 5]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -219,10 +207,6 @@ def dfs_postorder_iter(tree):
 
 def bfs_ltor_iter(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
-    >>> node = bfs_ltor_iter(tree)
-    >>> list(node)
-    [5, 2, 8, 1, 4, 7, 9, 0, 3, 6]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -237,10 +221,6 @@ def bfs_ltor_iter(tree):
 
 def bfs_rtol_iter(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
-    >>> node = bfs_rtol_iter(tree)
-    >>> list(node)
-    [5, 8, 2, 9, 7, 4, 1, 6, 3, 0]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -258,10 +238,6 @@ def bfs_rtol_iter(tree):
 #------------------------------------------------------------
 def dfs_preorder_recur(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
-    >>> node = dfs_preorder_recur(tree)
-    >>> list(node)
-    [5, 2, 1, 0, 4, 3, 8, 7, 6, 9]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -277,10 +253,6 @@ def dfs_preorder_recur(tree):
 
 def dfs_inorder_recur(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
-    >>> node = dfs_inorder_recur(tree)
-    >>> list(node)
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -296,10 +268,6 @@ def dfs_inorder_recur(tree):
 
 def dfs_postorder_recur(tree):
     '''
-    >>> tree = BinaryNode.create(range(10))
-    >>> node = dfs_postorder_recur(tree)
-    >>> list(node)
-    [0, 1, 3, 4, 2, 6, 7, 9, 8, 5]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -318,10 +286,6 @@ def dfs_postorder_recur(tree):
 #------------------------------------------------------------
 def dfs_preorder_prev(tree):
     '''
-    >>> tree = BinaryNode.create_prev(range(10))
-    >>> node = dfs_preorder_prev(tree)
-    >>> list(node)
-    [5, 2, 1, 0, 4, 3, 8, 7, 6, 9]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -338,10 +302,6 @@ def dfs_preorder_prev(tree):
 
 def dfs_inorder_prev(tree):
     '''
-    >>> tree = BinaryNode.create_prev(range(10))
-    >>> node = dfs_inorder_prev(tree)
-    >>> list(node)
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -359,11 +319,6 @@ def dfs_inorder_prev(tree):
 
 def dfs_postorder_prev(tree):
     '''
-
-    >>> tree = BinaryNode.create_prev(range(10))
-    >>> node = dfs_postorder_prev(tree)
-    >>> list(node)
-    [0, 1, 3, 4, 2, 6, 7, 9, 8, 5]
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -386,11 +341,6 @@ def dfs_postorder_prev(tree):
 def tree_contains_recur(tree, value):
     ''' A recursive implemplememtation to check if a value is
     in a tree.
-    >>> tree = BinaryNode.create(range(10))
-    >>> tree_contains_recur(tree, 5)
-    True
-    >>> tree_contains_recur(tree, 10)
-    False
 
     :param tree: The tree to check if a value is in
     :param value: The value to check if in the tree
@@ -404,11 +354,6 @@ def tree_contains_recur(tree, value):
 def tree_insert_recur(tree, value):
     ''' A recursive implemplememtation to check if a value is
     in a tree.
-    >>> tree = BinaryNode.create(range(5))
-    >>> tree_insert_recur(tree, 5)
-    >>> node = dfs_inorder_iter(tree)
-    >>> list(node)
-    [0, 1, 2, 3, 4, 5]
 
     :param tree: The tree to check if a value is in
     :param value: The value to check if in the tree
@@ -425,11 +370,6 @@ def tree_insert_recur(tree, value):
 def tree_insert_immut(tree, value):
     ''' A recursive implemplememtation to check if a value is
     in a tree.
-    >>> tree = BinaryNode.create(range(5))
-    >>> tree = tree_insert_immut(tree, 5)
-    >>> node = dfs_inorder_iter(tree)
-    >>> list(node)
-    [0, 1, 2, 3, 4, 5]
 
     :param tree: The tree to check if a value is in
     :param value: The value to check if in the tree
@@ -446,13 +386,7 @@ def tree_insert_immut(tree, value):
 def is_binary_search_tree_recur(tree):
     ''' Checks if a binary tree is a valid binary
     search tree.
-    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> is_binary_search_tree_recur(tree)
-    True
 
-    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(9))), Tree(6))
-    >>> is_binary_search_tree_recur(tree)
-    False
     '''
     def check(node, minv, maxv):
         if node == None: return True
@@ -462,20 +396,10 @@ def is_binary_search_tree_recur(tree):
                 check(node.right, node.value, maxv))
     return check(tree, None, None)
 
-
 def is_mirror_tree_recur(treea, treeb):
     ''' Given two trees, check if they are mirrors
     of each other.
 
-    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> treeb = Tree(5, Tree(6), Tree(2, Tree(3, Tree(4)), Tree(1)))
-    >>> is_mirror_tree_recur(treea, treeb)
-    True
-
-    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> is_mirror_tree_recur(treea, treeb)
-    False
     '''
     if not treea and treeb: return False
     if not treeb and treea: return False
@@ -484,9 +408,23 @@ def is_mirror_tree_recur(treea, treeb):
             is_mirror_tree_recur(treea.left, treeb.right) and
             is_mirror_tree_recur(treea.right, treeb.left))
 
-def print_zig_zag(root):
+def create_mirror_tree(tree):
+    ''' Given a tree, create a mirror of the given
+    tree.
+
+    :param tree: The tree to create a mirror of
+    :returns: The mirror of the supplied tree
+    '''
+    if not tree: return None
+    left, right = create_mirror_tree(tree.right), create_mirror_tree(tree.left)
+    return BinaryNode(tree.value, left, right)
+
+def get_tree_zig_zag(root):
     ''' Given a binary tree, print it out in a
     zig zag fashion.
+
+    :param root: The root node to return as a zig zag
+    :returns: A zip zag trail through the tree
     '''
     values = []
     stackr, stackl = [], [root]
@@ -505,17 +443,11 @@ def print_zig_zag(root):
     return values
 
 def are_trees_equal_recur(treea, treeb):
-    ''' Determine if two trees are equal.
+    ''' Determine if two trees are equal (using recursion).
 
-    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> are_trees_equal(treea, treeb)
-    True
-
-    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(9))), Tree(6))
-    >>> are_trees_equal(treea, treeb)
-    False
+    :param treea: The first tree to compare
+    :param treeb: The second tree to compare
+    :returns: True if the trees are equal, False otherwise
     '''
     if not treea and not treeb: return True
     if not treea  or not treeb: return False
@@ -523,19 +455,12 @@ def are_trees_equal_recur(treea, treeb):
     return (are_trees_equal_recur(treea.left,  treeb.left) and
             are_trees_equal_recur(treea.right, treeb.right))
 
-
 def are_trees_equal_iter(treea, treeb):
-    ''' Determine if two trees are equal.
+    ''' Determine if two trees are equal (imperative solution).
 
-    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> are_trees_equal_iter(treea, treeb)
-    True
-
-    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> treeb = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(9))), Tree(6))
-    >>> are_trees_equal_iter(treea, treeb)
-    False
+    :param treea: The first tree to compare
+    :param treeb: The second tree to compare
+    :returns: True if the trees are equal, False otherwise
     '''
     stack = [(treea, treeb)]
     while stack:
@@ -547,20 +472,20 @@ def are_trees_equal_iter(treea, treeb):
         stack.insert(0, (l.right, r.right))
     return True
 
+are_trees_equal = are_trees_equal_iter
 
 def find_path(tree, node):
     ''' Given a tree, find a path from the root
     node to the given node element.
 
-    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> node = Tree(4)
-    >>> find_path(tree, node).pop().value
-    4
+    :param tree: The tree to search for a path
+    :param node: The node to find a path to
+    :returns: A path from the root of the tree to the node
     '''
     current  = None # current node in the tree
     trail    = {}   # parent node adjacency graph
     path     = []   # the resulting path to the node
-    for current in tree_dfs(tree):
+    for current in dfs_preorder_iter(tree):
         if not current or (current.value == node.value):
             break
         trail[current.right] = current
@@ -575,12 +500,6 @@ def find_common_ancestor(tree, nodea, nodeb):
     ''' Given two trees, check if one is a subtree of
     the other.
 
-    >>> tree  = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> nodea = Tree(4)
-    >>> nodeb = Tree(1)
-    >>> find_common_ancestor(tree, nodea, nodeb).value
-    2
-
     '''
     patha = find_path(tree, nodea)
     pathb = find_path(tree, nodeb)
@@ -594,11 +513,6 @@ def lca(tree, nodea, nodeb):
     ''' Given two trees, check if one is a subtree of
     the other.
 
-    >>> tree  = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> nodea = Tree(4)
-    >>> nodeb = Tree(1)
-    >>> lca(tree, nodea, nodeb).value
-    2
     '''
     if not tree: return None               # no LCA
     if tree.value == nodea.value: return tree
@@ -613,16 +527,9 @@ def is_a_subtree(tree, node):
     ''' Given two trees, check if one is a subtree of
     the other.
 
-    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> treeb = Tree(2, Tree(1), Tree(3, right=Tree(4)))
-    >>> is_a_subtree(treea, treeb)
-    True
-
-    >>> treea = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> treeb = Tree(6, Tree(5, Tree(7)))
-    >>> is_a_subtree(treea, treeb)
-    False
-
+    :param tree: The main tree to search in
+    :param node: The root node to check for
+    :returns: True if node is a subtree, False otherwise
     '''
     if not tree: return False
     if not node: return True
@@ -635,9 +542,9 @@ def is_a_subtree(tree, node):
 def nth_tree_value(tree, n):
     ''' Return the nth value in order of the tree.
 
-    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> nth_tree_value(tree, 4)
-    4
+    :param tree: The tree to retrieve a value from
+    :param n: The value to retrieve from the tree
+    :returns: the Nth value of the tree in order
     '''
     stack, node = [], tree
     while node or stack:
@@ -654,10 +561,6 @@ def nth_tree_value(tree, n):
 def tree_to_array(tree):
     ''' Given a binary tree, convert it into a sorted array.
 
-    >>> tree = Tree(5, Tree(2, Tree(1), Tree(3, right=Tree(4))), Tree(6))
-    >>> tree_to_array(tree)
-    [1, 2, 3, 4, 5, 6]
-
     :param tree: The tree to convert to a sorted array
     :returns: The sorted array representing the tree
     '''
@@ -673,10 +576,6 @@ def tree_to_array(tree):
 def array_to_tree(array):
     ''' Given a sorted array, convert it into a
     minimal binary tree.
-
-    >>> array = [1, 2, 3, 4, 5, 6]
-    >>> array_to_tree(array)
-    [1, 2, 3, 4, 5, 6]
 
     :param array: The array to convert to a tree
     :returns: The converted tree
@@ -704,7 +603,7 @@ def deserialize_tree(string):
     :param string: The serialized tree
     :returns: The deserialzied tree
     '''
-    return json.loads(array_to_tree(tree))
+    return array_to_tree(json.loads(string))
 
 def invert_tree(tree):
     def invert(node, left, right):
@@ -716,12 +615,3 @@ def invert_tree(tree):
         node.left, node.right = left, right
         return roots
     return invert(tree, None, None)
-
-
-#------------------------------------------------------------
-# test runner
-#------------------------------------------------------------
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
