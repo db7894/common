@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import unittest
 import pandas as pd
-from bashwork.statistics.common import *
+from bashwork.statistics.distribution.discrete import *
 
-class DistributionTest(unittest.TestCase):
+class DiscreteDistributionTest(unittest.TestCase):
 
     def test_is_valid(self):
         dist = Distribution.create(range(10))
