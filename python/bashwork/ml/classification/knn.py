@@ -1,3 +1,7 @@
+'''
+.. todo::
+   - http://en.wikipedia.org/wiki/Ball_tree
+'''
 from collections import Counter
 from bashwork.ml.distance import manhattan_distance
 

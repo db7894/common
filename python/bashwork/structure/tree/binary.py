@@ -6,27 +6,38 @@ class BinaryNode(object):
     based on the current value of the node.
     '''
 
-    def __init__(self, value, left=None, right=None):
+    def __init__(self, **kwargs):
         ''' Initializes a new instance of the class.
 
         :param value: The value of this node
         :param left: The left child of this node (default None)
         :param right: The right child of this node (default None)
         '''
-        self.value = value
-        self.left  = left
-        self.right = right
+        self.value = kwargs.get('value', None)
+        self.left  = kwargs.get('left',  None)
+        self.right = kwargs.get('right', None)
+        self.attrs = kwargs
 
-    def __eq__(self, other):   return other and (other.value == self.value)
-    def __ne__(self, other):   return other and (other.value != self.value)
-    def __lt__(self, other):   return other and (other.value  < self.value)
-    def __le__(self, other):   return other and (other.value <= self.value)
-    def __gt__(self, other):   return other and (other.value  > self.value)
-    def __ge__(self, other):   return other and (other.value >= self.value)
-    def __hash__(self):        return hash(self.value)
-    def __repr__(self):        return str(self.value)
-    def __str__(self):         return str(self.value)
-    def __contains__(self, v): return self.contains(v)
+    def __getitem__(self, k):    return self.attrs.get(k, None)
+    def __setitem__(self, k, v): self.attrs[k] = v
+    def __eq__(self, other):     return other and (other.value == self.value)
+    def __ne__(self, other):     return other and (other.value != self.value)
+    def __lt__(self, other):     return other and (other.value  < self.value)
+    def __le__(self, other):     return other and (other.value <= self.value)
+    def __gt__(self, other):     return other and (other.value  > self.value)
+    def __ge__(self, other):     return other and (other.value >= self.value)
+    def __hash__(self):          return hash(self.value)
+    def __repr__(self):          return str(self.value)
+    def __str__(self):           return str(self.value)
+    def __contains__(self, v):   return self.contains(v)
+
+    def is_leaf_node(self):
+        ''' Check if the current node is a leaf nodes
+        or not.
+
+        :returns: True if a leaf node, False otherwise
+        '''
+        return self.right or self.left
 
     def height(self):
         ''' Given a tree, return its current max height

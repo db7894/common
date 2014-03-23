@@ -1,166 +1,104 @@
-#!/usr/bin/env python
-"""
-quick implementation of k-nearest neighbors
-"""
-from common import Entry, count_groups, best_gain
-from distance import euclidean_distance as distance
+from baswwork.structure.tree.binary import BinaryNode
+from bashwork.ml.common import Entry, count_groups, best_gain
 
-#------------------------------------------------------------#
-# Logging
-#------------------------------------------------------------#
-import logging
-_logger = logging.getLogger(__name__)
+class DecisionTree(BinaryNode):
+    ''' Represents a simple decision tree. Each node in this tree
+    should have the following attributes:
 
-#------------------------------------------------------------#
-# classes
-#------------------------------------------------------------#
-class Leaf(object):
-    ''' Represents the leaf of a tree '''
-
-    def __init__(self, label):
-        self.label = label
-
-    def __str__(self):
-        return "[%s]" % (self.label)
-
-class Tree(object):
-    ''' Represents some level of a given tree '''
-
-    def __init__(self, **kwargs):
-        self.name  = kwargs.get('name', 'x')
-        self.field = kwargs.get('field', 0)
-        self.value = kwargs.get('value', 0)
-        self.left  = kwargs.get('left',  Leaf('x'))
-        self.right = kwargs.get('right', Leaf('x'))
+    * name  - a graphical name for this field
+    * label - the label of this node (if this is a leaf)
+    * field - the field to split on (if this is a tree node)
+    * value - the value of the field to split with (if this is a tree node)
+    '''
 
     def classify(self, entry):
         ''' Classify a new entry with the current tree
         
-        @param entry The entry to classify
-        @return The label of the new entry
+        :param entry: The entry to classify
+        :returns: The label of the new entry
         '''
-        root = self
-        while True:
-            goright = (entry.values[root.field] > root.value)
-            root = root.right if goright else root.left
-            if isinstance(root, Leaf):
-                return root.label
-
-    def accuracy(self, dataset):
-        ''' Test the accurracy of the given tree using the
-        provided testing set.
-        
-        @param dataset The dataset to evaluate
-        @return The accurracy of the given tree
-        '''
-        correct = 0
-        for entry in dataset:
-            correct += (self.classify(entry) == entry.label)
-        return float(correct)/len(dataset)
+        node = self
+        while not node.is_leaf_node():
+            go_right = entry.values[node['field']] > node['value']
+            node = node.right if go_right else node.left
+        return node['label']
 
     def __str__(self):
-        return "{name:%s, field:%s, value:%d}" % (self.name, self.field, self.value)
+        if self['label']: return self.label
+        return "{}[{}] => {}".format(self['name'], self['field'], self['value'])
+
+    @classmethod
+    def train(klass, dataset, attributes, threshold=0.01):
+        ''' Given a dataset, train a new decision tree
+        with the supplied parameters.
+        
+        :param dataset: The training dataset
+        :param attributes: The attribute names
+        :param threshold: The gain threshold to cut off at
+        :returns: A newly trained decision tree
+        '''
+        def tree_builder(data):
+            if not len(data): return None                      # break if we have no data
+
+            label, groups = count_groups(data)                 # if the groups are pure
+            if (len(groups) == 1) or (len(attributes) == 0):   # or no more attributes
+                return klass(label=label)                      # create a leaf label node
+
+            (gain, value, field) = best_gain(data, attributes) # find the best split point
+            if gain < threshold: return klass(label=label)     # unless the gain is too low
+
+            node = klass(field=field, value=value, name=attributes[field])
+            node.left  = tree_builder([e for e in data if e.values[field] <= value])
+            node.right = tree_builder([e for e in data if e.values[field] >  value])
+            return node
+        return tree_builder(dataset)
 
 #------------------------------------------------------------#
 # helper methods
 #------------------------------------------------------------#
-def tree_build(dataset, attributes, threshold=0.01):
-    ''' Implementation of k-nearest-neighbor
-    
-    @param dataset The training dataset
-    @param attributes The attribute names
-    '''
-    attrs = attributes.keys() # just the indexes
-    def _inner(db):
-        # if groups are pure or no more attributes
-        m, groups = count_groups(db)
-        if (len(groups) == 1) or (len(attrs) == 0):
-            return Leaf(m)
-
-        # calculate entropies and gain
-        (gain, value, field) = best_gain(db, attrs)
-        _logger.debug("g:%f, f:%s, v:%f" % (gain, attributes[field], value))
-        if gain < threshold:
-           return Leaf(m)
-
-        # build next tree level
-        tree  = Tree(field=field, value=value, name=attributes[field])
-        _logger.debug(tree)
-        left  = [e for e in db if e.values[field] <= value]  # left  group
-        right = [e for e in db if e.values[field] >  value]  # right group
-        if len(left)  > 0: tree.left  = _inner(left)
-        if len(right) > 0: tree.right = _inner(right)
-        return tree
-    return _inner(dataset)
 
 def tree_to_rules(tree):
-    ''' Helper method to convert a tree to rules
+    ''' Given a decision tree, covert the tree
+    to a collection of rules.
     
-    @param tree The tree to test against
-    @return A list of rules
+    :param tree: The tree to convert to rules
+    :returns: A list of the rules encoded in the tree
     '''
-    def _inner(root, rule, rules):
-        if isinstance(root, Leaf):
-            return rules.append(rule[0:-2] + " -> " + root.label)
-        _inner(root.left,  rule + "%s <= %f, " % (root.name, root.value), rules)
-        _inner(root.right, rule + "%s >  %f, " % (root.name, root.value), rules)
-        return rules
-    return _inner(tree, "", [])
+    rules = []
+    def rule_builder(node, rule):
+        if not node.is_leaf_node():
+            rule_builder(node.left,  rule + "%s <= %f, " % (node['name'], node['value']))
+            rule_builder(node.right, rule + "%s >  %f, " % (node['name'], node['value']))
+        else: rules.append(rule[0:-2] + " -> " + node['label'])
+    rule_builder(tree)
+    return rules
 
 def tree_to_graphviz(tree):
     ''' Helper method to convert a tree to a graphviz
     document.
     
-    @param tree The tree to process
-    @return A graphviz representation of the tree
+    :param tree: The tree to process
+    :returns: A graphviz representation of the tree
     '''
-    def _listnodes(root, c):
-        if isinstance(root, Leaf):
-            return (c, '\tnode%d [label ="%s"];\n' % (c, root.label))
-        else:
-            g = '\tnode%d [label ="%s"];\n' % (c, root.name)
-            (c, l) = _listnodes(root.left,  c+1)
-            (c, r) = _listnodes(root.right, c+1)
-            return (c, g + l + r)
+    def get_tree_nodes(node, c):
+        if not node.is_leaf_node():
+            n = '\tnode%d [label ="%s"];\n' % (c, node['name'])
+            (c, l) = get_tree_nodes(node.left,  c + 1)
+            (c, r) = get_tree_nodes(node.right, c + 1)
+            return (c, n + l + r)
+        else: return (c, '\tnode%d [label ="%s"];\n' % (c, node['label']))
 
-    def _linklinks(root, count):
-        if isinstance(root, Leaf): return (count, "")
-        g  = '\tnode%d -> node%d [label="<= %0.2f"]\n' % (count, count+1, root.value)
-        (c, l) = _linklinks(root.left,  count+1)
-        g += '\tnode%d -> node%d [label="> %0.2f"]\n'  % (count, c+1, root.value)
-        (c, r) = _linklinks(root.right, c+1)
-        return (c, g + l + r)
+    def get_tree_links(node, count):
+        if node.is_leaf_node(): return (count, "")
+        n  = '\tnode%d -> node%d [label="<= %0.2f"]\n' % (count, count + 1, node.value)
+        (c, l) = get_tree_links(node.left,  count+1)
+        n += '\tnode%d -> node%d [label="> %0.2f"]\n'  % (count, c+1, node.value)
+        (c, r) = get_tree_links(node.right, c+1)
+        return (c, n + l + r)
 
     graph  = "digraph G\n{\n\tnode  [shape = diamond];\n"
     graph += '\tedge  [color="#2554c7"];\n'
-    graph += _listnodes(tree, 0)[1]
+    graph += get_tree_nodes(tree, 0)[1]
     graph += "\n\n"
-    graph += _linklinks(tree, 0)[1]
-
+    graph += get_tree_links(tree, 0)[1]
     return graph + "}"
-    
-#------------------------------------------------------------#
-# example run
-#------------------------------------------------------------#
-if __name__ == "__main__":
-    from common import load_arff
-
-    #logging.basicConfig()
-    #_logger.setLevel(logging.DEBUG)
-
-    attributes = {0:"temp", 1:"humid", 2:"light", 3:"cloud"}
-    training   = list(load_arff("data/training.arff"))
-    testing    = list(load_arff("data/testing.arff"))
-    tree       = tree_build(training, attributes)
-
-    print "# first 3 examples:",
-    print [tree.classify(entry) for entry in testing[0:3]]
-    print "#\n# training accuracy:",
-    print tree.accuracy(training)
-    print "# testing accuracy: ",
-    print tree.accuracy(testing)
-    print "#\n# rules:"
-    for rule in tree_to_rules(tree): print "#    " + rule
-    print "#\n# tree:"
-    print tree_to_graphviz(tree)
-
