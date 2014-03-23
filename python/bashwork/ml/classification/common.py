@@ -3,19 +3,26 @@ A collection of helper utilities for the various
 algorithms.
 """
 from math import log
-from collections import defaultdict
 
 #------------------------------------------------------------#
 # classes
 #------------------------------------------------------------#
 class Entry(object):
+    ''' Represents a single entry in a model along with
+    its label and values.
+    '''
 
     def __init__(self, label, values):
+        ''' Initialize a new instance of an Entry class.
+
+        :param label: The label associated with this entry
+        :param values: The values associated with this entry
+        '''
         self.label  = label
         self.values = tuple(values)
 
-    def __str__(self):
-        return "%s[%s]" % (self.values, self.label)
+    def __str__(self):  return self.label
+    def __repr__(self): return self.label
 
 #------------------------------------------------------------#
 # arff helpers
@@ -110,19 +117,3 @@ def best_gain(dataset, fields):
     gains = [best_value_gain(dataset, field) + (field, ) for field in fields]
     return max(gains) # (gain, value, field)
 
-#------------------------------------------------------------#
-# other helpers
-#------------------------------------------------------------#
-def count_groups(dataset, extract=lambda e:e.label):
-    ''' Given a dataset of entries, count the values
-    and return the most common label.
-
-    @param dataset The dataset to count
-    @param extract The label extractor
-    @return ('max label', count-dict)
-    '''
-    d = defaultdict(int)
-    for entry in dataset:
-        d[extract(entry)] += 1
-    return (max(d.items(), key=lambda a:a[1])[0], d)
-    
