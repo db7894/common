@@ -7,57 +7,38 @@ http://crsouza.blogspot.com/2010/03/kernel-functions-for-machine-learning.html
 '''
 import numpy as np
 
-
 def dot_product():
-    def kernel(a, b):
-        return np.dot(a, b)
-    return kernel
+    return lambda a, b: np.dot(a, b)
 
 def linear(c=0.0):
-    def kernel(a, b):
-        return np.dot(a, b) + c
-    return kernel
+    return lambda a, b: np.dot(a, b) + c
 
-def gaussian(gamma):
-    def kernel(a, b):
-        delta = b - a
-        return np.exp(-gamma * (delta * delta).sum())
-    return kernel
+def gaussian(sigma):
+    return lambda a, b: np.exp(-np.linalg.norm(b - a) ** 2 / (2 * sigma ** 2))
+
+def gaussian_gamma(gamma):
+    return lambda a, b: np.exp(-gamma * np.linalg.norm(b - a) ** 2)
 
 def rational_quadradic(c=0.0):
     def kernel(a, b):
-        delta  = b - a
-        normal = (delta * delta).sum()
+        normal = np.linalg.norm(b - a) ** 2
         return 1.0 - (normal / (normal + c))
     return kernel
 
 def multiquadradic(c=0.0):
-    def kernel(a, b):
-        delta  = b - a
-        return np.sqrt(delta.sum() ** 2 + c ** 2)
-    return kernel
+    return lambda a, b:np.sqrt((b - a).sum() ** 2 + c ** 2)
 
 def inverse_multiquadradic(c=0.0):
-    def kernel(a, b):
-        delta  = b - a
-        return 1.0 / np.sqrt(delta.sum() ** 2 + c ** 2)
-    return kernel
+    return lambda a, b: 1.0 / np.sqrt((b - a).sum() ** 2 + c ** 2)
 
 def exponential(sigma):
-    def kernel(a, b):
-        return np.exp((b - a).sum() / (-2 * sigma * sigma))
-    return kernel
+    return lambda a, b: np.exp((b - a).sum() / (-2 * sigma * sigma))
 
 def laplacian(sigma):
-    def kernel(a, b):
-        return np.exp((b - a).sum() / -sigma)
-    return kernel
+    return lambda a, b: np.exp((b - a).sum() / -sigma)
 
 def sigmoid(alpha=1.0, c=0.0):
-    def kernel(a, b):
-        return np.tanh(alpha * np.dot(a, b) + c)
-    return kernel
+    return lambda a, b: np.tanh(alpha * np.dot(a, b) + c)
 
 def polynomial(d, alpha=1.0, c=0):
-    def kernel(a, b):
-        return (alpha * np.dot(a, b) + c) ** d
+    return lambda a, b: (alpha * np.dot(a, b) + c) ** d
