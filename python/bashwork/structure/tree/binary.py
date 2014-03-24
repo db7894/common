@@ -6,17 +6,21 @@ class BinaryNode(object):
     based on the current value of the node.
     '''
 
-    def __init__(self, **kwargs):
+    def __init__(self, value=None, left=None, right=None, **kwargs):
         ''' Initializes a new instance of the class.
 
         :param value: The value of this node
         :param left: The left child of this node (default None)
         :param right: The right child of this node (default None)
         '''
-        self.value = kwargs.get('value', None)
-        self.left  = kwargs.get('left',  None)
-        self.right = kwargs.get('right', None)
+        self.value = value
+        self.left  = left
+        self.right = right
+
         self.attrs = kwargs
+        self.attrs['value'] = self.value
+        self.attrs['left']  = self.left
+        self.attrs['right'] = self.right
 
     def __getitem__(self, k):    return self.attrs.get(k, None)
     def __setitem__(self, k, v): self.attrs[k] = v
@@ -37,7 +41,7 @@ class BinaryNode(object):
 
         :returns: True if a leaf node, False otherwise
         '''
-        return self.right or self.left
+        return not bool(self.right or self.left)
 
     def height(self):
         ''' Given a tree, return its current max height
@@ -139,7 +143,7 @@ class BinaryNode(object):
         '''
         if not xs: return None
         m = len(xs) // 2
-        tree       = klass(xs[m])
+        tree       = klass(value=xs[m])
         tree.left  = klass.create(xs[:m])
         tree.right = klass.create(xs[m+1:])
         return tree
@@ -155,7 +159,7 @@ class BinaryNode(object):
         '''
         if not xs: return None
         m = len(xs) // 2
-        tree       = klass(xs[m])
+        tree       = klass(value=xs[m])
         tree.prev  = prev
         tree.left  = klass.create_with_parents(xs[:m], tree)
         tree.right = klass.create_with_parents(xs[m+1:], tree)
@@ -506,6 +510,22 @@ def find_path(tree, node):
         path.insert(0, current)
         current = trail.get(current, None)
     return path
+
+def get_all_paths(tree):
+    ''' Given a tree, return all the paths from
+    the supplied root node to a leaf.
+
+    :param tree: The tree to search for a path
+    :returns: A list of paths from the root of the tree to the leafs
+    '''
+    queue = [[tree]]
+    while queue:
+        path = queue.pop()
+        head = path[-1]
+        if not head.is_leaf_node():
+            if head.left:  queue.insert(0, path + [head.left ])
+            if head.right: queue.insert(0, path + [head.right])
+        else: yield path
 
 def find_common_ancestor(tree, nodea, nodeb):
     ''' Given two trees, check if one is a subtree of
