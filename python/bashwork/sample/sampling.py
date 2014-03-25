@@ -53,3 +53,18 @@ def random(coll, size):
         if choice < size:
             sample[choice] = element
     return sample
+
+def largest_difference(stream):
+    ''' Given a stream of numbers, return the maximum
+    difference between some entry at n, and another entry
+    at n + m.
+
+    :param stream: A stream of values to find the difference of
+    :returns: The maximum difference in the stream
+    '''
+    minimum = maxint
+    result  = -1
+    for entry in stream:
+        minimum = min(minimum, entry)
+        result  = max(result, entry - minimum)
+    return result

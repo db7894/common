@@ -23,6 +23,10 @@ class SamplingTest(unittest.TestCase):
         expect = [0, 6, 5]
         self.assertEquals(actual, expect)
 
+    def test_largest_difference(self):
+        self.assertEquals(8, largest_difference([4,5,6,1,4,7,9]))
+        self.assertEquals(0, largest_difference([5,4,3,2,1]))
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#
