@@ -1,80 +1,55 @@
 import heapq
-from collections import defaultdict
+from bashwork.generators import gen_file_stream
 
-class Op(object):
-    Insert = 1
-    Remove = 2
+class HeapedStreams(object):
 
-class Skyline(object):
+    @classmethod
+    def create(klass, **kwargs):
+        ''' Initialize the HeapedStreams class
 
-    def __init__(self, buildings):
-        ''' Initialize a new instance of the problem
-
-        :param buildings: The buildings to solve with
+        :param streams: The streams to merge
+        :param files: The files to merge
+        :returns: An initialized heaped stream collection
         '''
-        self.buildings = buildings
+        streams = kwargs.get('streams', []) + kwargs.get('files', [])
+        streams = { i: gen_file_stream(s) for i, s in enumerate(streams) }
+        heap = klass(streams=streams)
+        heap.repopulate()
+        return heap
 
-    def get_events(self):
-        ''' Get a stream of events to use with solving
-        the problem: `event = (x, op, y)`
+    def __init__(self, streams):
+        ''' Initialize a new instance of the HeapedStreams class.
 
-        This allows the priority to the following:
-
-        1. left events before right events
-        2. insert events before remove events
-        3. finally return the max height
+        :param streams: The collection of streams to merge
         '''
-        heap = []
-        for l, h, r in self.buildings:
-            heapq.heappush(heap, (l, Op.Insert, h))
-            heapq.heappush(heap, (r, Op.Remove, h))
-        while heap: yield heapq.heappop(heap)
+        self.streams = streams
+        self.heap    = []
 
-    def solve(self):
-        ''' Generate the solution to the problem
-        using a vertical sweep line.
+    def repopulate(self, stream=None):
+        ''' This will make sure all the heaps have at least
+        one item available to pull from
         '''
-        results, current, tree = [], 0, []
-        for x, op, h in self.get_events():
-            if   op == Op.Insert: tree.append(h)
-            elif op == Op.Remove: tree.remove(h)
-            max_height = max(tree or [0])
-            if current != max_height:
-                current = max_height
-                results.append((x, max_height))
-        return results
+        if stream == None: streams = self.streams.items()
+        elif stream not in self.streams: return
+        else: streams = [(stream, self.streams[stream])]
 
-class SkylineBrute(object):
+        for idx, stream in streams:
+            try:
+                heapq.heappush(self.heap, (stream.next(), idx))
+            except StopIteration: del self.streams[idx]
+   
+    def next(self):
+        if not len(self.heap):
+            raise StopIteration()
 
-    def __init__(self, buildings):
-        ''' Initialize a new instance of the problem
+        entry, stream = heapq.heappop(self.heap)
+        self.repopulate(stream)
+        return entry
 
-        :param buildings: The buildings to solve with
-        '''
-        self.buildings = buildings
+    def __iter__(self): return self
 
-    def get_heights_map(self):
-        heights = defaultdict(int)
-        for l, h, r in self.buildings:
-            for v in range(l, r):
-                heights[v] = max(heights[v], h)
-        return heights
-
-    def solve(self):
-        heights = self.get_heights_map()
-        current = 0
-        results = []
-        ml, mr  = min(heights), max(heights)
-        for x in range(ml, mr + 1):
-            max_height = heights[x]
-            if current != max_height:
-                current = max_height
-                results.append((x, max_height))
-        results.append((mr + 1, 0))
-        return results
-
-               
-solutions = [(1,11), (3,13), (9,0), (12,7), (16,3), (19,18), (22,3), (23,13), (29,0)]
-buildings = [[1,11,5],[2,6,7],[3,13,9],[12,7,16],[14,3,25],[19,18,22],[23,13,29],[24,4,28]]
-assert solutions == Skyline(buildings).solve()
-assert solutions == SkylineBrute(buildings).solve()
+if __name__ == "__main__":
+    files = ['a', 'b', 'c', 'd']
+    heap  = HeapedStreams.create(files=files)
+    for entry in heap:
+        print entry
