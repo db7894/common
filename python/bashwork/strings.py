@@ -65,6 +65,29 @@ def ransom_note(note, magazines):
         except StopIteration: return False
     return True
 
+def str_to_int(string):
+    '''
+    >>> str_to_int('12345')
+    12345
+    '''
+    curr, sign = 0, -1 if string[0] == '-' else 1
+    if string[0] == '-': string.pop(0)
+
+    for c in string:
+        curr = (curr * 10) + (ord(c) - 48)
+    return sign * curr
+
+def int_to_str(value):
+    '''
+    >>> int_to_str(12345)
+    '12345'
+    '''
+    string = []
+    while value:
+        string.insert(0, chr(48 + value % 10))
+        value /= 10
+    if value < 0: string.insert(0, '-')
+    return ''.join(string)
 
 if __name__ == "__main__":
     import doctest

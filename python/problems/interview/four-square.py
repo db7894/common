@@ -3,6 +3,10 @@
 '''
 Given a matrix of arrows, try to find a 2x2 box containing
 one of up, down, left, and right in any order.
+
+.. todo::
+   - use xor hash to compare 2x2 with M 2x2 boxes in matrix
+   - new hash is xor (n,1, n,2) and xor (n-1,1 n-1,2)
 '''
 
 class Direction(object):
@@ -104,6 +108,7 @@ MOVES  = {
     Direction.Right : '→',
     Direction.Down  : '↓',
 }
+#HASHED = reduce(lambda t, c: t ^ ord(c), MOVES.values(), 0)
 MATRIX = build_matrix()
 X, Y   = len(MATRIX) - 1, len(MATRIX[0]) - 1
 
