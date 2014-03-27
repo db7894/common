@@ -44,7 +44,19 @@ class ExcelEncoder(Encoder):
 class EllisGammaEncoder(Encoder):
 
     def encode(self, value):
-        pass
+        string = bin(value)[2:]
+        return ('0' * (len(string) - 1)) + string
 
     def decode(self, string):
-        pass
+        v = string.find('1')
+        d = string[v:v + v + 1]
+        return int(d, 2)
+
+    def decode_stream(self, string):
+        idx, values = 0, []
+        while idx < len(string):
+            v = string.find('1', idx)
+            d = string[v:v + (v - idx) + 1]
+            values.append(int(d, 2))
+            idx += len(d) * 2 - 1
+        return values

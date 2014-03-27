@@ -14,17 +14,16 @@ def find_arbitrages(exchanges):
     :param exchanges: The exchange graph
     :returns: A generator of the available arbitrages
     '''
-    queue = [[(1.0, exchange)] for exchange in exchanges]
+    queue = [(1.0, ['U'])]
     while queue:
-        current = queue.pop()
-        rate, path = current[-1]
-        if len(path) > 1 and path[0] == path[-1]:
-            if rate > 1.0: yield rate, path
+        rate, path = queue.pop()
+        if path[-1] == path[0] and rate > 1.0:
+            yield rate, path
         else:
             for name, exch in exchanges[path[-1]].items():
-                queue.insert(0, current + [(rate * exch, name)])
+                queue.insert(0, (rate * exch, path + [name]))
 
-def print_arbitrages(exchanges, arbitrage):
+def print_arbitrage(exchanges, arbitrage):
     ''' Given a team name, print it using the
     correct spacing.
 
@@ -34,9 +33,9 @@ def print_arbitrages(exchanges, arbitrage):
     prev = arbitrage.pop(0)
     path = [(rate, prev)]
     for curr in arbitrage:
-        prev, rate = curr, rate * exchaanges[prev][curr]
+        prev, rate = curr, rate * exchanges[prev][curr]
         path.append((prev, rate))
-    print '→'.join("{}:{}".format(exch, rate) for exch, rate in path)
+    print ' → '.join("{}:{}".format(exch, rate) for exch, rate in path)
 
 #------------------------------------------------------------
 # constants
