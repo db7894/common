@@ -13,16 +13,6 @@ import numpy as np
 import pandas as pd
 from bashwork.statistics.utilities import *
 
-class TruthTable(object):
-    '''
-    '''
-
-    def __init__(self, table):
-        self.table = table
-
-    def __str__(self):
-        pass # print out table
-
 class Distribution(object):
     ''' Models a probability distribution
     of a given set of variables::
