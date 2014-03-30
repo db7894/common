@@ -1,58 +1,30 @@
+'''
+.. todo:: just inline the various pieces
+'''
 from math import log
 from collections import Counter
 
-#------------------------------------------------------------#
-# classes
-#------------------------------------------------------------#
-
-class Entry(object):
-    ''' Represents a single entry in a model along with
-    its label and values.
-    '''
-
-    def __init__(self, label, values):
-        ''' Initialize a new instance of an Entry class.
-
-        :param label: The label associated with this entry
-        :param values: The values associated with this entry
-        '''
-        self.label  = label
-        self.values = tuple(values)
-
-    def __str__(self):  return self.label
-    def __repr__(self): return self.label
-
-#------------------------------------------------------------#
-# entropy helpers
-#------------------------------------------------------------#
-# A great deal of these operations can be cached to be
-# more performant (as they are recomputed many times). If
-# that is an issue, simply move them into a single function
-# or use a more performant library.
-#------------------------------------------------------------#
-
-def count_groups(dataset, extract=lambda e:e.label):
+def count_groups(labels):
     ''' Given a dataset of entries, count the values
     and return the most common label.
     
-    :param dataset: The dataset to count
-    :param extract: The label extractor
+    :param labels: The labels to count
     :returns: ('max label', counter)
     '''
-    counts = Counter(extract(entry) for entry in dataset)
+    counts = Counter(labels)
     return (counts.most_common(1)[0][0], counts)
 
-def entropy(dataset):
-    ''' Computes the entropy of the dataset::
+def entropy(labels):
+    ''' Computes the entropy of the labels::
 
         sum { -Pr(i) log2 Pr(i) }
 
-    :param dataset: The dataset to calculate the entropy of
-    :returns: The entropy of the dataset
+    :param labels: The labels to calculate the entropy of
+    :returns: The entropy of the labels
     '''
-    c = len(dataset)
-    d = count_groups(dataset)[1]
-    return sum(((-1.0 * v) / c) * log((1.0 * v) / c, 2) for v in d.values())
+    c = len(labels)
+    d = count_groups(labels)[1].values()
+    return sum(((-1.0 * v) / c) * log((1.0 * v) / c, 2) for v in d)
 
 def entropy_split(dataset, field, value):
     ''' Computes the entropy of splitting at the selected
@@ -104,15 +76,3 @@ def best_gain(dataset, fields):
     cache = entropy(dataset)
     gains = (best_value_gain(dataset, field, cache) + (field, ) for field in fields)
     return max(gains) # (gain, value, field)
-
-def check_classifier_accuracy(classifier, dataset):
-    ''' Test the accurracy of the given classifier using
-    the provided testing set.
-   
-    :param classifier: The classifier to evaluate
-    :param dataset: The dataset to evaluate with
-    :returns: The accurracy of the given classifier
-    '''
-    correct = sum(classifier.classify(e) == e.label for e in dataset)
-    return float(correct) / len(dataset)
-
