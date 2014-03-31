@@ -62,14 +62,3 @@ def kmeans(database, k, initialize=random_initialize, terminate=None):
         if terminate(): break;
     return centroids
 
-#------------------------------------------------------------#
-# example run
-#------------------------------------------------------------#
-if __name__ == "__main__":
-    from common import load_arff
-
-    database = list(load_arff("training.arff"))
-    #training = list(load_arff("testing.arff"))
-
-    print "5-means",
-    print kmeans(database, 5)

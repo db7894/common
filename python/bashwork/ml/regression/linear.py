@@ -1,8 +1,6 @@
 import numpy as np
-from bashwork.ml.classification import kernel
-
-class Regression(object):
-    pass
+from bashwork.ml.classify import kernel
+from bashwork.ml.regression import Regression
 
 class LinearRegression(Regression):
 

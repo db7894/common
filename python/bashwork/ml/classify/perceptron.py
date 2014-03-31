@@ -5,7 +5,7 @@
 '''
 import random
 import numpy as np
-from bashwork.ml.classification import kernel
+from bashwork.ml.classify import kernel
 
 class Perceptron(object):
 

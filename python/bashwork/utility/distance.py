@@ -1,8 +1,5 @@
-"""
-A collection of distance functions.
-"""
 		
-def euclidean_distance(left, right):
+def euclidean(left, right):
 	'''
 	@param left The left value to compare
 	@param right The right value to compare
@@ -11,7 +8,7 @@ def euclidean_distance(left, right):
 	total = sum(pow(l - r, 2) for (l,r) in zip(left, right))
 	return pow(total, 0.5)
 	
-def manhattan_distance(left, right):
+def manhattan(left, right):
 	'''
 	@param left The left value to compare
 	@param right The right value to compare
@@ -19,7 +16,7 @@ def manhattan_distance(left, right):
 	'''
 	return sum(abs(l - r) for (l,r) in zip(left, right))
 	
-def chebyshev_distance(left, right):
+def chebyshev(left, right):
 	'''
 	@param left The left value to compare
 	@param right The right value to compare
@@ -27,7 +24,7 @@ def chebyshev_distance(left, right):
 	'''
 	return max(abs(l - r) for (l,r) in zip(left, right))
 
-def minkowski_distance(left, right, p=1):
+def minkowski(left, right, p=1):
 	'''
 	@param left The left value to compare
 	@param right The right value to compare
