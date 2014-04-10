@@ -198,6 +198,30 @@ def dfs_inorder_iter(tree):
             yield node
             node = node.right
 
+def dfs_inorder_iter2(tree):
+    ''' This is roughly what would be needed to implement
+    the inorder in java.
+
+    :param tree: The root tree node to traverse from
+    :returns: An iterator around that tree
+    '''
+    def has_next(stack):
+        return bool(stack)
+
+    def populate(stack, node):
+        stack.append(node)
+        while node.left:
+            node = node.left
+            stack.append(node)
+        return stack
+
+    stack = populate([], tree) 
+    while has_next(stack):
+        node = stack.pop()
+        if node.right:
+            populate(stack, node.right)
+        yield node
+
 def dfs_postorder_iter(tree):
     '''
 
