@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
 quick implementation of k-nearest neighbors
+http://datasciencelab.wordpress.com/2013/12/27/finding-the-k-in-k-means-clustering/
 """
 from operator import add
 from random import randint

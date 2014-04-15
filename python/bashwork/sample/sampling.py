@@ -1,7 +1,7 @@
 import heapq
 from sys import maxint
 from collections import Counter
-from random import randint, seed
+from random import randint, seed, random
 
 def popular_exact(coll, size):
     ''' Given a collection, sample the N most
@@ -16,6 +16,24 @@ def popular_exact(coll, size):
     for elem in coll:
         sample[elem] += 1
     return heapq.nlargest(size, sample, key=lambda el:sample[el])
+
+def reservoir(coll, size):
+    ''' Given a collection, sample the N most
+    common elements in a single pass. This uses
+    reservoir sampling to do this task.
+
+    :param coll: The collection to sample
+    :param size: The number of common elements to sample
+    :returns: A collection of the most common elements
+    '''
+    c, sample = 0, []
+    for elem in coll:
+        c += 1
+        if len(sample) >= size:
+            s = int(random() * c)
+            if s < size: sample[s] = elem
+        else: sample.append(elem)
+    return sample
 
 def popular(coll, size):
     ''' Given a collection, sample the N most
@@ -39,7 +57,7 @@ def popular(coll, size):
             del sample[xcurr]                          # remove the old popular element
     return sample.keys()                               # finally return the N most popular elements
 
-def random(coll, size):
+def random_sample(coll, size):
     ''' Given a collection, randomly sample with
     equal probability N elements.
 

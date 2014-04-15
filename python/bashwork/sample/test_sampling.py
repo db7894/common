@@ -16,10 +16,17 @@ class SamplingTest(unittest.TestCase):
         expect = [2, 3, 4]
         self.assertEquals(actual, expect)
 
-    def test_random(self):
+    def test_reservoir(self):
+        seed(0) # to force same results
+        coll = [1,3,2,4,1,5,3,2,6,7,2,4,3,4]
+        actual = reservoir(coll, 3)
+        expect = [1, 3, 5]
+        self.assertEquals(actual, expect)
+
+    def test_random_sample(self):
         seed(0) # to force same results
         coll = range(0, 10)
-        actual = random(coll, 3)
+        actual = random_sample(coll, 3)
         expect = [0, 6, 5]
         self.assertEquals(actual, expect)
 
