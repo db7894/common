@@ -23,7 +23,7 @@ def find_solutions(wheels):
 # ------------------------------------------------------------
 # constants
 # ------------------------------------------------------------
-WHEELS = [
+WHEELS1 = [
     list('farbes'),
     list('ortsma'),
     list('fiftan'),
@@ -34,6 +34,21 @@ WHEELS = [
     list('githin'),
     list('ipinsh'),
     list('thtter'),
+]
+
+WHEELS2 = [
+    list('thees'),
+    list('surei'),
+    list('mebod'),
+    list('behin'),
+    list('ediss'),
+    list('tysoi'),
+    list('dever'),
+    list('rtuno'),
+    list('yhadm'),
+    list('ppano'),
+    list('ilyfa'),
+    list('hywis'),
 ]
 
 if __name__ == "__main__":

@@ -1,0 +1,680 @@
+#!/bin/zsh
+#------------------------------------------------------------
+# This is simply a wrapper for a number of common operations
+# that are performed again and again for an android project.
+#------------------------------------------------------------
+
+#------------------------------------------------------------
+# constants
+#------------------------------------------------------------
+# Each constant is prefixed with the part of the script it is
+# concerned with.
+#------------------------------------------------------------
+
+typeset -A PROJECTS
+PROJECTS=(keyword ProjectName)
+PROJECTS_LIST=(ProjectName)
+PROJECTS_HOME="<project directory>"
+PROJECTS_MAIN="<the.main.application.point>"
+PROJECTS_PACK="<the.main.application.adk>"
+
+PROJECT_STORAGE="/sdcard"
+PROJECT_DATA="${PROJECT_STORAGE}/Pictures"
+PROJECT_DATABASE="localstate.db"
+PROJECT_DATABASES="/data/data/${PROJECTS_MAIN}/databases"
+PROJECT_SCAN_INTENT="android.intent.action.MEDIA_MOUNTED"
+
+DEVICE_WIFI_PATH="/data/misc/wifi/wpa_supplicant.conf"
+DEVICE_WIFI_NAME="WIFI_NAME"
+DEVICE_WIFI_PASS="WIFI_PASS"
+DEVICE_SYSTRACE_SETUP=0
+
+BUILD_SKIP_TESTS=0
+BUILD_OFFLINE=0
+BUILD_ALWAYS_CLEAN=1
+BUILD_PROGUARD=0
+BUILD_DEBUG=0
+BUILD_INSTALL=1
+
+MAVEN_REPO="<maven repository>"
+MAVEN_GROUP="<maven group>"
+MAVEN_HOST="<maven hostname>"
+
+EXTRA_SCRIPTS="no_existing_scripts"
+EXTRA_PATH="no_extra_path"
+
+SCRIPT_DEBUG=0
+
+#------------------------------------------------------------
+# install tool paths
+#------------------------------------------------------------
+{
+  sdk=`which adb`
+  if [[ $? == 0 ]]; then
+    SDK_HOME=${sdk%/platform-tools*}
+  else
+    SDK_HOME="/Applications/adt-bundle/sdk"
+  fi
+  SDK_ADD_ONS="${SDK_HOME}/add-ons"
+  SDK_BUILD="${SDK_HOME}/platform-tools"
+  SDK_TRACE="${SDK_BUILD}/systrace"
+  SDK_TOOLS="${SDK_HOME}/tools"
+}
+
+#------------------------------------------------------------
+# install extra helper scripts and commands
+#------------------------------------------------------------
+# EXTRA_SCRIPTS
+#   A file or directory of extra scripts to load in this
+#   namespace (say constants)
+#
+# EXTRA_PATH
+#   A directory of extra shell commands to load into this
+#   namespace (say helper python scripts or java commands).
+#------------------------------------------------------------
+if [[ -d ${EXTRA_PATH} ]]; then
+    PATH=${PATH}:${EXTRA_PATH}
+fi
+
+if   [[ -f ${EXTRA_SCRIPTS} ]]; then
+    source ${EXTRA_SCRIPTS}
+elif [[ -d ${EXTRA_SCRIPTS} ]]; then
+    for script in `ls -d -1 ${EXTRA_SCRIPTS}/*`; do
+      source ${script}
+    done
+fi
+
+#------------------------------------------------------------
+# enable / disable debugging output
+#------------------------------------------------------------
+
+if (( ${SCRIPT_DEBUG} == 0 )); then
+    IGNORE_OUTPUT=" > /dev/null 2>&1"
+else
+    IGNORE_OUTPUT=""
+fi
+
+#------------------------------------------------------------
+# application constants
+#------------------------------------------------------------
+
+BOLD_RED_TEXT="\e[1;31m"
+BOLD_YELLOW_TEXT="\e[1;33m"
+BOLD_BLUE_TEXT="\e[1;34m"
+BOLD_GREEN_TEXT="\e[1;32m"
+RESET_TEXT="\e[0m"
+
+#------------------------------------------------------------
+# console utilities
+#------------------------------------------------------------
+# * move_cursor - moves the cursor to the supplied column
+# * success - prints the supplied parameters in green
+# * failure - prints the supplied parameters in red
+# * warning - prints the supplied parameters in blue
+# * command_success - prints the success result message
+# * command_failure - prints the failure result message
+# * command_warning - prints the warning result message
+#------------------------------------------------------------
+
+move_cursor() { echo -en "\e[${1:=60}G" }
+success() { echo -en "${BOLD_GREEN_TEXT}$1${RESET_TEXT}" }
+notice()  { echo -en "${BOLD_BLUE_TEXT}$1${RESET_TEXT}"  }
+warning() { echo -en "${BOLD_YELLOW_TEXT}$1${RESET_TEXT}"  }
+failure() { echo -en "${BOLD_RED_TEXT}$1${RESET_TEXT}"   }
+debug()   { [[ ${SCRIPT_DEBUG} == 1 ]] && echo -en "${BOLD_BLUE_TEXT}$1${RESET_TEXT}\n" }
+
+command_success() { move_cursor && success "[ success ]\n" }
+command_notice()  { move_cursor && notice  "[ notice  ]\n" }
+command_warning() { move_cursor && warning "[ warning ]\n" }
+command_failure() { move_cursor && failure "[ failure ]\n" }
+
+print_command_result() {
+  if (( $? == 0 )); then
+     command_success 
+  else
+     command_failure
+  fi
+}
+
+are_you_sure() {
+    failure "$1 (y/n): "
+    read answer
+
+    [[ "${answer}" == "y" ]] && return 0
+    [[ "${answer}" != "y" ]] && return 1
+}
+
+#------------------------------------------------------------
+# check for neccessary commands in system path
+#------------------------------------------------------------
+# Feel free to remove any of these checks if you don't use
+# that part of the script.
+#------------------------------------------------------------
+check_if_command_exists() {
+  which $1 > /dev/null || {
+    failure "$1 is need to run this script; please install and try again!\n"
+    exit 1
+  }
+}
+
+check_if_command_exists git
+check_if_command_exists sqlite3
+check_if_command_exists python
+check_if_command_exists ${SDK_BUILD}/adb
+check_if_command_exists ${SDK_TOOLS}/traceview
+
+#------------------------------------------------------------
+# device information
+#------------------------------------------------------------
+
+DEVICE_STATE="`${SDK_BUILD}/adb get-state`"
+DEVICE_SERIAL="`${SDK_BUILD}/adb get-serialno`"
+DEVICE_PATH="`${SDK_BUILD}/adb get-devpath`"
+
+device_exists_or_quit() {
+  [[ "${DEVICE_STATE}" == "device" ]] || {
+      failure "android device is not attached, quitting!\n"
+      exit 1
+  }
+}
+
+device_information() {
+  device_exists_or_quit
+  notice "android device [${DEVICE_SERIAL}] attached at [${DEVICE_PATH}]\n"
+}
+
+#------------------------------------------------------------
+# Run the supplied command for a single project alias.
+#   $1 = header message
+#   $2 = command to run
+#   $3 = project to run on
+#------------------------------------------------------------
+for_one_project() {
+  success "running '${2}' on all ${PROJECTS[$3]}:\n"
+  for project in $PROJECTS[${3}]; do
+    pushd .
+    cd ${PROJECTS_HOME}/${project}
+
+    debug "running '${2}' on `pwd`"
+    success "${1}: ${project}..."
+    eval ${2} ${IGNORE_OUTPUT}
+    print_command_result
+
+    popd
+  done
+}
+
+#------------------------------------------------------------
+# Run the supplied command for every project.
+#   $1 = header message
+#   $2 = command to run
+#------------------------------------------------------------
+for_all_projects() {
+  success "running '${2}' on all projects:\n"
+  for project in ${PROJECTS_LIST}; do
+    pushd .
+    cd ${PROJECTS_HOME}/${project}
+
+    debug "running '${2}' on `pwd`"
+    success "${1}: ${project}..."
+    eval ${2} ${IGNORE_OUTPUT}
+    print_command_result
+
+    popd
+  done
+}
+
+#------------------------------------------------------------
+# Run the supplied command for all the projects if no project
+# is specified, otherwise run it for the supplied project alias.
+#   $1 = header message
+#   $2 = command to run
+#   $3 = project to run on (optional)
+#------------------------------------------------------------
+for_one_or_all_projects() {
+  if [[ $# == 3  && $3 != "all" ]]; then
+    for_one_project  $*
+  else
+    for_all_projects $*
+  fi
+}
+
+#------------------------------------------------------------
+# source control functions
+#------------------------------------------------------------
+# * source_update - pulls latest on the supplied branches
+# * source_checkout_debug - checkout the current debug branch
+#------------------------------------------------------------
+
+source_update() {
+  project=$1
+  message="updating project source"
+  operation="git pull"
+  for_one_or_all_projects $message $operation $project
+}
+
+#------------------------------------------------------------
+# build functions
+#------------------------------------------------------------
+
+maven_clean() {
+  project=$1
+  message="cleaning project"
+  operation="mvn clean"
+  for_one_or_all_projects $message $operation $project
+}
+
+maven_build() {
+  project=$1
+  message="building project"
+  operation="mvn"
+  [[ ${BUILD_SKIP_TESTS}   == 1 ]] && operation="${operation} -DskipTests=true"
+  [[ ${BUILD_PROGUARD}     == 1 ]] && operation="${operation} -Pproguard"
+  [[ ${BUILD_OFFLINE}      == 1 ]] && operation="${operation} -o"
+  [[ ${BUILD_DEBUG}        == 1 ]] && operation="${operation} -e"
+  [[ ${BUILD_ALWAYS_CLEAN} == 1 ]] && operation="${operation} clean"
+  [[ ${BUILD_INSTALL}      == 1 ]] && operation="${operation} install"
+  for_one_or_all_projects $message $operation $project
+}
+
+#------------------------------------------------------------
+# Will deploy a new jar to the maven repository
+#  $1 = the jar to deploy
+#------------------------------------------------------------
+maven_deploy_jar() {
+  filename=${1##*/}
+  product=${filename%-*}
+  package=${filename##*.}
+  version=${${filename##*-}%.*}
+
+  success "deploying ${filename} to the nexus...\n"
+  mvn deploy:deploy-file           \
+	  -DgroupId=${MAVEN_GROUP}     \
+	  -DartifactId=${product}      \
+	  -Dversion=${version}         \
+	  -Dpackaging=${package}       \
+	  -Dfile=${filename}           \
+	  -DrepositoryId=${MAVEN_REPO} \
+	  -Durl=${MAVEN_HOST}
+  print_command_result
+}
+
+#------------------------------------------------------------
+# project functions
+#------------------------------------------------------------
+
+project_install() {
+  project=${1:=${PROJECTS_PACK}}
+
+  device_exists_or_quit
+  success "deploying build from '`stat -f "%Sm" ${project}`'..."
+  eval ${SDK_BUILD}/adb -d install -d -r ${project} ${IGNORE_OUTPUT}
+  print_command_result
+}
+
+project_clear_state() {
+  device_exists_or_quit
+  are_you_sure "this will clear all state from the application, continue" && {
+    success "clearing state from the application..."
+    eval ${SDK_BUILD}/adb -d shell pm clear ${PROJECTS_MAIN} ${IGNORE_OUTPUT}
+    print_command_result
+  } || {
+    failure "skipping device clear\n"
+  }
+}
+
+project_uninstall() {
+  device_exists_or_quit
+  are_you_sure "this will restore the stock application, continue" && {
+    success "removing build..."
+    eval ${SDK_BUILD}/adb -d uninstall ${PROJECTS_MAIN} ${IGNORE_OUTPUT}
+    print_command_result
+  } || {
+    failure "skipping application uninstall\n"
+  }
+}
+
+project_stop() {
+  device_exists_or_quit
+  success "stopping main application..."
+  eval ${SDK_BUILD}/adb -d shell am force-stop ${PROJECTS_MAIN} ${IGNORE_OUTPUT}
+  print_command_result
+}
+
+project_get_pid() {
+  device_exists_or_quit
+  pid=`${SDK_BUILD}/adb shell ps | grep ${PROJECTS_MAIN} | cut -d' ' -f3`
+  if [[ "${pid}" != "" ]]; then
+    notice "the current pid of the main application is [${pid}]\n"
+  else
+    failure "${PROJECTS_MAIN} is not currently running\n"
+  fi
+}
+
+#------------------------------------------------------------
+# This downloads the supplied database from the main
+# application and opens it up in sqlite.
+#  $1 = The database to download
+#------------------------------------------------------------
+project_get_database() {
+
+  input=${1:=${PROJECT_DATABASE}}
+  output=${2:=$input}
+
+  device_exists_or_quit
+  success "grabbing project application database: ${output}..."
+  for file in `${SDK_BUILD}/adb shell "ls ${PROJECT_DATABASES}/*${input}" | tr '\r' ' '`; do
+    debug "downloading '${file}' to ${output}"
+    eval ${SDK_BUILD}/adb pull ${file} ${output} ${IGNORE_OUTPUT}
+    break # only want the latest
+  done
+  print_command_result
+
+  sqlite3 -line ${output} ".tables"
+  sqlite3 ${output}
+}
+
+#------------------------------------------------------------
+# This downloads all the existing databases from the main
+# application and opens it up in sqlite.
+#  $1 = The output directory to save to (databases)
+#------------------------------------------------------------
+project_get_all_databases() {
+
+  output=${1:=databases}
+
+  device_exists_or_quit
+  success "grabbing all project application databases to: ${output}..."
+  eval ${SDK_BUILD}/adb pull ${PROJECT_DATABASES} ${output} ${IGNORE_OUTPUT}
+  print_command_result
+
+  rm -r ${output}/*-journal
+  for database in `ls ${output}/*.db`; do
+      notice "\nschema for ${database}:\n"
+      sqlite3 -line ${database} ".tables"
+  done
+}
+
+#------------------------------------------------------------
+# Get a screenshot of the running android device.
+#   $1 = the output name of the screenshot (screenshot.png)
+#------------------------------------------------------------
+android_get_screenshot() {
+
+  output=${1:=screenshot.png}
+
+  device_exists_or_quit
+  success "grabbing android screenshot..."
+  eval ${SDK_BUILD}/adb -d shell screencap -p ${PROJECT_STORAGE}/${output} ${IGNORE_OUTPUT}
+  eval ${SDK_BUILD}/adb -d pull ${PROJECT_STORAGE}/${output} ${IGNORE_OUTPUT}
+  eval ${SDK_BUILD}/adb -d shell rm ${PROJECT_STORAGE}/${output} ${IGNORE_OUTPUT}
+  print_command_result
+}
+
+#------------------------------------------------------------
+# Get the tracelog of the running android application.
+#   $1 = the input name of the trace log (project.trace)
+#   $1 = the output name of the trace log (project.trace)
+#------------------------------------------------------------
+android_get_tracelog() {
+
+  input=${1:=project.trace}
+  output=${2:=$input}
+
+  device_exists_or_quit
+  success "grabbing android tracelog..."
+  eval ${SDK_BUILD}/adb -d pull ${PROJECT_STORAGE}/${input} ${output} ${IGNORE_OUTPUT}
+  eval ${SDK_BUILD}/adb -d shell rm ${PROJECT_STORAGE}/${input} ${IGNORE_OUTPUT}
+  print_command_result
+  ${SDK_TOOLS}/traceview ${output}
+  #${SDK_BUILD}dmtracedump -h -g ${output}.html ${output}
+}
+
+#------------------------------------------------------------
+# Run a systrace and open the final report (make sure to open
+# this in chrome)
+#   $1 = the output name of the trace log (project-trace.html)
+#------------------------------------------------------------
+android_get_systrace() {
+
+  output=${1:="`pwd`/project-trace.html"}
+  tags="gfx,view,wm,am,input"
+  controls="--disk --time=10 -f -w -i -o ${output}"
+
+  device_exists_or_quit
+  pushd .
+  [[ ${DEVICE_SYSTRACE_SETUP} == 1 ]] && {
+    success "setting systrace settings..."
+    eval python ${SDK_TRACE}/systrace.py --set-tags ${tags} ${IGNORE_OUTPUT}
+    eval ${SDK_BUILD}/adb shell stop  ${IGNORE_OUTPUT}
+    eval ${SDK_BUILD}/adb shell start ${IGNORE_OUTPUT}
+    print_command_result
+
+    # setup any extra debug properties here
+    eval ${SDK_BUILD}/adb shell setprop libc.debug.malloc 1 ${IGNORE_OUTPUT}
+  }
+
+  are_you_sure "are you ready to begin tracing" && {
+    success "grabbing android systrace..."
+    eval python ${SDK_TRACE}/systrace.py ${controls} ${IGNORE_OUTPUT}
+    print_command_result
+    open ${output}
+    project_get_pid
+  }
+  popd
+}
+
+#------------------------------------------------------------
+# Push all the files from the source directory to the
+# destination directory.
+#   $1 = the source directory (.)
+#   $2 = the destination directory (/sdcard/Pictures)
+#------------------------------------------------------------
+android_load_files() {
+
+  input=${1:=`pwd`}
+  output=${2:=${PROJECT_DATA}}
+
+  device_exists_or_quit
+  # short circuit for database file(s)
+  if [[ ${input} == *.db ]]; then
+    output=${2:=${PROJECT_DATABASES}}
+    success "side loading the supplied database..."
+    eval ${SDK_BUILD}/adb push ${input} ${output} ${IGNORE_OUTPUT}
+    print_command_result
+    exit 1
+  fi
+
+  # main path for side loading image(s)
+  success "side loading the supplied directory of files...\n"
+  for file in `ls -1 ${input}/*`; do
+    success "pushing ${file}..."
+    eval ${SDK_BUILD}/adb push ${file} ${output} ${IGNORE_OUTPUT}
+    print_command_result
+  done
+
+  ${SDK_BUILD}/adb shell am broadcast -a ${PROJECT_SCAN_INTENT} -d file://mnt/sdcard
+  success "done!\n"
+}
+
+#------------------------------------------------------------
+# Runs android monkey on the supplied application
+#   $1 = the number of iterations to run
+#------------------------------------------------------------
+android_monkey() {
+
+  count=${1:=500}
+
+  device_exists_or_quit
+  success "starting android monkey for ${PROJECTS_MAIN}...\n"
+  ${SDK_BUILD}/adb shell monkey -p ${PROJECTS_MAIN} -v ${count}
+  print_command_result
+}
+
+#------------------------------------------------------------
+# Searches the android developer documentation for the
+# supplied query.
+#   $1 = the query to search for an answer
+#------------------------------------------------------------
+android_lookup_documentation() {
+  query=$*
+  success "searching documents for ${query}..."
+  open "http://developer.android.com/index.html#q=${query}"
+  print_command_result
+}
+
+#------------------------------------------------------------
+# Restarts the attached android device
+#------------------------------------------------------------
+android_restart_device() {
+
+  device_exists_or_quit
+  success "restarting the attached device..."
+  eval ${SDK_BUILD}/adb reboot ${IGNORE_OUTPUT}
+  print_command_result
+}
+
+#------------------------------------------------------------
+# Shuts down the attached android device
+#------------------------------------------------------------
+android_shutdown_device() {
+
+  device_exists_or_quit
+  success "shutting down the attached device..."
+  eval ${SDK_BUILD}/adb shell reboot -p ${IGNORE_OUTPUT}
+  print_command_result
+}
+
+#------------------------------------------------------------
+# Starts up a shell to the android device
+#------------------------------------------------------------
+android_device_shell() {
+
+  operation=$*
+
+  device_exists_or_quit
+  success "launching android shell to device...\n"
+  ${SDK_BUILD}/adb shell ${operation}
+  print_command_result
+}
+
+#------------------------------------------------------------
+# Will setup an initially flashed device to connect to wifi.
+#------------------------------------------------------------
+android_device_setup() {
+
+  password=$(cat <<EOF
+network={
+    ssid=\"${DEVICE_WIFI_NAME}\"
+    psk=\"${DEVICE_WIFI_PASS}\"
+    key_mgmt=WPA-PSK
+    priority=1
+}
+EOF)
+
+  success "setting up the android device..."
+  ${SDK_BUILD}/adb shell "echo \"${password}\" >> ${DEVICE_WIFI_PATH}"
+  ${SDK_BUILD}/adb shell "chown wifi:wifi ${DEVICE_WIFI_PATH}"
+  ${SDK_BUILD}/adb shell "svc wifi disable"
+  ${SDK_BUILD}/adb shell "svc wifi enable"
+  print_command_result
+}
+
+#------------------------------------------------------------
+# Prints the help usage of the script
+#------------------------------------------------------------
+print_script_help() {
+  notice "Usage: $1 <command:help> <options:default>\n"
+  notice " build <${(k)PROJECTS}:all> `move_cursor 50` - builds the project (or all)\n"
+  notice " clean <${(k)PROJECTS}:all> `move_cursor 50` - cleans the build for the project (or all)\n"
+  notice " clear `move_cursor 50` - clears all the data from the currently installed android application\n"
+  notice " db|database <output:${PROJECT_DATABASE}> `move_cursor 50` - downloads and drops into the current main database\n"
+  notice " dbs|databases <output:database> `move_cursor 50` - get all the current databases from the device\n"
+  notice " deploy | install <apk:built apk> `move_cursor 50` - install the main application\n"
+  notice " info `move_cursor 50` - prints the device information\n"
+  notice " kill | stop `move_cursor 50` - stops the running main application\n"
+  notice " load <source> <destination:${PROJECT_DATA}> `move_cursor 50` - loads the files from <directory> to <output>\n"
+  notice " lookup <query> `move_cursor 50` - opens a web browser to the supplied query topic\n"
+  notice " metrics <enable,disable:enable> `move_cursor 50` - turns on or off the local metrics debugging\n"
+  notice " monkey <count:500> `move_cursor 50` - runs monkey on the application <count> times\n"
+  notice " package <jar> `move_cursor 50` - add the supplied file to the maven repository\n"
+  notice " repl `move_cursor 50` - starts the command repl to save you some keystrokes\n"
+  notice " screenshot <output:screenshot.png> `move_cursor 50` - saves a screenshot of the running android device\n"
+  notice " setup `move_cursor 50` - setup a newly flashed android device (only wifi for now)\n"
+  notice " shell <operation:none> `move_cursor 50` - starts a shell to the android device\n"
+  notice " shutdown `move_cursor 50` - shuts down the android device\n"
+  notice " systrace <output:project.trace> `move_cursor 50` - runs an android systrace\n"
+  notice " trace <tracefile:project.trace>`move_cursor 50` - pulls and processes the last run trace\n"
+  notice " restart `move_cursor 50` - restarts the android device\n"
+  notice " undeploy | uninstall `move_cursor 50` - uninstall the main application\n"
+  notice " update <${(k)PROJECTS}:all> `move_cursor 50` - updates the sourcecode for the project (or all)\n"
+}
+
+#------------------------------------------------------------
+# script methods
+#------------------------------------------------------------
+
+script_handle_command() {
+
+  script_command=$1
+  script_arguments=$*[2,-1]
+  
+  case "${script_command}" in
+    deploy|install)     project_install ${script_arguments} ;;
+    undeploy|uninstall) project_uninstall ;;
+    kill|stop)          project_stop ;;
+    db|database)        project_get_database ${script_arguments} ;;
+    dbs|databases)      project_get_all_databases ${script_arguments} ;;
+    clear)              project_clear_state  ;;
+    build)              maven_build ${script_arguments} ;;
+    clean)              maven_clean ${script_arguments} ;;
+    package)            maven_deploy_jar ${script_arguments} ;;
+    update)             source_update ${script_arguments} ;;
+    trace)              android_get_tracelog ${script_arguments} ;;
+    systrace)           android_get_systrace ${script_arguments} ;;
+    load)               android_load_files ${script_arguments} ;;
+    monkey)             android_monkey ${script_arguments} ;;
+    screenshot)         android_get_screenshot ${script_arguments} ;;
+    restart)            android_restart_device ;;
+    shutdown)           android_shutdown_device ;;
+    shell)              android_device_shell ${script_arguments} ;;
+    setup)              android_device_setup ;;
+    lookup)             android_lookup_documentation ${script_arguments} ;;
+    repl)               script_handle_repl ;;
+    quit|exit)          script_exit_repl   ;;
+    info)               device_information ;;
+    *)                  print_script_help ${script_name} ;;
+  esac
+}
+
+#------------------------------------------------------------
+# Starts the read/eval/print loop so you only have to type
+# commands instead of typing the script over and over
+#------------------------------------------------------------
+script_handle_repl() {
+
+  success "staring repl, use <exit|quit> to exit\n"
+  while read "?>> " input; do
+      script_handle_command ${input}
+  done
+}
+
+script_exit_repl() {
+  success "leaving the repl\n"
+  exit 1
+}
+
+
+#------------------------------------------------------------
+# main launcher
+#------------------------------------------------------------
+script_count=$#
+script_name=$0
+
+if (( ${script_count} < 1 )); then
+  print_script_help ${script_name}
+  exit 1
+fi
+
+script_handle_command $*
+exit 0

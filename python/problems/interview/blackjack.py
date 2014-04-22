@@ -94,6 +94,7 @@ def find_card_hands(cards):
 #------------------------------------------------------------
 HAND = [11,2,3,4,10]
 HAND = [2,10,3,8,11]
+HAND = [11,3,7,6,2]
 
 if __name__ == "__main__":
     for hand in find_card_hands(HAND):
