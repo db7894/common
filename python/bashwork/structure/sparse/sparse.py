@@ -1,7 +1,26 @@
+'''
+Sparse datastructures are generally of two camps:
+
+1. those that support efficient modification
+2. those that support efficient operations
+
+The common methods of building / creating sparse structures are:
+
+* dictionary of keys (DOK)
+* list of lists (LIL)
+* coordinate list (COO)
+
+When the sparse structures need to be operated on, the
+following are better representations:
+
+* compresses sparse row (CSR)
+* compresses sparse column (CSC)
+ 
+'''
 import math
 from bisect import bisect_left
 
-class SparseArray(object):
+class SparseVector(object):
     '''
     '''
 
@@ -37,6 +56,29 @@ class SparseArray(object):
 
     def iter_sparse(self):
         return zip(self.index, self.values)
+
+class SparseMatrix(object):
+    '''
+    .. todo:: complete this
+    '''
+
+    def __init__(self, default=None):
+        '''
+        :param default: The default value to use for missing keys
+        '''
+        self.values   = []
+        self.idx_rows = []
+        self.idx_cows = []
+        self.default = default
+
+    def __setitem__(self, key, value):
+        pass
+
+    def __getitem__(self, key):
+        pass
+
+    def __iter__(self):
+        pass
 
 
 def distance(this, that):

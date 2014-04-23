@@ -485,15 +485,26 @@ android_load_files() {
     exit 1
   fi
 
-  # main path for side loading image(s)
-  success "side loading the supplied directory of files...\n"
-  for file in `ls -1 ${input}/*`; do
-    success "pushing ${file}..."
-    eval ${SDK_BUILD}/adb push ${file} ${output} ${IGNORE_OUTPUT}
+  if [[ ${input} == *.* ]]; then
+    # short circuit for single file
+    success "side loading the supplied file..."
+    eval ${SDK_BUILD}/adb push ${input} ${output} ${IGNORE_OUTPUT}
     print_command_result
-  done
+  else
+    # main path for side loading image(s)
+    success "side loading the supplied directory of files...\n"
+    for file in `ls -1 ${input}/*`; do
+      success "pushing ${file}..."
+      eval ${SDK_BUILD}/adb push ${file} ${output} ${IGNORE_OUTPUT}
+      print_command_result
+    done
+  fi
 
-  ${SDK_BUILD}/adb shell am broadcast -a ${PROJECT_SCAN_INTENT} -d file://mnt/sdcard
+  if [[ "${PROJECT_SCAN_INTENT}" != "" ]]; then
+    # if we need to issue an intent for the application to see the
+    # new files, do it now.
+    eval ${SDK_BUILD}/adb shell am broadcast -a ${PROJECT_SCAN_INTENT} -d file://mnt/sdcard ${IGNORE_OUTPUT}
+  fi
   success "done!\n"
 }
 
