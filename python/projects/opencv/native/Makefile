@@ -6,7 +6,7 @@ OBJECTS  = $(SOURCES:%.cc=%)
 
 CC     = g++
 CXX    = g++
-CFLAGS = `pkg-config --cflags opencv`
+CFLAGS = `pkg-config --cflags opencv` -I /usr/local/include/opencv2
 LIBS   = `pkg-config --libs opencv`
 
 all: $(OBJECTS)

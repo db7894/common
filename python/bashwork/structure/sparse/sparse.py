@@ -15,7 +15,7 @@ following are better representations:
 
 * compresses sparse row (CSR)
 * compresses sparse column (CSC)
- 
+* Yale format
 '''
 import math
 from bisect import bisect_left
