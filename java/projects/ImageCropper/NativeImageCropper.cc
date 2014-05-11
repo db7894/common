@@ -16,7 +16,7 @@ namespace {
     static const int max_edge_threshold   = 100;
     static const int edge_kernel_size     = 3;
     static cv::Scalar low_color_threshold = cv::Scalar(105, 100, 100);
-    static cv::Scalar max_color_threshold = cv::Scalar(115, 255, 255);
+    static cv::Scalar max_color_threshold = cv::Scalar(125, 255, 255);
     static cv::Size kernel_size           = cv::Size(5, 5);
     static cv::Mat  morphology_kernel     = cv::getStructuringElement(cv::MORPH_RECT, kernel_size);
 }

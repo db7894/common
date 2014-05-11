@@ -1,6 +1,37 @@
 import cv2
 import numpy as np
 
+#------------------------------------------------------------
+# Color Spaces
+#------------------------------------------------------------
+# Opencv uses the following ranges for HSV:
+# Hue = [0..179]
+# Sat = [0..255]
+# Val = [0..255]
+#------------------------------------------------------------
+def print_all_color_flags():
+    ''' This will print all the available color conversion
+    flags that can be used with::
+    
+        cv2.cvtColor(image, flag)
+    '''
+    flags = [f for f in dir(cv2) if f.startswith('COLOR')]
+    print flags
+
+def convert_color(color):
+    ''' Given a BGR color, print the correct HSV value
+    to use for that color. For tracking, simply take that
+    value and use the following ranges:
+
+    * (H-10, 100, 100) # lower value
+    * (H+10, 255, 255) # upper value
+    '''
+    hsv = cv2.cvtColor(color, cv2.COLOR_BGR2HSV)
+    print "{} -> {}".format(color, hsv)
+
+#------------------------------------------------------------
+# Image Tracker
+#------------------------------------------------------------
 capture = cv2.VideoCapture(0)
 while True:
 

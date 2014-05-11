@@ -51,15 +51,45 @@ plt.show()
 im_blur = cv2.medianBlur(im_base, 5)
 _, th1 = cv2.threshold(im_blur, 127, 255, cv2.THRESH_BINARY)
 th2 = cv2.adaptiveThreshold(im_blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
-th3 = cv2.adaptiveThreshold(im_blue, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+th3 = cv2.adaptiveThreshold(im_blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
 titles = ['Original Image', 'Global Thresholding (v = 127)', 'Adaptive Mean Thresholding', 'Adaptive Gaussian Thresholding']
 images = [im_base, th1, th2, th3]
 
 for i in xrange(4):
-    plt.subplot(2, 2, i+1),
+    plt.subplot(2, 2, i + 1),
     plt.imshow(images[i], 'gray')
     plt.title(titles[i])
     plt.xticks([])
     plt.yticks([])
+plt.show()
+
+#------------------------------------------------------------
+# Otsu's Method
+#------------------------------------------------------------
+# This is useful when we have a bimodal image whose histogram
+# has two peaks. This will find a value in the middle of the
+# two that will be useful in thresholding.
+#------------------------------------------------------------
+ret1, th1 = cv2.threshold(im_base, 127, 255, cv2.THRESH_BINARY)                  # global thresholding
+ret2, th2 = cv2.threshold(im_base, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)  # Otsu's thresholding
+im_blur = cv2.GaussianBlur(im_base, (5, 5), 0)                                   # Gaussian filtering (remove noise)
+ret3, th3 = cv2.threshold(im_blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)  # Otsu's thresholding
+
+images = [im_base, 0, th1, im_base, 0, th2, im_blur, 0, th3]
+titles = [
+    'Original Noisy Image', 'Histogram','Global Thresholding (v=127)',
+    'Original Noisy Image', 'Histogram', "Otsu's Thresholding",
+    'Gaussian filtered Image', 'Histogram', "Otsu's Thresholding"
+]
+
+for i in xrange(3):
+    plt.subplot(3, 3, i * 3 + 1), plt.imshow(images[i * 3], 'gray')
+    plt.title(titles[i * 3]), plt.xticks([]), plt.yticks([])
+
+    plt.subplot(3, 3, i * 3 + 2), plt.hist(images[i * 3].ravel(), 256)
+    plt.title(titles[i * 3 + 1]), plt.xticks([]), plt.yticks([])
+
+    plt.subplot(3, 3, i * 3 + 3), plt.imshow(images[i * 3 + 2], 'gray')
+    plt.title(titles[i * 3 + 2]), plt.xticks([]), plt.yticks([])
 plt.show()
