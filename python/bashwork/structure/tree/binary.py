@@ -1,3 +1,4 @@
+import sys
 import json
 
 class BinaryNode(object):
@@ -670,3 +671,16 @@ def invert_tree(tree):
         node.left, node.right = left, right
         return roots
     return invert(tree, None, None)
+
+def max_subtree(node):
+    ''' Given a tree, return the maximum sub-tree
+    of the form (value, root).
+
+    :param node: The tree to find the maximum sub-tree of
+    :returns: The result of (value, root) 
+    '''
+    if node == None: return (-sys.maxint, None)
+    if node.left == None and node.right == None:
+        return (node.value, node)
+    l, r = max_subtree(node.left), max_subtree(node.right)
+    return max(l, r, (l.value + r.value + node.value, node))
