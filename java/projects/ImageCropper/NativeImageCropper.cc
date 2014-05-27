@@ -89,8 +89,12 @@ void process_image(const fs::path& file) {
     if (image.data) {
         cv::Mat mask = bw::get_region_mask(image);
         cv::Rect rectangle = bw::get_largest_rectangle(mask);
-        display_image(file, image, rectangle);
-        std::cout << file << " : " << rectangle << std::endl;
+        if (rectangle.area() > 0) {
+            //display_image(file, image, rectangle);
+            std::cout << file << " : " << rectangle << std::endl;
+        } else {
+            std::cout << file << " : " << "no rectangle found" << std::endl;
+        }
     } else {
         std::cout << "Invalid image supplied: " << file << std::endl;
     }
@@ -118,7 +122,7 @@ int main(int argc, char** argv) {
         } else {
             process_image(root);
         }
-        cv::waitKey(0);
+        //cv::waitKey(0);
     } else {
         std::cout << "File or path does not exist" << std::endl;
         return -1;
