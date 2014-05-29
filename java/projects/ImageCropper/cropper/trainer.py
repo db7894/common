@@ -6,6 +6,7 @@ import cv2
 from collections import defaultdict
 
 from .graphic import select_rectangle
+from .conversion import width_to_point2
 
 #------------------------------------------------------------
 # logging
@@ -33,30 +34,6 @@ def crop_and_save(path, rectangle):
     cv2.imwrite(path, im_crop)
     return path
 
-def point_to_width(rectangle):
-    ''' Given a rectangle described by the upper
-    left point and lower right point, convert it
-    to a form described by the upper left point and
-    a width and height.
-
-    :param rectangle: The rectangle to convert
-    :returns: The converted rectangle
-    '''
-    x1, y1, x2, y2 = rectangle
-    return (x1, y1, x2 - x1, y2 - y1)
-
-def width_to_point(rectangle):
-    ''' Given a rectangle described by the upper
-    left point and a width and height convert it
-    to a form described by the upper left point
-    and lower right point.
-
-    :param rectangle: The rectangle to convert
-    :returns: The converted rectangle
-    '''
-    x, y, w, h = rectangle
-    return (x, y, x + w, y + h)
-
 def average_tuples(tuples):
     ''' Given a list of tuples, return the average
     of the tuple elementwise.
@@ -83,7 +60,7 @@ def view_training_data(images, resize=False):
     for index, path in images['Path'].items():
         path = os.path.join('images', path)
         rect = images['Crop'][index]
-        rect = width_to_point(rect)
+        rect = width_to_point2(rect)
         _ = select_rectangle(path, initial=rect, resize=resize)
 
 def create_data_set(images, resize=False):

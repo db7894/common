@@ -67,8 +67,16 @@ class PointSelector(object):
         :returns: True if we drew an image, False otherwise
         '''
         image = self.image.copy()
-        for point in self.points:
-            cv2.circle(image, point, 3, (0, 255, 0), thickness=-1)
+        green = (0, 255, 0)
+
+        for idx in range(len(self.points)):
+            cv2.circle(image, self.points[idx], 3, green, thickness=-1)
+            if idx > 0:
+                cv2.line(image, self.points[idx - 1], self.points[idx], green, 1)
+
+        if len(self.points) > 2:
+            cv2.line(image, self.points[0], self.points[-1], green, 1)
+
         cv2.imshow(self.window, image)
 
 class RectangleSelector(object):
@@ -124,9 +132,11 @@ class RectangleSelector(object):
         :returns: True if we drew an image, False otherwise
         '''
         image = self.image.copy()
+        green = (0, 255, 0)
+
         if self.rectangle:
             x0, y0, x1, y1 = self.rectangle
-            cv2.rectangle(image, (x0, y0), (x1, y1), (0, 255, 0), 2)
+            cv2.rectangle(image, (x0, y0), (x1, y1), green, 2)
         cv2.imshow(self.window, image)
 
 def select_rectangle(path, **kwargs):
