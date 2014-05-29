@@ -1,10 +1,11 @@
+#!/usr/bin/env python
 import os
 import sys
 import json
 import cv2
-import numpy as np
-import pandas as pd
 from collections import defaultdict
+
+from .graphic import select_rectangle
 
 #------------------------------------------------------------
 # logging
@@ -13,62 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------
-# classes
-#------------------------------------------------------------
-
-class RectangleSelector:
-
-    def __init__(self, path, **kwargs):
-        ''' Initialize a new RectangleSelector
-
-        :param path: The path to the image to select from
-        '''
-        self.window     = "image-window"
-        self.image      = cv2.imread(path)
-        if kwargs.get('resize', False):
-            self.image  = cv2.resize(self.image, (0,0), fx=0.5, fy=0.5) 
-        self.is_drawing = False
-        self.rectangle  = kwargs.get('initial', None)
-        cv2.imshow(self.window, self.image)
-        cv2.setMouseCallback(self.window, self.on_mouse)
-        self.update_image()
-
-    def on_mouse(self, event, x, y, flags, param):
-        ''' The callback for the on_mouse movement.
-        '''
-        x, y = np.int16([x, y]) # cast to int
-
-        if event == cv2.EVENT_LBUTTONDOWN:
-            self.is_drawing = True
-            self.rectangle  = (x, y, x, y)
-
-        elif event == cv2.EVENT_LBUTTONUP:
-            self.is_drawing = False
-
-        if self.is_drawing:
-            xc, yc, w, h = self.rectangle
-            x0, y0 = np.minimum([xc, yc], [x, y])
-            x1, y1 = np.maximum([xc, yc], [x, y])
-            self.rectangle = (x0, y0, x1, y1)
-            self.update_image()
-
-    def update_image(self):
-        ''' Given an image, draw the currently selected
-        rectangle on that image.
-
-        :param image: The image to draw the current selection on
-        :returns: True if we drew an image, False otherwise
-        '''
-        if not self.rectangle:
-            return False
-
-        image = self.image.copy()
-        x0, y0, x1, y1 = self.rectangle
-        cv2.rectangle(image, (x0, y0), (x1, y1), (0, 255, 0), 2)
-        cv2.imshow(self.window, image)
-
-#------------------------------------------------------------
-# helper methods
+# utilities
 #------------------------------------------------------------
 
 def crop_and_save(path, rectangle):
@@ -86,27 +32,6 @@ def crop_and_save(path, rectangle):
     path = "{}-crop.{}".format(name, form)
     cv2.imwrite(path, im_crop)
     return path
-
-def select_rectangle(path, **kwargs):
-    ''' Given an image path, run the rectangle
-    selector GUI for that image.
-
-    :param path: The image to select a rectangle for
-    :returns: The selected rectangle
-    '''
-    select = RectangleSelector(path, **kwargs)
-
-    while True:
-        key = cv2.waitKey(5)
-        if key == ord(' '):
-            break;
-
-    cv2.destroyAllWindows()
-    return select.rectangle
-
-#------------------------------------------------------------
-# utilities
-#------------------------------------------------------------
 
 def point_to_width(rectangle):
     ''' Given a rectangle described by the upper
@@ -180,7 +105,7 @@ def create_data_set(images, resize=False):
         print "{}\t{}".format(path, rect)
     return images
 
-def create_average_data_set(images, resize=False, count=4):
+def create_average_data_set(images, **kwargs):
     ''' Given a training image set, generate new crop
     data for every image in the set by averaging the
     values for N number of cameras.
@@ -192,14 +117,19 @@ def create_average_data_set(images, resize=False, count=4):
     updates = defaultdict(list)
     average = {} # the current average for a given camera
     waiting = [] # the current waiting list for averages
+    resize  = kwargs.get('resize', False)
+    count   = kwargs.get('count', 4)
+    pathdir = kwargs.get('path', '')
 
     for index, path in images['Path'].items():
+        house  = images['Camera'][index]
         camera = images['Camera'][index]
+        camera = house + "." + camera
 
-        if index in images['Crop']:
+        if images['Crop'].get(index, None):
             continue # already have cropped data
         elif camera not in average:
-            path = os.path.join('images', path)
+            path = os.path.join(pathdir, path)
             rect = select_rectangle(path, resize=resize)
             if resize: rect = map(lambda z: z * 2, rect)
             updates[camera].append(rect)
@@ -207,6 +137,7 @@ def create_average_data_set(images, resize=False, count=4):
 
         if len(updates[camera]) == count:
             average[camera] = average_tuples(updates[camera])
+            logger.debug("average {}\t{}".format(camera, average[camera]))
 
     for index, camera in waiting:
         if camera not in average:
@@ -217,11 +148,14 @@ def create_average_data_set(images, resize=False, count=4):
     return images
 
 if __name__ == "__main__":
-    path = sys.argv[2]
-    data = json.load(open(sys.argv[2]))
-
-    if sys.argv[1] == "train":
+    logging.basicConfig(level=logging.DEBUG)
+    if len(sys.argv) <= 1:
+        print "%s <view|train> <database>" % sys.argv[0]
+        sys.exit()
+    elif sys.argv[1] == "train":
+        data = json.load(open(sys.argv[2]))
         create_average_data_set(data)
-        json.dump(data, open(path + ".train", 'w'))
+        json.dump(data, open(sys.argv[2] + ".train", 'w'))
     elif sys.argv[1] == "view":
+        data = json.load(open(sys.argv[2]))
         view_training_data(data)
