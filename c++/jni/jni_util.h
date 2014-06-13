@@ -1,34 +1,31 @@
-// Copyright (c) 2013 The Chromium Embedded Framework Authors. All rights
-// reserved. Use of this source code is governed by a BSD-style license that
-// can be found in the LICENSE file.
-
-#ifndef CEF_TESTS_CEFCLIENT_JNI_UTIL_H_
-#define CEF_TESTS_CEFCLIENT_JNI_UTIL_H_
+#ifndef BASHWORK_JNI_UTIL_H_
+#define BASHWORK_JNI_UTIL_H_
 
 #include <jni.h>
 #include <vector>
-#include "include/cef_base.h"
-#include "include/cef_browser.h"
-#include "util.h"
 
-// Set the global JVM reference.
-void SetJVM(JavaVM* jvm);
+/**
+ * Set the global JVM reference
+ * @param jvm The jvm reference to store as the global.
+ * @return void
+ */
+void set_global_jvm(JavaVM* jvm);
 
 // Retrieve the JNIEnv for the current thread.
-JNIEnv* GetJNIEnv();
+JNIEnv* get_jni_env();
 
 // Determines whether the current thread is already attached to the VM,
 // and tells the caller if it needs to later DetachCurrentThread.
 //
 // INSTEAD OF USING THIS FUNCTION DIRECTLY, USE THE HELPER MACRO
 // BEGIN_ENV(e) INSTEAD.
-jint GetJNIEnv(JNIEnv **env, bool *mustDetach);
+jint get_jni_env(JNIEnv **env, bool *mustDetach);
 
 // Detaches the current thread from the VM.
 //
 // INSTEAD OF USING THIS FUNCTION DIRECTLY; USE THE HELPER MACRO
 // END_ENV(e) INSTEAD.
-void DetachFromThread(bool *mustDetach);
+void detach_from_thread(bool *mustDetach);
 
 // Helper macros to bind and release the JNI environment
 // to other threads than the JNI function was called on.
@@ -41,25 +38,18 @@ void DetachFromThread(bool *mustDetach);
     DetachFromThread(&__shouldDetach); \
   } \
 
-# if defined(OS_MACOSX)
-// Required for onscreen rendering ability on Mac OS X.
-void AddLayerToComponent(jobject parent, JNIEnv *env, CefWindowHandle child);
-#elif defined(OS_WIN)
-HWND GetHwndOfCanvas(jobject canvas, JNIEnv *env);
-#endif
-
 // Create a new JNI object and call the default constructor.
-jobject NewJNIObject(JNIEnv* env, jclass cls);
-jobject NewJNIObject(JNIEnv* env, const char* class_name);
-jobject NewJNIObject(JNIEnv* env, const char* class_name, const char* sig, ...);
+jobject new_jni_object(JNIEnv* env, jclass cls);
+jobject new_jni_object(JNIEnv* env, const char* class_name);
+jobject new_jni_object(JNIEnv* env, const char* class_name, const char* sig, ...);
 
 // Create a new primitive reference
-jobject NewJNIBoolRef(JNIEnv* env, bool initValue);
-jobject NewJNIIntRef(JNIEnv* env, int initValue) ;
+jobject new_jni_bool_ref(JNIEnv* env, bool initial_value);
+jobject new_jni_int_ref(JNIEnv* env, int initial_value) ;
 
 // Retrieve primitive reference values
-bool GetJNIBoolRef(JNIEnv* env, jobject jboolRef);
-int GetJNIIntRef(JNIEnv* env, jobject jintRef);
+bool get_jni_bool_ref(JNIEnv* env, jobject jboolRef);
+int get_jni_int_ref(JNIEnv* env, jobject jintRef);
 
 // Set primitive reference values
 void SetJNIBoolRef(JNIEnv* env, jobject jboolRef, bool boolValue);
@@ -175,10 +165,6 @@ bool IsJNIEnumValue(JNIEnv* env, jobject jenum, const char* class_name, const ch
   } \
 }
 
-#define JNI_GET_BROWSER_OR_RETURN(env, obj, ...) \
-  GetCefFromJNIObject<CefBrowser>(env, obj, "CefBrowser"); \
-  if (!browser.get()) \
-    return __VA_ARGS__;
 
 // Set the CEF base object for an existing JNI object. A reference will be
 // added to the base object. If a previous base object existed a reference
@@ -215,4 +201,4 @@ T* GetCefFromJNIObject(JNIEnv* env, jobject obj, const char* varName) {
   return NULL;
 }
 
-#endif // CEF_TESTS_CEFCLIENT_JNI_UTIL_H_
+#endif // BASHWORK_JNI_UTIL_H_

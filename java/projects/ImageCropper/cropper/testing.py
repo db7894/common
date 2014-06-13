@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 import os
 import json
@@ -22,8 +23,8 @@ class Config(object):
     ''' A collection of configuration parameters for the
     detection algorithm.
     '''
-    LowerThreshold = (105, 100, 100)
-    UpperThreshold = (145, 255, 255)
+    LowerThreshold = ( 90,  50,  50)
+    UpperThreshold = (115, 255, 255)
     MorphKernel    = np.ones((5, 5), np.uint8)
 
 #------------------------------------------------------------
@@ -38,9 +39,10 @@ def open_if_path(path, **kwargs):
     :returns: A new numpy image
     '''
     is_gray = kwargs.get('gray', False)
+    is_hsv  = kwargs.get('hsv', False)
     im_base = cv2.imread(path) if isinstance(path, unicode) else path
-    if is_gray:
-        return cv2.cvtColor(im_base, cv2.COLOR_BGR2GRAY)
+    if is_gray: return cv2.cvtColor(im_base, cv2.COLOR_BGR2GRAY)
+    if is_hsv:  return cv2.cvtColor(im_base, cv2.COLOR_BGR2HSV)
     return im_base
 
 def generate_pick_mask(image):
@@ -130,10 +132,10 @@ def get_image_contours(image):
     '''
     im_base = open_if_path(image)
     im_cann = cv2.Canny(im_base, 100, 100, apertureSize=3)
-    contours, hierarchy = cv2.findContours(im_cann, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(im_cann, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     return contours
 
-def get_biggest_rectangle(image):
+def get_biggest_rectangle(image, **kwargs):
     ''' Given a threshold image, retrieve all the existing
     contours and attempt to find the biggest rectangle in 
     the image.
@@ -152,6 +154,7 @@ def get_biggest_rectangle(image):
     biggest  = (0, (None,))
 
     for i in range(len(contours)):
+        #epsilon    = cv2.arcLength(contours[i], True) * 0.1
         rectangle  = cv2.approxPolyDP(contours[i], 3, True)
         x, y, w, h = cv2.boundingRect(rectangle)
         biggest = max((w * h, (x, y, w, h)), biggest)
@@ -170,43 +173,114 @@ def get_image_crop(image, rectangle):
     im_crop = image[y:y+h, x:x+w]
     return im_crop
 
+def show_image_crop(name, image, rectangle):
+    ''' Given an image and a rectangle of the form
+    (x, y, w, h), crop that image and show the resulting
+    crop on screen.
+
+    :param name: The name of the image to display
+    :param image: The image to crop
+    :param rectangle: The portion of the image to crop
+    :returns: The cropped portion of the image
+    '''
+    crop = get_image_crop(image, rectangle)
+    cv2.imshow(name, crop)
+
 #------------------------------------------------------------
 # evaluation methods
 #------------------------------------------------------------
 
 def score_crop(rect1, rect2):
+    ''' Given two rectangles of the form (x, y, w, h),
+    calculate a score of how close they are to each other::
+
+        score = inter(r1, r2) / union(r1, r2)
+        score = area(inter(r1, r2)) / (area(r1) + area(r2))
+
+    :param rect1: The first rectangle to compare
+    :param rect2: The second rectangle to compare
+    :returns: A score between 0.0 (fail) and 1.0 (match)
     '''
-    score = inter(r1, r2) / union(r1, r2)
-    score = area(inter(r1, r2)) / (area(r1) + area(r2))
-    '''
-    x11, y11, x12, y12 = rect1
-    x21, y21, x22, y22 = rect2
+    if rect2[0] == None or rect1[0] == None:
+        return 0.0 # (None,) means no rectangle was found
 
-    area1 = (x12 - x11) * (y12 - y11)
-    area2 = (x22 - x21) * (y22 - y21)
+    x1, y1, w1, h1 = rect1
+    x2, y2, w2, h2 = rect2
 
-    xover = min(x12, x22) - max(x11, x21)
-    yover = min(y12, y22) - max(y11, y21)
-    areao = xover * yover * 1.0
+    x_overlap = max(0.0, min(x1 + w1, x2 + w2) - max(x1, x2)) # x-axis overlap width
+    y_overlap = max(0.0, min(y1 + h1, y2 + h2) - max(y1, y2)) # y-axis overlap width
+    overlap   = (x_overlap * y_overlap * 1.0)                 # area of the overlapped region
 
-    return min(1.0, areao / (area1 + area2))
+    area1 = w1 * h1
+    area2 = w2 * h2
+    total = area1 + area2 - overlap                         # remove double added overlap
+
+    return min(1.0, overlap / total)                        # make sure we contribute max of 1.0
 
 def validate_data_set(images):
     '''
     '''
     scores = 0.0
     count  = len(images['Path'])
+    total  = count * 1.0
+    zeros  = 0
 
     for index, path in images['Path'].items():
         path = os.path.join('images', path)
         im_base = open_if_path(path)
         im_gray = generate_pick_mask(im_base)
         rect1 = images['Crop'][index]
-        rect2 = get_biggest_rectangle(im_gray)
+        rect2 = get_biggest_rectangle(im_gray, prev=rect1)
         score = score_crop(rect1, rect2)
-        scores += score
-        print "[%f]\t%s" % (score, path)
-    print "total score: %f of %f" % (scores, count * 1.0)
+        scores += score if score <= 0.85 else 1.0
+        if score == 0.0: zeros += 1
+        #print "%f\t%s\t%s" % (score, path, rect2)
+        #show_image_crop(path, im_base, rect2)
+    print "total score: %d / %d = %f : failures[%d]" % (scores, total, scores / total, zeros)
+
+def create_image_histogram(images):
+    '''
+    '''
+    channels = [0, 1]
+    sizes    = [180, 256]
+    ranges   = [0, 180, 0, 256]
+    im_crops = []
+    im_hist  = np.zeros(sizes)
+
+    for index, path in images['Path'].items():
+        rect = images['Crop'][index]
+        path = os.path.join('images', path)
+        im_base = open_if_path(path, hsv=True)
+        im_crop = get_image_crop(im_base, rect)
+        im_crops.append(im_crop)
+    im_hist = cv2.calcHist(im_crops, channels, None, sizes, ranges)
+    import ipdb;ipdb.set_trace()
+    cv2.normalize(im_hist, im_hist, 0, 255, cv2.NORM_MINMAX)
+
+def create_image_backprops(images):
+    '''
+    '''
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    for index, path in images['Path'].items():
+        rect = images['Crop'][index]
+        path = os.path.join('images', path)
+        im_base = open_if_path(path, hsv=True)
+        im_crop = get_image_crop(im_base, rect)
+
+        histogram = cv2.calcHist([im_crop], [0, 1], None, [180, 256], [0, 180, 0, 256])
+        cv2.normalize(histogram, histogram, 0, 255, cv2.NORM_MINMAX)
+        backprop = cv2.calcBackProject([im_base], [0,1], histogram, [0, 180, 0, 256], 1)
+        cv2.filter2D(backprop, -1, kernel, backprop)
+        _, im_thresh = cv2.threshold(backprop, 50, 255, 0)
+
+        im_mask  = cv2.merge((im_thresh, im_thresh, im_thresh))
+        im_clean = cv2.bitwise_and(im_base, im_mask)
+        examine = np.vstack([im_base, im_mask, im_clean])
+        cv2.imshow(path, examine)
+
+        while cv2.waitKey(5) != ord(' '):
+            pass
+    cv2.destroyAllWindows()
 
 #------------------------------------------------------------
 # main
@@ -214,4 +288,5 @@ def validate_data_set(images):
 
 if __name__ == "__main__":
     images = json.load(open(sys.argv[1]))
+    #create_image_histogram(images)
     validate_data_set(images)
