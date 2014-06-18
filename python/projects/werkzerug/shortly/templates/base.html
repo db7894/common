@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %} | shortly{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="shortcut icon" href="/static/favicon.ico" />
+    {% block extra_head %} {% endblock %}
+  </head>
+
+  <body>
+    <h1><a href=/>shortly</a></h1>
+    <p class=tagline>Shortly is a URL shortener written with Werkzeug
+    {% block content %} {% endblock %}
+
+    <!-- delay loading of the javascript files -->
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/underscore-min.js"></script>
+    <script src="/static/js/backbone-min.js"></script>
+    {% block extra_script %} {% endblock %}
+
+  </body>
+</html>

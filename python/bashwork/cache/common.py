@@ -175,3 +175,21 @@ class PandasFileCache(FileCache):
         path = os.path.join(self.root, path + self.ext)
         return pd.read_hdf(path)
 
+def cacheable(key_format):
+    ''' A helper method to cache expensive methods
+    of a class method. The key format should use all
+    the params of the input to the function.
+ 
+    :param key_format: The format of the key to cache
+    :returns: A decorated class method
+    '''
+    def _cacheable(func):
+        def wrapper(self, *args):
+            key = key_format.format(*args)
+            if not self.cache.exists(key):
+                result = func(self, *args)
+                self.cache.save(key, result)
+                return result
+            return self.cache.load(key)
+        return wrapper
+    return _cacheable

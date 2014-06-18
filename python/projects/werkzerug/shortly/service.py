@@ -1,6 +1,7 @@
 import os
 import redis
 import urlparse
+import logging
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Rule, Map
 from werkzeug.exceptions import HTTPException, NotFound
@@ -156,16 +157,17 @@ def create_application(**kwargs):
         '/static'    : os.path.join(ap_root, 'static'),
         '/templates' : os.path.join(ap_root, 'templates'),
     }
+
+    if kwargs.get('debug', True):
+        logging.getLogger().setLevel(logging.DEBUG)
+        logging.basicConfig()
+
     database = redis.Redis(db_host, db_port)
     loader   = FileSystemLoader(config['/templates'])
     template = Environment(loader=loader, autoescape=True)
     template.filters['hostname'] = get_hostname
     instance = Shortly(database, template)
+
     if kwargs.get('with_static', True):
         instance.wsgi_app = SharedDataMiddleware(instance.wsgi_app, config)
     return instance
-
-if __name__ == "__main__":
-    from werkzeug.serving import run_simple
-    application = create_application()
-    run_simple('localhost', 8080, application, use_debugger=True, use_reloader=True)
