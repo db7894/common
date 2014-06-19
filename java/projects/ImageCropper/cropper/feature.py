@@ -1,3 +1,4 @@
+import sys
 import cv2
 import numpy as np
 
@@ -234,8 +235,15 @@ def apply_features(database):
     '''
     contexts = database_to_contexts(database)
     features = apply_features_to_contexts(contexts)
+    return features
 
-    with open('feature.results.json', 'w') as handle:
-        #for index, values in features:
+if __name__ == '__main__':
+    if len(sys.argv) <= 1:
+        print "%s <database.json>" % sys.argv[0]
+        sys.exit()
+
+    database = json.load(open(sys.argv[1], 'r'))
+    features = apply_features(database)
+
+    with open(sys.argv[1] + '.features', 'w') as handle:
         json.dump(list(features), handle) 
-
