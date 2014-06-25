@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+'''
+This module is used to test the results of a training session
+against the current implementation of the algorithm.
+
+'''
 import sys
 import os
 import json

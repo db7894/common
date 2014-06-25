@@ -4,19 +4,22 @@ import numpy as np
 
 from .utility import *
 
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------
 # Context Classes
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------
 
 class CropHistory(object):
     ''' Represents a single cropped region reading
     along with some additional data about that reading.
+
+    .. todo:: Weight the reading based on its score.
     '''
 
     __slots__ = ['region', 'base_color', 'edge_color']
 
     def __init__(self, **kwargs):
         self.region     = kwargs.get('region')
+        self.score      = kwargs.get('score', 1.0)
         self.base_color = kwargs.get('base_color')
         self.edge_color = kwargs.get('edge_color')
 
@@ -66,25 +69,25 @@ class FeatureContext(object):
         values  = [int(sum(group) / count + 0.5) for group in zip(*regions)]
         return values
 
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------
 # Image Feature Collection
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------
 
 FEATURES = [
     region_area_history,
     region_area_ratio,
     region_aspect_ratio,
-    #region_skew,
+    region_skew,
     region_centrality,
-    edge_color_average,
     region_color_average,
     region_pixel_intensity,
+    edge_color_average,
     edge_color_intensity,
 ]
 
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------
 # Image Features
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------
 def region_area_history(context):
     ''' Feature that computes the accuracy of the
     current region reading versus a previous historical
@@ -135,7 +138,8 @@ def region_skew(context):
     :param context: The context to calculate with
     :returns: The score for this feature
     '''
-    #tl, tr, bl, br = kwargs.get('region')
+    # At the moment I use two points to mark a rectangle
+    # as such, there is no notion of skew in this system.
     return 0
 
 def region_centrality(context):
@@ -196,9 +200,9 @@ def edge_color_intensity(context):
     edges = context.region_edges
     return edges.mean()
 
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------
 # Image Feature Computing
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------
 
 def apply_features_to_contexts(contexts, features=FEATURES):
     ''' Given a collection of contexts, apply the features
@@ -237,6 +241,9 @@ def apply_features(database):
     features = apply_features_to_contexts(contexts)
     return features
 
+#------------------------------------------------------------
+# Main
+#------------------------------------------------------------
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
         print "%s <database.json>" % sys.argv[0]
