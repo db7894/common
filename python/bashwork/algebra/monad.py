@@ -175,6 +175,14 @@ class Either(Monad):
         '''
         raise NotImplemented("right")
 
+    def silent(self):
+        ''' Ignores the error and converts an either into
+        a Maybe monad.
+
+        :returns: The Maybe monad version of this instance
+        '''
+        return Nothing if is_error else Something(self.right)
+
     def flat_map(self, func):
         ''' Given a function of the following signature,
         apply it to the Either and return its result::
