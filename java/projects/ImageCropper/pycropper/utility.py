@@ -3,26 +3,34 @@ import cv2
 import numpy as np
 import urllib2
 
-def download_images(paths, root="downloads"):
+def download_image(path, post=None, root="downloads"):
+    ''' Given a URL path to an image, download
+    it to the supplied destination directory.
+
+    :param path: The path to the image to download
+    :param post: An operation to perform before saving (resize)
+    :param root: The base output directory to save to
+    :returns: The path to the downloaded image
+    '''
+    post = post or (lambda x: x)
+    name = path.rsplit('/', 1)[-1].split('?')[0]
+    name = os.path.join(root, name)
+    http = urllib2.urlopen(path)
+    with open(name, 'wb') as handle:
+        handle.write(post(http.read()))
+    return name
+
+def download_images(paths, post=None, root="downloads"):
     ''' Given a collection of URL paths to images,
     download them all to the supplied destination
     directory.
 
     :param paths: The paths to the images to download
+    :param post: An operation to perform before saving (resize)
     :param root: The base output directory to save to
     :returns: The paths to the downloaded images
     '''
-    names = []
-    for path in paths:
-        try:
-            name = path.rsplit('/', 1)[-1].split('?')[0]
-            name = os.path.join(root, name)
-            http = urllib2.urlopen(path)
-            with open(name, 'wb') as handle:
-                handle.write(http.read())
-            names.append(name)
-        except Exception, ex: print ex
-    return names
+    return [download_image(path, post, root) for path in paths]
 
 def open_if_path(path, **kwargs):
     ''' Given an object, return it if it is an image or create

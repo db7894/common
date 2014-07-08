@@ -1,10 +1,12 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
+#include "boost/program_options.hpp" 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 #include "NativeImageCropper.h"
 
+namespace po = boost::program_options; 
 namespace fs = boost::filesystem;
 namespace bw = bashwork::vision;
 
@@ -15,7 +17,7 @@ namespace {
     static const int low_edge_threshold   = 100;
     static const int max_edge_threshold   = 100;
     static const int edge_kernel_size     = 3;
-    static cv::Scalar low_color_threshold = cv::Scalar(105, 100, 100);
+    static cv::Scalar low_color_threshold = cv::Scalar( 90,  50,  50);
     static cv::Scalar max_color_threshold = cv::Scalar(125, 255, 255);
     static cv::Size kernel_size           = cv::Size(5, 5);
     static cv::Mat  morphology_kernel     = cv::getStructuringElement(cv::MORPH_RECT, kernel_size);
@@ -84,13 +86,15 @@ cv::Rect bashwork::vision::get_largest_rectangle(const cv::Mat &image) {
  * @summary Process the supplied file with the current algorithm
  * @param file The file to process
  */
-void process_image(const fs::path& file) {
+void process_image(const fs::path& file, bool is_debug=false) {
     cv::Mat image = cv::imread(file.string(), CV_LOAD_IMAGE_COLOR);
     if (image.data) {
         cv::Mat mask = bw::get_region_mask(image);
         cv::Rect rectangle = bw::get_largest_rectangle(mask);
         if (rectangle.area() > 0) {
-            //display_image(file, image, rectangle);
+            if (is_debug) {
+                display_image(file, image, rectangle);
+            }
             std::cout << file << " : " << rectangle << std::endl;
         } else {
             std::cout << file << " : " << "no rectangle found" << std::endl;
@@ -106,23 +110,45 @@ void process_image(const fs::path& file) {
  * @param argv The arguments supplied
  */
 int main(int argc, char** argv) {
-    if (argc != 2) {
-        std::cout << argv[0] << " <path to image>" << std::endl;
-        return -1;
-    }
 
-    fs::path root(argv[1]);
+    po::variables_map options; 
+    po::options_description description("Options"); 
+    description.add_options() 
+        ("help,h", "Print this help message") 
+        ("path,p", po::value<std::string>()->required(), "Path to the images to process") 
+        ("debug,d", "Enable image debug viewing") ;
+
+    try {
+        po::store(po::parse_command_line(argc, argv, description), options);
+
+        if (options.count("help")) {
+            std::cout << description << std::endl; 
+            return 0;
+        }
+        po::notify(options);
+
+    } catch (po::error& ex) { 
+        std::cerr << "ERROR: " << ex.what() << std::endl << std::endl; 
+        std::cerr << description << std::endl; 
+        return -1;
+    } 
+
+    bool is_debug = options.count("debug");
+    fs::path root(options["path"].as<std::string>());
+
     if (fs::exists(root)) {
         if (fs::is_directory(root)) {
             fs::directory_iterator it_end;
             for (auto it = fs::directory_iterator(root); it != it_end; ++ it) {
                 if (it->path().extension() == ".jpeg")
-                    process_image(*it);
+                    process_image(*it, is_debug);
             }
         } else {
             process_image(root);
         }
-        //cv::waitKey(0);
+        if (is_debug) {
+            cv::waitKey(0);
+        }
     } else {
         std::cout << "File or path does not exist" << std::endl;
         return -1;

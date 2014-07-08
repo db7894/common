@@ -14,7 +14,7 @@ CFLAGS   = `pkg-config --cflags opencv` -I /usr/local/include/opencv2
 CFLAGS  += -std=c++11 -Wall
 CFLAGS  += -I /System/Library/Frameworks/JavaVM.framework/Headers
 LIBS     = `pkg-config --libs opencv`
-LIBS    += -lboost_system -lboost_filesystem
+LIBS    += -lboost_system -lboost_filesystem -lboost_program_options
 
 all: $(PROJECT) $(LIBRARY)
 

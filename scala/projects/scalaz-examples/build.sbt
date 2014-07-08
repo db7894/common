@@ -12,4 +12,8 @@ libraryDependencies ++= Seq(
 
 scalacOptions += "-feature"
 
+// sbt console
 initialCommands in console := "import scalaz._, Scalaz._"
+
+// sbt test:console
+initialCommands in console in Test := "import scalaz._, Scalaz._, scalacheck.ScalazProperties._, scalacheck.ScalazArbitrary._,scalacheck.ScalaCheckBinding._"
