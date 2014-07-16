@@ -101,7 +101,7 @@ def sample_data(data, rate=1.0):
 # main runner
 #---------------------------------------------------------------------------# 
 
-if __name__ == "__main__":
+def main():
     option = get_options()
     output = os.path.abspath(option.path)
     links  = json.load(open(option.database))

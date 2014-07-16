@@ -132,6 +132,7 @@ def create_average_data_set(images, **kwargs):
 #---------------------------------------------------------------------------# 
 # initialize our program settings
 #---------------------------------------------------------------------------# 
+
 def get_options():
     ''' A helper method to parse the command line options
 
@@ -149,11 +150,11 @@ def get_options():
 
     parser.add_option("-v", "--view",
         help="To view a dataset that has been trained",
-        action="store_true", dest="view", default=True)
+        action="store_true", dest="view", default=False)
 
     parser.add_option("-t", "--train",
         help="To train a dataset again",
-        action="store_true", dest="train", default=True)
+        action="store_true", dest="train", default=False)
 
     parser.add_option("-i", "--input",
         help="The input database to operate with",
@@ -162,10 +163,11 @@ def get_options():
     (opt, arg) = parser.parse_args()
     return opt
 
-def testingxxx(**kwargs):
-    print kwargs
+#------------------------------------------------------------
+# main
+#------------------------------------------------------------
 
-if __name__ == "__main__":
+def main():
     option = get_options()
 
     if option.debug:
@@ -173,9 +175,10 @@ if __name__ == "__main__":
 
     database = json.load(open(option.database))
     output   = option.database + ".trained"
+    params   = { 'path': option.path }
 
     if option.train:
-        create_average_data_set(database, *option)
+        create_average_data_set(database, **params)
         json.dump(database, open(output, 'w'))
     elif option.view:
-        view_training_data(database, *option)
+        view_training_data(database, **params)

@@ -11,8 +11,16 @@ import numpy as np
 import cv2
 import cv
 from matplotlib import pyplot as plt
+from optparse import OptionParser
 
 from .utility import *
+
+#------------------------------------------------------------
+# logging
+#------------------------------------------------------------
+
+import logging
+logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------
 # configuration
@@ -65,16 +73,18 @@ def score_crop(rect1, rect2):
 
     return min(1.0, overlap / total)                        # make sure we contribute max of 1.0
 
-def validate_data_set(images):
+def validate_data_set(images, **kwargs):
     '''
     '''
-    scores = 0.0
-    count  = len(images['Path'])
-    total  = count * 1.0
-    zeros  = 0
+    pathdir = kwargs.get('path', '')
+    debug   = kwargs.get('debug', False)
+    scores  = 0.0
+    count   = len(images['Path'])
+    total   = count * 1.0
+    zeros   = 0
 
     for index, path in images['Path'].items():
-        path = os.path.join('images', path)
+        path = os.path.join(pathdir, path)
         im_base = open_if_path(path)
         im_gray = generate_pick_mask(im_base)
         rect1 = images['Crop'][index]
@@ -82,13 +92,15 @@ def validate_data_set(images):
         score = score_crop(rect1, rect2)
         scores += score if score <= 0.85 else 1.0
         if score == 0.0: zeros += 1
-        #print "%f\t%s\t%s" % (score, path, rect2)
-        #show_image_crop(path, im_base, rect2)
+        if debug:
+            log.debug("%f\t%s\t%s" % (score, path, rect2))
+            show_image_crop(path, im_base, rect2)
     print "total score: %d / %d = %f : failures[%d]" % (scores, total, scores / total, zeros)
 
-def create_image_histogram(images):
+def create_image_histogram(images, **kwargs):
     '''
     '''
+    pathdir  = kwargs.get('path', '')
     channels = [0, 1]
     sizes    = [180, 256]
     ranges   = [0, 180, 0, 256]
@@ -97,7 +109,7 @@ def create_image_histogram(images):
 
     for index, path in images['Path'].items():
         rect = images['Crop'][index]
-        path = os.path.join('images', path)
+        path = os.path.join(pathdir, path)
         im_base = open_if_path(path, hsv=True)
         im_crop = get_image_crop(im_base, rect)
         im_crops.append(im_crop)
@@ -105,13 +117,16 @@ def create_image_histogram(images):
     import ipdb;ipdb.set_trace()
     cv2.normalize(im_hist, im_hist, 0, 255, cv2.NORM_MINMAX)
 
-def create_image_backprops(images):
+def create_image_backprops(images, **kwargs):
     '''
     '''
+
+    pathdir = kwargs.get('path', '')
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+
     for index, path in images['Path'].items():
         rect = images['Crop'][index]
-        path = os.path.join('images', path)
+        path = os.path.join(pathdir, path)
         im_base = open_if_path(path, hsv=True)
         im_crop = get_image_crop(im_base, rect)
 
@@ -130,11 +145,49 @@ def create_image_backprops(images):
             pass
     cv2.destroyAllWindows()
 
+#---------------------------------------------------------------------------# 
+# initialize our program settings
+#---------------------------------------------------------------------------# 
+
+def get_options():
+    ''' A helper method to parse the command line options
+
+    :returns: The options manager
+    '''
+    parser = OptionParser()
+
+    parser.add_option("-p", "--path",
+        help="The path to append to the files path",
+        dest="path", default="")
+
+    parser.add_option("-d", "--debug",
+        help="Enable debug tracing",
+        action="store_true", dest="debug", default=False)
+
+    parser.add_option("-v", "--validate",
+        help="Enable validating a test set",
+        action="store_true", dest="validate", default=True)
+
+    parser.add_option("-i", "--input",
+        help="The input database to operate with",
+        dest="database", default='')
+
+    (opt, arg) = parser.parse_args()
+    return opt
+
 #------------------------------------------------------------
 # main
 #------------------------------------------------------------
 
-if __name__ == "__main__":
-    images = json.load(open(sys.argv[1]))
-    #create_image_histogram(images)
-    validate_data_set(images)
+def main():
+    option = get_options()
+
+    if option.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
+    database = json.load(open(option.database))
+    params   = { 'path': option.path }
+
+    if option.validate:
+        validate_data_set(images, **params)
+    #create_image_histogram(images, **params)
