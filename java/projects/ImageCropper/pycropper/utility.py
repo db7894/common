@@ -32,6 +32,16 @@ def download_images(paths, post=None, root="downloads"):
     '''
     return [download_image(path, post, root) for path in paths]
 
+def resize_image(image, ratio):
+    ''' Given an image, resize it by the supplied rate.
+
+    :param image: The image to resize
+    :param ratio: The ratio to resize the image by
+    :returns: The resized image
+    '''
+    if not image: return None # assuming PIL
+    return image.resize([int(s * ratio) for s in image.size])
+
 def open_if_path(path, **kwargs):
     ''' Given an object, return it if it is an image or create
     an image if it is a path to an image.

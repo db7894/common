@@ -4,6 +4,7 @@ import sys
 import json
 import cv2
 from collections import defaultdict
+from optparse import OptionParser
 
 from .graphic import select_rectangle
 from .conversion import width_to_point2
@@ -49,16 +50,20 @@ def average_tuples(tuples):
 # main methods
 #------------------------------------------------------------
 
-def view_training_data(images, resize=False):
+def view_training_data(images, **kwargs):
     ''' Given an image training set, run through the
     training set and validate that everything looks good.
 
     :param images: The image dataset to validate
+    :param path: An optional path to append to each image's path
     :param resize: A flag indicating if the image is large
     :returns: The updated image
     '''
+    resize  = kwargs.get('resize', False)
+    pathdir = kwargs.get('path', '')
+
     for index, path in images['Path'].items():
-        path = os.path.join('images', path)
+        path = os.path.join(pathdir, path)
         rect = images['Crop'][index]
         rect = width_to_point2(rect)
         _ = select_rectangle(path, initial=rect, resize=resize)
@@ -124,15 +129,53 @@ def create_average_data_set(images, **kwargs):
 
     return images
 
+#---------------------------------------------------------------------------# 
+# initialize our program settings
+#---------------------------------------------------------------------------# 
+def get_options():
+    ''' A helper method to parse the command line options
+
+    :returns: The options manager
+    '''
+    parser = OptionParser()
+
+    parser.add_option("-p", "--path",
+        help="The path to append to the files path",
+        dest="path", default="")
+
+    parser.add_option("-d", "--debug",
+        help="Enable debug tracing",
+        action="store_true", dest="debug", default=False)
+
+    parser.add_option("-v", "--view",
+        help="To view a dataset that has been trained",
+        action="store_true", dest="view", default=True)
+
+    parser.add_option("-t", "--train",
+        help="To train a dataset again",
+        action="store_true", dest="train", default=True)
+
+    parser.add_option("-i", "--input",
+        help="The input database to operate with",
+        dest="database", default='')
+
+    (opt, arg) = parser.parse_args()
+    return opt
+
+def testingxxx(**kwargs):
+    print kwargs
+
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    if len(sys.argv) <= 1:
-        print "%s <view|train> <database>" % sys.argv[0]
-        sys.exit()
-    elif sys.argv[1] == "train":
-        data = json.load(open(sys.argv[2]))
-        create_average_data_set(data)
-        json.dump(data, open(sys.argv[2] + ".train", 'w'))
-    elif sys.argv[1] == "view":
-        data = json.load(open(sys.argv[2]))
-        view_training_data(data)
+    option = get_options()
+
+    if option.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
+    database = json.load(open(option.database))
+    output   = option.database + ".trained"
+
+    if option.train:
+        create_average_data_set(database, *option)
+        json.dump(database, open(output, 'w'))
+    elif option.view:
+        view_training_data(database, *option)
