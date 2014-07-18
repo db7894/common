@@ -12,35 +12,36 @@ from optparse import OptionParser
 #------------------------------------------------------------
 
 import logging
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------
 # utiliites
 #------------------------------------------------------------
 
-def retrieve_image(path, link):
+def retrieve_image(link, **kwargs):
     ''' Given an image link, download it to memory
     and return it and a path it can be saved to.
 
-    :param path: The path to save the image to
     :param link: The link to the image to save
+    :param path: The path to save the image to
     :returns: (path to save image to, in memory image)
     '''
     link = link.replace('_C.jpeg?', '.jpeg?')
     name = link.split('/')[-1].split('?')[0]
+    path = kwargs.get('path', '')
     path = os.path.join(path, name)
 
     try:
         if not os.path.exists(path):
-            logger.debug("Downloading {}".format(len(name)))
+            _logger.debug("Downloading {}".format(len(name)))
             data = urllib.urlopen(link).read()
             return (path, Image.open(StringIO(data)))
     except Exception, ex:
-        logger.exception("Download failed for {}".format(path))
+        _logger.exception("Download failed for {}".format(path))
     return (path, None)
 
-def save_image(path, link, **kwargs):
-    ''' Given an image link, save it to the supplied path
+def save_image(link, **kwargs):
+    ''' Given an image link, save it to the supplied path.
 
     :param path: The path to save the image to
     :param link: The link to the image to save
@@ -48,11 +49,24 @@ def save_image(path, link, **kwargs):
     :returns: The path to the saved image
     '''
     size = kwargs.get('size', 0.25)
-    path, image = retrieve_image(path, link)
+    path = kwargs.get('path', '')
+
+    path, image = retrieve_image(link, path=path)
     if image:
         image = image.resize([int(s * size) for s in image.size])
         image.save(path)
     return path
+
+def save_images(links, **kwargs):
+    ''' Given a collection of image links, save
+    them to the supplied path.
+
+    :param links: The collection of links to save
+    :param threads: The number of threads to save with
+    :returns: The paths to the saved images
+    '''
+    threads = kwargs.get('threads', 5)
+    return Parallel(n_jobs=threads)(delayed(save_image)(link **kwargs) for link in links)
 
 #---------------------------------------------------------------------------# 
 # initialize our program settings
@@ -106,5 +120,14 @@ def main():
     output = os.path.abspath(option.path)
     links  = json.load(open(option.database))
     links  = sample_data(links, option.sample)
-    paths  = Parallel(n_jobs=10)(delayed(save_image)(path, link) for link in links)
-    logger.debug("Downloaded {} files".format(len(paths)))
+    paths  = save_images(linkes, path=path)
+    _logger.debug("Downloaded {} files".format(len(paths)))
+
+#------------------------------------------------------------
+# exports
+#------------------------------------------------------------
+__all__ = [
+    'retrieve_image',
+    'save_image',
+    'save_images',
+]

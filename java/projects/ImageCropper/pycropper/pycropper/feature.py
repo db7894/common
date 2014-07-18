@@ -1,5 +1,5 @@
 import sys
-import cv2
+import cv2, cv
 import numpy as np
 
 from .utility import *
@@ -15,7 +15,7 @@ class CropHistory(object):
     .. todo:: Weight the reading based on its score.
     '''
 
-    __slots__ = ['region', 'base_color', 'edge_color']
+    __slots__ = ['region', 'score', 'base_color', 'edge_color']
 
     def __init__(self, **kwargs):
         self.region     = kwargs.get('region')
@@ -36,58 +36,132 @@ class FeatureContext(object):
         :param image: The original image in HSV format
         :param region: The region of interest in (x, y, w, h) format
         '''
-        self.index      = kwargs.get('index')
         self.image      = kwargs.get('image')
-        self.region     = kwargs.get('region')
+        self.index      = kwargs.get('index', None)
+        self.contour    = kwargs.get('contour', None)
+        self.perimiter  = kwargs.get('perimiter', None)
+        self.rectangle2 = kwargs.get('rectangle2', None)
+        self.rectangler = kwargs.get('rectangler', None)
+        self.rectangle4 = kwargs.get('rectangle4', None)
         self.edge_width = kwargs.get('edge_width', 5)
         self.history    = kwargs.get('history', [])
 
     @property
+    def region(self):
+        ''' The captured region of interest
+        '''
+        return self.rectangle2 or self.rectangle4
+
+    @property
     def region_edges(self):
+        ''' The pixels of the edges of the region of
+        interest
+        '''
         return get_image_crop_edges(self.image, self.region, self.edge_width)
 
     @property
     def cropped_region(self):
-        return get_image_crop(self.image, self.region)
-
-    @property
-    def cropped_region(self):
+        ''' The pixels of the region of interest from
+        the main image.
+        '''
         return get_image_crop(self.image, self.region)
 
     @property
     def region_dimensions(self):
+        ''' The dimesions (w, h) of the region of interest
+        '''
         return self.region[2:]
 
     @property
     def image_dimensions(self):
+        ''' The dimesions (w, h) of the main image
+        '''
         return self.image.shape[:2]
 
     @property
+    def image_center(self):
+        ''' The center point of the main image
+        '''
+        size = self.image_dimensions
+        return np.ceil(np.array(size)).astype(int)
+
+    @property
     def historic_average_region(self):
+        ''' The average of the region of interest from
+        the supplied history.
+        '''
         count   = float(len(self.history))
         regions = [h.region for h in self.history]
-        values  = [int(sum(group) / count + 0.5) for group in zip(*regions)]
+        values  = (np.sum(regions, axis=0) / count).astype(int)
         return values
 
-#------------------------------------------------------------
-# Image Feature Collection
-#------------------------------------------------------------
-
-FEATURES = [
-    region_area_history,
-    region_area_ratio,
-    region_aspect_ratio,
-    region_skew,
-    region_centrality,
-    region_color_average,
-    region_pixel_intensity,
-    edge_color_average,
-    edge_color_intensity,
-]
+    @property
+    def historic_average_region_center(self):
+        ''' The average of the region of interest from
+        the supplied history.
+        '''
+        region = self.historic_average_region
+        return np.ceil(np.array(region)).astype(int)
 
 #------------------------------------------------------------
 # Image Features
 #------------------------------------------------------------
+def contour_white_count(context):
+    ''' Feature that computes the count of blue
+    pixels in the specified contour area (where
+    blue is a threshold range).
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    crop = context.cropped_region
+    low  = (200, 200, 200)
+    high = (255, 255, 255)
+    return count_pixels_in_range(crop, low, high)
+
+def contour_blue_count(context):
+    ''' Feature that computes the count of blue
+    pixels in the specified contour area (where
+    blue is a threshold range).
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    crop = context.cropped_region
+    low  = ( 90,  50,  50)
+    high = (125, 255, 255)
+    return count_pixels_in_range(crop, low, high)
+
+def contour_area(context):
+    ''' Feature that computes the area of the contour
+    that we are bouding with a cropping rectangle.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    if not context.rectangler:
+        return 0 # no penalty if no rotated rectangle
+
+    return cv2.contourArea(context.contour)
+
+def contour_centrality(context):
+    ''' Feature that computes the centrality
+    of a the contour to the supplied image.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    if not context.rectangler:
+        return 0 # no penalty if no rotated rectangle
+
+    (x, y), (w, h), theta = context.rectangler
+    size = context.image_dimensions
+    diag = np.linalg.norm(size)
+    rect = np.array((w, h)) / 2.0 + np.array((x, y))
+    cent = size / 2.0
+    dist = np.linalg.norm(rect - cent)
+    return dist / diag
+
 def region_area_history(context):
     ''' Feature that computes the accuracy of the
     current region reading versus a previous historical
@@ -138,9 +212,9 @@ def region_skew(context):
     :param context: The context to calculate with
     :returns: The score for this feature
     '''
-    # At the moment I use two points to mark a rectangle
-    # as such, there is no notion of skew in this system.
-    return 0
+    if not context.rectangler: return 0
+    (cx, cy), (w, h), theta = context.rectangler
+    return theta + 180 if w < h else theta + 90
 
 def region_centrality(context):
     ''' Feature that computes the centrality
@@ -201,6 +275,26 @@ def edge_color_intensity(context):
     return edges.mean()
 
 #------------------------------------------------------------
+# Image Feature Collection
+#------------------------------------------------------------
+
+FEATURES = [
+    region_area_history,
+    region_area_ratio,
+    region_aspect_ratio,
+    region_skew,
+    region_centrality,
+    region_color_average,
+    region_pixel_intensity,
+    edge_color_average,
+    edge_color_intensity,
+    contour_area,
+    contour_centrality,
+    contour_blue_count,
+    contour_white_count,
+]
+
+#------------------------------------------------------------
 # Image Feature Computing
 #------------------------------------------------------------
 
@@ -214,6 +308,26 @@ def apply_features_to_contexts(contexts, features=FEATURES):
     '''
     for context in contexts:
         yield [(context.index, feature(context)) for features in features]
+
+def contour_to_context(image, contour, **kwargs):
+    ''' Given a single contour for a given image, compute
+    the remaining neccessary features to be used to create
+    a feature context.
+
+    :param image: The image to create the context with
+    :param contour: The contour to initialize features with
+    :returns: A populated FeatureContext
+    '''
+    perimiter = cv2.arcLength(contour, True),
+    kwargs.update({
+        'image'      : image,
+        'contour'    : contour,
+        'perimiter'  : perimiter,
+        'rectangle2' : cv2.boundingRect(contour),
+        'rectangler' : cv2.minAreaRect(contour),
+        'rectangle4' : cv2.approxPolyDP(contour, perimiter * 0.1, True),
+    })
+    return FeatureContext(**kwargs)
 
 def database_to_contexts(database):
     ''' A generator to convert an input image collection

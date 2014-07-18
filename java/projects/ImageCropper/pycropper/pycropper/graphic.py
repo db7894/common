@@ -11,7 +11,7 @@ from collections import defaultdict
 # logging
 #------------------------------------------------------------
 import logging
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------
 # Rectangle Selectors
@@ -148,7 +148,7 @@ def select_rectangle(path, **kwargs):
     '''
     method = kwargs.get('method', RectangleSelector)
     select = method(path, **kwargs)
-    logger.debug("selecting rectangle for %s", path)
+    _logger.debug("selecting rectangle for %s", path)
 
     while True:
         key = cv2.waitKey(5)
@@ -157,3 +157,12 @@ def select_rectangle(path, **kwargs):
 
     cv2.destroyAllWindows()
     return select.get_result()
+
+#------------------------------------------------------------
+# exports
+#------------------------------------------------------------
+__all__ = [
+    'PointSelector',
+    'RectangleSelector',
+    'select_rectangle',
+]

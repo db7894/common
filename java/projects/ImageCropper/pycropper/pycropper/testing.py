@@ -19,7 +19,7 @@ from .utility import *
 #------------------------------------------------------------
 
 import logging
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------
 # configuration

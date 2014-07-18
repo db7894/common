@@ -6,6 +6,7 @@ form to another rectangle form:
 * rectangle 2 point - (x1, y1, x2, y2)
 * rectangle 4 point - [tl, tr, br, bl]
 '''
+
 def point2_to_width(rectangle):
     ''' Given a rectangle described by the upper
     left point and lower right point, convert it
@@ -76,3 +77,15 @@ def width_to_point4(rectangle):
     '''
     x, y, w, h = rectangle
     return [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
+
+#------------------------------------------------------------
+# exports
+#------------------------------------------------------------
+__all__ = [
+    'point2_to_width',
+    'point2_to_point4',
+    'point4_to_point2',
+    'point4_to_width',
+    'width_to_point2',
+    'width_to_point4',
+]

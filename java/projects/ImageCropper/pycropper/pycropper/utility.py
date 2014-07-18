@@ -3,35 +3,6 @@ import cv2, cv
 import numpy as np
 import urllib2
 
-def download_image(path, post=None, root="downloads"):
-    ''' Given a URL path to an image, download
-    it to the supplied destination directory.
-
-    :param path: The path to the image to download
-    :param post: An operation to perform before saving (resize)
-    :param root: The base output directory to save to
-    :returns: The path to the downloaded image
-    '''
-    post = post or (lambda x: x)
-    name = path.rsplit('/', 1)[-1].split('?')[0]
-    name = os.path.join(root, name)
-    http = urllib2.urlopen(path)
-    with open(name, 'wb') as handle:
-        handle.write(post(http.read()))
-    return name
-
-def download_images(paths, post=None, root="downloads"):
-    ''' Given a collection of URL paths to images,
-    download them all to the supplied destination
-    directory.
-
-    :param paths: The paths to the images to download
-    :param post: An operation to perform before saving (resize)
-    :param root: The base output directory to save to
-    :returns: The paths to the downloaded images
-    '''
-    return [download_image(path, post, root) for path in paths]
-
 def resize_image(image, ratio):
     ''' Given an image, resize it by the supplied rate.
 
@@ -56,21 +27,26 @@ def open_if_path(path, **kwargs):
     if is_hsv:  return cv2.cvtColor(im_base, cv2.COLOR_BGR2HSV)
     return im_base
 
-def generate_pick_mask(image, config):
+def generate_pick_mask(image, **kwargs):
     ''' Given a path or image, generate a mask for the
     taped off space in the picking region.
     
     :param image: The image or path to generate a mask for
-    :param config: The configuration for the tuning parameters
     :returns: The mask of the supplied image
     '''
+    lower_threshold = kwargs.get('color_low_threshold', ( 90,  50,  50))
+    upper_threshold = kwargs.get('color_top_threshold', (125, 255, 255))
+    opening_kernel  = kwargs.get('opening_kernel', np.ones((5, 5), np.uint8))
+    should_blur     = kwargs.get('should_blur', True)
+
     im_base = open_if_path(image)
     im_base = cv2.cvtColor(im_base, cv2.COLOR_BGR2HSV)
-    im_blue = cv2.inRange(im_base, config.LowerThreshold, config.UpperThreshold)
-    im_open = cv2.morphologyEx(im_blue, cv2.MORPH_OPEN, config.MorphKernel)
-    return im_open
+    im_near = cv2.inRange(im_base, lower_threshold, upper_threshold)
+    if should_blur:
+        return cv2.morphologyEx(im_near, cv2.MORPH_OPEN, opening_kernel)
+    return im_near
 
-def get_image_lines(image):
+def get_image_lines(image, **kwargs):
     ''' Given an image, return a collection of discovered
     lines in that image.
 
@@ -82,7 +58,7 @@ def get_image_lines(image):
     :param image: The image to get the lines from
     :returns: A collection of the lines in the image
     '''
-    blur_kernel   = kwargs.get('blur-kernel', (3, 3))
+    blur_kernel   = kwargs.get('blur-kernel', np.ones((3, 3), np.uint8))
     cann_low_thr  = kwargs.get('canny-low-threshold', 100)
     cann_high_thr = kwargs.get('canny-high-threshold', 100)
     cann_size     = kwargs.get('canny-aperture-size', 3)
@@ -105,14 +81,29 @@ def add_image_lines(image, lines, **kwargs):
     :param image: The image to draw the lines on
     :param lines: The lines to draw on the image
     '''
-    color = kwargs.get('color', Color.Green)
+    color = kwargs.get('color', (0, 255, 0))
     width = kwargs.get('width', 2)
 
     for x1, y1, x2, y2 in lines:
         cv2.line(image, (x1, y1), (x2, y2), color, width)
     return image
 
-def get_image_corners(image):
+def add_image_points(image, points, **kwargs):
+    ''' Given an image, add the supplied lines to 
+    the image for debugging.
+
+    :param image: The image to draw the lines on
+    :param lines: The lines to draw on the image
+    '''
+    color  = kwargs.get('color', (0, 0, 255))
+    width  = kwargs.get('width', 2)
+    radius = kwargs.get('radius', 3)
+
+    for point in points:
+        cv2.circle(image, tuple(point), radius, color, width)
+    return image
+
+def get_image_corners(image, **kwargs):
     ''' Given an image, retrieve all the corners of the image.
 
     To debug the result of this operation::
@@ -131,12 +122,13 @@ def get_image_corners(image):
     :param image: The image to retrieve the corners of
     :returns: The corners of the supplied image
     '''
+    # TODO kwargs parameters
     im_base = open_if_path(image)
     im_gray = np.float32(im_base)
     im_corn = cv2.cornerHarris(im_gray, 2, 3, 0.04)
     return im_corn
 
-def get_image_contours(image):
+def get_image_contours(image, **kwargs):
     ''' Given an image, find all the contours that exist.
 
     To debug the result of this operation::
@@ -155,8 +147,12 @@ def get_image_contours(image):
     :param image: The image to find contours of
     :returns: A collection of the image contours
     '''
+    cann_low_thr  = kwargs.get('canny-low-threshold', 100)
+    cann_high_thr = kwargs.get('canny-high-threshold', 100)
+    cann_size     = kwargs.get('canny-aperture-size', 3)
+
     im_base = open_if_path(image)
-    im_cann = cv2.Canny(im_base, 100, 100, apertureSize=3)
+    im_cann = cv2.Canny(im_base, cann_low_thr, cann_high_thr, apertureSize=cann_size)
     contours, hierarchy = cv2.findContours(im_cann, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     return contours
 
@@ -293,9 +289,10 @@ def get_center_point(points):
     center = np.array(points).sum(axis=0) * (1.0 / len(points))
     return tuple(center.astype(np.int))
 
-def get_image_rectangle(image):
+def get_image_rectangle_tight(image, **kwargs):
     ''' Given an image, find the largest complete
-    rectangle in the image and return its points.
+    rectangle in the image and return its points as tight
+    as possible to the resulting polygon.
 
     :param image: The image to get the rectangle for
     :returns: The points of the discovered rectangle
@@ -305,14 +302,87 @@ def get_image_rectangle(image):
     im_cann = cv2.Canny(im_blur, 100, 250)
     #cv2.imshow('canny', im_cann)
     contours, hierarchy = cv2.findContours(im_cann, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    epsilon = cv2.arcLength(contours[0], True) * 0.1 
-    points  = cv2.approxPolyDP(contours[0], epsilon, True)
+    contour = contours[0]
+    epsilon = cv2.arcLength(contour, True) * 0.1 
+    points  = cv2.approxPolyDP(contour, epsilon, True)
     return [tuple(point[0]) for point in points]
 
+def get_image_rectangle_fuzzy(image, **kwargs):
+    ''' Given an image, find the largest complete
+    rectangle in the image and return points around
+    the rough area that includes it (may be larger
+    than the rectangle).
+
+    :param image: The image to get the rectangle for
+    :returns: The points of the discovered rectangle
+    '''
+    best = (0, (None,))
+    contours = get_image_contours(image, **kwargs)
+
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        rect = cv2.boundingRect(contour)
+        best = max((area, rect), best)
+    return best[1]
+
 def get_warped_rectangle(image, rect, size):
+    ''' Given an image and a discovered rectangle of
+    (bl, tl, tr, br), extract the rectangle and project
+    it to a normalized image of the supplied size.
+
+    :param image: The image to extract the rectangle from
+    :param rect: The rectangle to extract from the image
+    :param size: The size to project the rectangle to
+    :returns: The extracted and projected rectangle
+    '''
     w, h  = size
     rect  = np.array(rect, np.float32)
     dest  = np.array([(0, h), (w, h), (w, 0), (0, 0)], np.float32)
     transform = cv2.getPerspectiveTransform(rect, dest)
-    warp = cv2.warpPerspective(image, transform, (w, h)) 
-    return warp
+    im_warp = cv2.warpPerspective(image, transform, (w, h)) 
+    return im_warp
+
+def count_pixels_in_range(image, low, high):
+    ''' Given an image and a high and low color
+    range, count all the pixels that fall between
+    these ranges.
+
+    :param image: The input image to count pixels for
+    :param low: The low color threshold to count
+    :param high: The high color threshold to count
+    :returns: The number of pixels that were in range
+    '''
+    params = {
+        'color_low_threshold': low,
+        'color_top_threshold': high,
+        'should_blur'        : False,
+    }
+    im_mask = generate_pick_mask(image, **params)
+    return cv2.countNonZero(im_mask)
+
+#------------------------------------------------------------
+# exports
+#------------------------------------------------------------
+__all__ = [
+    'add_image_lines',
+    'add_image_points',
+    'count_pixels_in_range',
+    'find_all_intersections',
+    'find_intersection',
+    'generate_pick_mask',
+    'get_biggest_rectangle',
+    'get_center_point',
+    'get_image_contours',
+    'get_image_corners',
+    'get_image_crop',
+    'get_image_crop_edges',
+    'get_image_lines',
+    'get_image_rectangle_fuzzy',
+    'get_image_rectangle_tight',
+    'get_largest_contours',
+    'get_polygon',
+    'get_warped_rectangle',
+    'open_if_path',
+    'resize_image',
+    'show_image_crop',
+]

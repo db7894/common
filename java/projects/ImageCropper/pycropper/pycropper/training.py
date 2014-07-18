@@ -12,7 +12,7 @@ from .conversion import width_to_point2
 # logging
 #------------------------------------------------------------
 import logging
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------
 # utilities
@@ -118,12 +118,12 @@ def create_average_data_set(images, **kwargs):
 
         if len(updates[camera]) == count:
             average[camera] = average_tuples(updates[camera])
-            logger.debug("average {}\t{}".format(camera, average[camera]))
+            _logger.debug("average {}\t{}".format(camera, average[camera]))
 
     for index, camera in waiting:
         if camera not in average:
             average[camera] = average_tuples(updates[camera])
-        logger.debug("average {}\t{}".format(camera, average[camera]))
+        _logger.debug("average {}\t{}".format(camera, average[camera]))
         images['Crop'][index] = average[camera]
 
     return images
