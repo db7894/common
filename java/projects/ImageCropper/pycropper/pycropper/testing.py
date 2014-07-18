@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
 This module is used to test the results of a training session
 against the current implementation of the algorithm.
@@ -114,13 +113,11 @@ def create_image_histogram(images, **kwargs):
         im_crop = get_image_crop(im_base, rect)
         im_crops.append(im_crop)
     im_hist = cv2.calcHist(im_crops, channels, None, sizes, ranges)
-    import ipdb;ipdb.set_trace()
     cv2.normalize(im_hist, im_hist, 0, 255, cv2.NORM_MINMAX)
 
 def create_image_backprops(images, **kwargs):
     '''
     '''
-
     pathdir = kwargs.get('path', '')
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 

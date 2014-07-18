@@ -1,5 +1,5 @@
 import os
-import cv2
+import cv2, cv
 import numpy as np
 import urllib2
 
@@ -56,17 +56,18 @@ def open_if_path(path, **kwargs):
     if is_hsv:  return cv2.cvtColor(im_base, cv2.COLOR_BGR2HSV)
     return im_base
 
-def generate_pick_mask(image):
+def generate_pick_mask(image, config):
     ''' Given a path or image, generate a mask for the
     taped off space in the picking region.
     
     :param image: The image or path to generate a mask for
+    :param config: The configuration for the tuning parameters
     :returns: The mask of the supplied image
     '''
     im_base = open_if_path(image)
     im_base = cv2.cvtColor(im_base, cv2.COLOR_BGR2HSV)
-    im_blue = cv2.inRange(im_base, Config.LowerThreshold, Config.UpperThreshold)
-    im_open = cv2.morphologyEx(im_blue, cv2.MORPH_OPEN, Config.MorphKernel)
+    im_blue = cv2.inRange(im_base, config.LowerThreshold, config.UpperThreshold)
+    im_open = cv2.morphologyEx(im_blue, cv2.MORPH_OPEN, config.MorphKernel)
     return im_open
 
 def get_image_lines(image):
@@ -81,9 +82,21 @@ def get_image_lines(image):
     :param image: The image to get the lines from
     :returns: A collection of the lines in the image
     '''
+    blur_kernel   = kwargs.get('blur-kernel', (3, 3))
+    cann_low_thr  = kwargs.get('canny-low-threshold', 100)
+    cann_high_thr = kwargs.get('canny-high-threshold', 100)
+    cann_size     = kwargs.get('canny-aperture-size', 3)
+    hough_rho     = kwargs.get('hough-rho', 1)
+    hough_theta   = kwargs.get('hough-theta', cv.CV_PI / 180)
+    hough_thr     = kwargs.get('hough-max-threshold', 70)
+    hough_len     = kwargs.get('hough-max-length', 30)
+    hough_gap     = kwargs.get('hough-min-gap', 10)
+
     im_base = open_if_path(image)
-    im_cann = cv2.Canny(im_base, 100, 100, apertureSize=3)
-    return cv2.HoughLinesP(im_cann, 1, cv.CV_PI/180, 50, 70, 20)[0]
+    im_blur = cv2.blur(im, blur_kernel)
+    im_cann = cv2.Canny(im_blur, cann_low_thr, cann_high_thr, apertureSize=cann_size)
+    lines   = cv2.HoughLinesP(im_cann, hough_rho, hough_theta, hough_thr, hough_len, hough_gap)[0]
+    return lines
 
 def add_image_lines(image, lines, **kwargs):
     ''' Given an image, add the supplied lines to 
@@ -97,6 +110,7 @@ def add_image_lines(image, lines, **kwargs):
 
     for x1, y1, x2, y2 in lines:
         cv2.line(image, (x1, y1), (x2, y2), color, width)
+    return image
 
 def get_image_corners(image):
     ''' Given an image, retrieve all the corners of the image.
@@ -146,6 +160,20 @@ def get_image_contours(image):
     contours, hierarchy = cv2.findContours(im_cann, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     return contours
 
+def get_largest_contours(image, **kwargs):
+    ''' Given an image, find the largest contour(s)
+    that exist in the image.
+
+    :param image: The image to find contours of
+    :param count: The number of contours to retrieve
+    :returns: A collection of the image contours
+    '''
+    count    = kwargs.get('count', 1)
+    sortby   = kwargs.get('sortby', cv2.contourArea)
+    contours = get_image_contours(image)
+    contours = sorted(contours, key=sortby, reverse=True)[:count]  
+    return contours
+
 def get_biggest_rectangle(image, **kwargs):
     ''' Given a threshold image, retrieve all the existing
     contours and attempt to find the biggest rectangle in 
@@ -165,8 +193,8 @@ def get_biggest_rectangle(image, **kwargs):
     biggest  = (0, (None,))
 
     for i in range(len(contours)):
-        #epsilon    = cv2.arcLength(contours[i], True) * 0.1
-        rectangle  = cv2.approxPolyDP(contours[i], 3, True)
+        epsilon    = cv2.arcLength(contours[i], True) * 0.1
+        rectangle  = cv2.approxPolyDP(contours[i], epsilon, True)
         x, y, w, h = cv2.boundingRect(rectangle)
         biggest = max((w * h, (x, y, w, h)), biggest)
     return biggest[1]
@@ -215,3 +243,76 @@ def show_image_crop(image, rectangle, name="cropped"):
     '''
     crop = get_image_crop(image, rectangle)
     cv2.imshow(name, crop)
+
+def find_intersection(line1, line2):
+    ''' Given two lines of the form (x1, y1, x2, y2),
+    return the point of intersection or (None, None)
+
+    :param line1: The first line to find an intersect
+    :param line2: The second line to find an intersect
+    :returns: The (x, y) intersect or (None, None) if none
+    '''
+    x1, y1, x2, y2 = line1
+    x3, y3, x4, y4 = line2
+    d = ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4))
+    if d == 0: return None
+    x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / d
+    y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / d
+    return (x, y)
+
+def find_all_intersections(lines):
+    ''' Given a collection of lines, find all the
+    intersecting points.
+
+    :param lines: All the lines to find intersect points
+    :returns: The intersecting points
+    '''
+    points = (find_intersection(l1, l2) for l1 in lines for l2 in lines)
+    points = [point for point in points if point != None]
+    return points
+
+def get_polygon(points, **kwargs):
+    ''' Given a collection of points, attempt to fit a polygon
+    to the points and return those points.
+
+    :param points: The points to fit a polygon around
+    :returns: The bounding polygon
+    '''
+    curve     = np.array(points)
+    perimiter = cv2.arcLength(curve, True) * 0.02
+    polygon   = cv2.approxPolyDP(curve, perimiter, True)
+    return polygon
+
+def get_center_point(points):
+    ''' Given a collection of points, find the center
+    of mass for the collection.
+
+    :param points: The points to find the center for
+    :returns: The center of all the points
+    '''
+    center = np.array(points).sum(axis=0) * (1.0 / len(points))
+    return tuple(center.astype(np.int))
+
+def get_image_rectangle(image):
+    ''' Given an image, find the largest complete
+    rectangle in the image and return its points.
+
+    :param image: The image to get the rectangle for
+    :returns: The points of the discovered rectangle
+    '''
+    im_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    im_blur = cv2.blur(im_gray, (3, 3)) 
+    im_cann = cv2.Canny(im_blur, 100, 250)
+    #cv2.imshow('canny', im_cann)
+    contours, hierarchy = cv2.findContours(im_cann, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    epsilon = cv2.arcLength(contours[0], True) * 0.1 
+    points  = cv2.approxPolyDP(contours[0], epsilon, True)
+    return [tuple(point[0]) for point in points]
+
+def get_warped_rectangle(image, rect, size):
+    w, h  = size
+    rect  = np.array(rect, np.float32)
+    dest  = np.array([(0, h), (w, h), (w, 0), (0, 0)], np.float32)
+    transform = cv2.getPerspectiveTransform(rect, dest)
+    warp = cv2.warpPerspective(image, transform, (w, h)) 
+    return warp

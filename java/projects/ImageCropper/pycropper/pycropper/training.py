@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import sys
 import json
@@ -148,6 +147,10 @@ def get_options():
         help="Enable debug tracing",
         action="store_true", dest="debug", default=False)
 
+    parser.add_option("-c", "--count",
+        help="The number of repeat images to use for training",
+        dest="count", default=1)
+
     parser.add_option("-v", "--view",
         help="To view a dataset that has been trained",
         action="store_true", dest="view", default=False)
@@ -175,7 +178,7 @@ def main():
 
     database = json.load(open(option.database))
     output   = option.database + ".trained"
-    params   = { 'path': option.path }
+    params   = { 'path': option.path, 'count': option.count }
 
     if option.train:
         create_average_data_set(database, **params)
