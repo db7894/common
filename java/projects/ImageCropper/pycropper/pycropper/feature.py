@@ -1,6 +1,7 @@
 import sys
 import cv2, cv
 import numpy as np
+import pandas as pd
 
 from .utility import *
 
@@ -70,20 +71,20 @@ class FeatureContext(object):
     def region_dimensions(self):
         ''' The dimesions (w, h) of the region of interest
         '''
-        return self.region[2:]
+        return np.array(self.region[2:])
 
     @property
     def image_dimensions(self):
         ''' The dimesions (w, h) of the main image
         '''
-        return self.image.shape[:2]
+        return np.array(self.image.shape[:2])
 
     @property
     def image_center(self):
         ''' The center point of the main image
         '''
         size = self.image_dimensions
-        return np.ceil(np.array(size)).astype(int)
+        return np.ceil(size).astype(int)
 
     @property
     def historic_average_region(self):
@@ -115,8 +116,8 @@ def contour_white_count(context):
     :returns: The score for this feature
     '''
     crop = context.cropped_region
-    low  = (200, 200, 200)
-    high = (255, 255, 255)
+    low  = (  0,   0, 180)
+    high = (255,  50, 255)
     return count_pixels_in_range(crop, low, high)
 
 def contour_blue_count(context):
@@ -143,6 +144,20 @@ def contour_area(context):
         return 0 # no penalty if no rotated rectangle
 
     return cv2.contourArea(context.contour)
+
+def contour_area_ratio(context):
+    ''' Feature that computes the area of the contour
+    as a ratio of the overall image.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    if not context.rectangler:
+        return 0 # no penalty if no rotated rectangle
+
+    width, height = context.image_dimensions
+    area = cv2.contourArea(context.contour)
+    return area / float(width * height)
 
 def contour_centrality(context):
     ''' Feature that computes the centrality
@@ -182,6 +197,16 @@ def region_area_history(context):
     overlap   = (x_overlap * y_overlap * 1.0)                 # area of the overlapped region
     total     = area1 + area2 - overlap                       # remove double added overlap
     return min(1.0, overlap / total)                          # make sure we contribute max of 1.0
+
+def region_area(context):
+    ''' Feature that computes the area of the region
+    of interest.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    width, height = context.region_dimensions
+    return width * height
 
 def region_area_ratio(context):
     ''' Feature that computes the ratio of the area
@@ -280,6 +305,7 @@ def edge_color_intensity(context):
 
 FEATURES = [
     region_area_history,
+    region_area,
     region_area_ratio,
     region_aspect_ratio,
     region_skew,
@@ -289,9 +315,12 @@ FEATURES = [
     edge_color_average,
     edge_color_intensity,
     contour_area,
+    contour_area_ratio,
     contour_centrality,
     contour_blue_count,
     contour_white_count,
+    # TODO HuMoments
+    # TODO contour_aspect_ratio
 ]
 
 #------------------------------------------------------------
@@ -304,10 +333,20 @@ def apply_features_to_contexts(contexts, features=FEATURES):
 
     :param contexts: A collection of contexts to apply
     :param features: The features to apply to the context
-    :returns: A generator around the results
+    :returns: A generator around the results (context, { name : value })
     '''
     for context in contexts:
-        yield [(context.index, feature(context)) for features in features]
+        yield (context, { f.func_name : f(context) for f in features })
+
+def apply_features_to_context(context, features=FEATURES):
+    ''' Given a context, apply the features supplied against
+    the context.
+
+    :param context: A single context to apply
+    :param features: The features to apply to the context
+    :returns: The resulting features { name : value }
+    '''
+    return { f.func_name : f(context) for f in features }
 
 def contour_to_context(image, contour, **kwargs):
     ''' Given a single contour for a given image, compute
@@ -318,7 +357,7 @@ def contour_to_context(image, contour, **kwargs):
     :param contour: The contour to initialize features with
     :returns: A populated FeatureContext
     '''
-    perimiter = cv2.arcLength(contour, True),
+    perimiter = cv2.arcLength(contour, True)
     kwargs.update({
         'image'      : image,
         'contour'    : contour,
@@ -328,6 +367,17 @@ def contour_to_context(image, contour, **kwargs):
         'rectangle4' : cv2.approxPolyDP(contour, perimiter * 0.1, True),
     })
     return FeatureContext(**kwargs)
+
+def image_to_features(image):
+    ''' Given an image, extract the contours and for
+    each of them extract a feature set.
+
+    :param image: The image to get the features for
+    :returns: [(context, { name : value })]
+    '''
+    contours = get_image_contours(image)
+    contexts = [contour_to_context(image, c) for c in contours]
+    return list(apply_features_to_contexts(contexts))
 
 def database_to_contexts(database):
     ''' A generator to convert an input image collection
@@ -354,6 +404,24 @@ def apply_features(database):
     contexts = database_to_contexts(database)
     features = apply_features_to_contexts(contexts)
     return features
+
+def apply_crop_rules(results):
+    ''' Given the feature results for a collection of contours
+    for a single image, apply the learned ruleset to select the
+    best contour for the given image.
+
+    :param results: A collection of [(context, { name : value })]
+    :returns: The resulting selection with the given confidence
+    '''
+    # TODO learn these rules with a large dataset, then svm or
+    # linear regression
+    A = pd.DataFrame([x for _,x in results])
+    B = A[A.contour_area > A.contour_area.max()               * 0.10]
+    C = B[B.contour_blue_count > A.contour_blue_count.max()   * 0.10]
+    D = C[C.contour_white_count > A.contour_white_count.max() * 0.01]
+    E = D[D.contour_centrality < A.contour_centrality.max()   * 0.50]
+    F = E[E.region_aspect_ratio < A.region_aspect_ratio.max() * 0.10]
+    return A,B,C,D,E,F
 
 #------------------------------------------------------------
 # Main
