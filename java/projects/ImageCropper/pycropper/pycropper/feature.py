@@ -2,8 +2,16 @@ import sys
 import cv2, cv
 import numpy as np
 import pandas as pd
+from optparse import OptionParser
 
 from .utility import *
+
+#------------------------------------------------------------
+# logging
+#------------------------------------------------------------
+
+import logging
+_logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------
 # Context Classes
@@ -107,6 +115,7 @@ class FeatureContext(object):
 #------------------------------------------------------------
 # Image Features
 #------------------------------------------------------------
+
 def contour_white_count(context):
     ''' Feature that computes the count of blue
     pixels in the specified contour area (where
@@ -132,6 +141,50 @@ def contour_blue_count(context):
     low  = ( 90,  50,  50)
     high = (125, 255, 255)
     return count_pixels_in_range(crop, low, high)
+
+def contour_width_ratio(context):
+    ''' Feature that computes the ratio of the contour
+    width that we are bouding with a cropping rectangle.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    if not context.rectangler:
+        return 0 # no penalty if no rotated rectangle
+
+    (x, y), (w, h), theta = context.rectangler
+    width, height = context.image_dimensions
+    if width == 0: return 0
+    return float(w) / width
+
+def contour_height_ratio(context):
+    ''' Feature that computes the ratio of the contour
+    height that we are bouding with a cropping rectangle.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    if not context.rectangler:
+        return 0 # no penalty if no rotated rectangle
+
+    (x, y), (w, h), theta = context.rectangler
+    width, height = context.image_dimensions
+    if height == 0: return 0
+    return float(h) / height
+
+def contour_aspect_ratio(context):
+    ''' Feature that computes the aspect ratio of the
+    contour that we are bouding with a cropping rectangle.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    if not context.rectangler:
+        return 0 # no penalty if no rotated rectangle
+
+    (x, y), (width, height), theta = context.rectangler
+    if height == 0: return 0
+    return float(width) / float(height)
 
 def contour_area(context):
     ''' Feature that computes the area of the contour
@@ -176,6 +229,28 @@ def contour_centrality(context):
     cent = size / 2.0
     dist = np.linalg.norm(rect - cent)
     return dist / diag
+
+def contour_moments(context):
+    ''' Feature that computes the first moments
+    of the supplied contour.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    # cx = int(moments['m10']/moments['m00'])
+    # cy = int(moments['m01']/moments['m00'])
+    # moment_area = moments['m00']
+    return cv2.moments(context.contour)
+
+def contour_hu_moments(context):
+    ''' Feature that computes the seven hu moments
+    of the supplied contour.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    moments = cv2.moments(context.contour)
+    return cv2.HuMoments(moments)
 
 def region_area_history(context):
     ''' Feature that computes the accuracy of the
@@ -228,6 +303,7 @@ def region_aspect_ratio(context):
     :returns: The score for this feature
     '''
     width, height = context.region_dimensions
+    if height == 0: return 0
     return float(width) / float(height)
 
 def region_skew(context):
@@ -237,7 +313,9 @@ def region_skew(context):
     :param context: The context to calculate with
     :returns: The score for this feature
     '''
-    if not context.rectangler: return 0
+    if not context.rectangler:
+        return 0
+
     (cx, cy), (w, h), theta = context.rectangler
     return theta + 180 if w < h else theta + 90
 
@@ -316,15 +394,18 @@ FEATURES = [
     edge_color_intensity,
     contour_area,
     contour_area_ratio,
+    contour_aspect_ratio,
     contour_centrality,
+    contour_width_ratio,
+    contour_height_ratio,
     contour_blue_count,
     contour_white_count,
-    # TODO HuMoments
-    # TODO contour_aspect_ratio
+    contour_moments,
+    contour_hu_moments,
 ]
 
 #------------------------------------------------------------
-# Image Feature Computing
+# Image Feature Utilities
 #------------------------------------------------------------
 
 def apply_features_to_contexts(contexts, features=FEATURES):
@@ -379,6 +460,48 @@ def image_to_features(image):
     contexts = [contour_to_context(image, c) for c in contours]
     return list(apply_features_to_contexts(contexts))
 
+def images_to_features(images):
+    ''' Given a collection of images, extract the contours
+    and for each of them extract a feature set.
+
+    :param images: The images to get the features for
+    :returns: A generator of [(context, { name : value })]
+    '''
+    for image in images:
+        yield image_to_features(image)
+
+def features_to_dataframe(index, features):
+    ''' Given a collection of features for the
+    specified entry in the database, return the
+    features as a pandas dataframe.
+
+    :param index: The index to associate with the database
+    :param features: The resulting features for the index
+    :returns: A pandas dataframe for the features
+    '''
+    frame = pd.DataFrame([x for _,x in features])
+    frame['label'] = 0
+    frame['index'] = index
+    # TODO flatten and delete features
+    return frame
+
+def database_to_features(database, **kwargs):
+    ''' Given a pandas dataframe as a database,
+    for each image in the database, compute the features
+    and flatten them into a final dataframe that can be
+    used to train on.
+
+    :param database: The input database to operate with
+    :returns: A full database of contours to train with
+    '''
+    dataframes = pd.DataFrame()
+    for index, image in open_images(database, **kwargs):
+        _logger.debug("converting [%d] to features", index)
+        features  = image_to_features(image)
+        dataframe = features_to_dataframe(index, features)
+        dataframes.append(dataframe)
+    return dataframes
+
 def database_to_contexts(database):
     ''' A generator to convert an input image collection
     database to a FeatureContext container.
@@ -386,10 +509,10 @@ def database_to_contexts(database):
     :param database: The images database to convert
     :returns: A generator around the conversion
     '''
-    for index in database['Path']:
+    for index, path in database.Path.iteritems():
         params = {
-            'region': database['Crop'][index],
-            'image' : open_if_path(database['Path'][index], hsv=True),
+            'region': database.ix[index].Crop,
+            'image' : open_if_path(path, hsv=True),
             'index' : index,
         }
         yield FeatureContext(**params)
@@ -423,16 +546,75 @@ def apply_crop_rules(results):
     F = E[E.region_aspect_ratio < A.region_aspect_ratio.max() * 0.10]
     return A,B,C,D,E,F
 
-#------------------------------------------------------------
-# Main
-#------------------------------------------------------------
-if __name__ == '__main__':
-    if len(sys.argv) <= 1:
-        print "%s <database.json>" % sys.argv[0]
-        sys.exit()
+#---------------------------------------------------------------------------# 
+# initialize our program settings
+#---------------------------------------------------------------------------# 
 
-    database = json.load(open(sys.argv[1], 'r'))
-    features = apply_features(database)
+def get_options():
+    ''' A helper method to parse the command line options
 
-    with open(sys.argv[1] + '.features', 'w') as handle:
-        json.dump(list(features), handle) 
+    :returns: The options manager
+    '''
+    parser = OptionParser()
+
+    parser.add_option("-p", "--path",
+        help="The path to append to the files path",
+        dest="path", default="")
+
+    parser.add_option("-d", "--debug",
+        help="Enable debug tracing",
+        action="store_true", dest="debug", default=False)
+
+    parser.add_option("-i", "--input",
+        help="The input database to operate with",
+        dest="database", default='')
+
+    parser.add_option("-o", "--output",
+        help="The output database to store features at",
+        dest="output", default=None)
+
+    (opt, arg) = parser.parse_args()
+    return opt
+
+#------------------------------------------------------------
+# main
+#------------------------------------------------------------
+
+def main():
+    ''' A main driver for collection features from a given
+    database of images. The database is assumed to be a
+    pandas dataframe that is serialized in json.
+    '''
+    option = get_options()
+
+    # global configuration
+    params   = {
+        'root': option.path or '',
+    }
+
+    if option.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
+    database = pd.read_json(option.database)
+    features = database_to_features(database, **params)
+    storage  = option.output or (option.database + ".features")
+    features.to_json(storage)
+
+#------------------------------------------------------------
+# exports
+#------------------------------------------------------------
+
+__all__ = [
+    'FEATURES',
+    'apply_features_to_contexts',
+    'apply_features_to_context',
+    'contour_to_context',
+    'image_to_features',
+    'images_to_features',
+    'features_to_dataframe',
+    'database_to_features',
+    'database_to_contexts',
+    'apply_features',
+    'apply_crop_rules',
+    'main',
+]

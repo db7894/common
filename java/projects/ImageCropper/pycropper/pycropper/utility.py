@@ -3,6 +3,17 @@ import cv2, cv
 import numpy as np
 import urllib2
 
+#------------------------------------------------------------
+# logging
+#------------------------------------------------------------
+
+import logging
+_logger = logging.getLogger(__name__)
+
+#------------------------------------------------------------
+# utilities 
+#------------------------------------------------------------
+
 def resize_image(image, ratio):
     ''' Given an image, resize it by the supplied rate.
 
@@ -23,9 +34,26 @@ def open_if_path(path, **kwargs):
     is_gray = kwargs.get('gray', False)
     is_hsv  = kwargs.get('hsv', False)
     im_base = cv2.imread(path) if isinstance(path, unicode) else path
+    if isinstance(path, unicode):
+        _logger.debug("opening image at: %s", path)
     if is_gray: return cv2.cvtColor(im_base, cv2.COLOR_BGR2GRAY)
     if is_hsv:  return cv2.cvtColor(im_base, cv2.COLOR_BGR2HSV)
     return im_base
+
+def open_images(database, **kwargs):
+    ''' Given a collection of paths, open all the paths
+    and return an image handle to that image.
+
+    :param database: The input database to operate with
+    :param root: An optional path to append to each image's path
+    :returns: A generator of (index, image)
+    '''
+    pathdir = kwargs.get('root', '')
+
+    for index, path in database.Path.iteritems():
+        path  = os.path.join(pathdir, path)
+        image = open_if_path(path, **kwargs)
+        yield (index, image)
 
 def generate_pick_mask(image, **kwargs):
     ''' Given a path or image, generate a mask for the
@@ -383,6 +411,7 @@ __all__ = [
     'get_polygon',
     'get_warped_rectangle',
     'open_if_path',
+    'open_images',
     'resize_image',
     'show_image_crop',
 ]
