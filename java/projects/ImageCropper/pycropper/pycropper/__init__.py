@@ -1,4 +1,7 @@
 from .utility import *
-from .graphic import *
-from .conversion import *
-from .download import *
+
+from . import graphic
+from . import learning
+from . import download
+from . import download
+from . import extract

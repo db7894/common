@@ -1,8 +1,5 @@
-import sys
 import cv2, cv
 import numpy as np
-import pandas as pd
-from optparse import OptionParser
 
 from .utility import *
 
@@ -115,6 +112,15 @@ class FeatureContext(object):
 #------------------------------------------------------------
 # Image Features
 #------------------------------------------------------------
+
+def contour_index(context):
+    ''' Feature that computes a unique index for this
+    contour for the specific image.
+
+    :param context: The context to calculate with
+    :returns: The score for this feature
+    '''
+    return context.index
 
 def contour_white_count(context):
     ''' Feature that computes the count of blue
@@ -392,6 +398,7 @@ FEATURES = [
     region_pixel_intensity,
     edge_color_average,
     edge_color_intensity,
+    contour_index,
     contour_area,
     contour_area_ratio,
     contour_aspect_ratio,
@@ -402,219 +409,4 @@ FEATURES = [
     contour_white_count,
     contour_moments,
     contour_hu_moments,
-]
-
-#------------------------------------------------------------
-# Image Feature Utilities
-#------------------------------------------------------------
-
-def apply_features_to_contexts(contexts, features=FEATURES):
-    ''' Given a collection of contexts, apply the features
-    supplied against the contexts.
-
-    :param contexts: A collection of contexts to apply
-    :param features: The features to apply to the context
-    :returns: A generator around the results (context, { name : value })
-    '''
-    for context in contexts:
-        yield (context, { f.func_name : f(context) for f in features })
-
-def apply_features_to_context(context, features=FEATURES):
-    ''' Given a context, apply the features supplied against
-    the context.
-
-    :param context: A single context to apply
-    :param features: The features to apply to the context
-    :returns: The resulting features { name : value }
-    '''
-    return { f.func_name : f(context) for f in features }
-
-def contour_to_context(image, contour, **kwargs):
-    ''' Given a single contour for a given image, compute
-    the remaining neccessary features to be used to create
-    a feature context.
-
-    :param image: The image to create the context with
-    :param contour: The contour to initialize features with
-    :returns: A populated FeatureContext
-    '''
-    perimiter = cv2.arcLength(contour, True)
-    kwargs.update({
-        'image'      : image,
-        'contour'    : contour,
-        'perimiter'  : perimiter,
-        'rectangle2' : cv2.boundingRect(contour),
-        'rectangler' : cv2.minAreaRect(contour),
-        'rectangle4' : cv2.approxPolyDP(contour, perimiter * 0.1, True),
-    })
-    return FeatureContext(**kwargs)
-
-def image_to_features(image):
-    ''' Given an image, extract the contours and for
-    each of them extract a feature set.
-
-    :param image: The image to get the features for
-    :returns: [(context, { name : value })]
-    '''
-    contours = get_image_contours(image)
-    contexts = [contour_to_context(image, c) for c in contours]
-    return list(apply_features_to_contexts(contexts))
-
-def images_to_features(images):
-    ''' Given a collection of images, extract the contours
-    and for each of them extract a feature set.
-
-    :param images: The images to get the features for
-    :returns: A generator of [(context, { name : value })]
-    '''
-    for image in images:
-        yield image_to_features(image)
-
-def features_to_dataframe(index, features):
-    ''' Given a collection of features for the
-    specified entry in the database, return the
-    features as a pandas dataframe.
-
-    :param index: The index to associate with the database
-    :param features: The resulting features for the index
-    :returns: A pandas dataframe for the features
-    '''
-    frame = pd.DataFrame([x for _,x in features])
-    frame['label'] = 0
-    frame['index'] = index
-    # TODO flatten and delete features
-    return frame
-
-def database_to_features(database, **kwargs):
-    ''' Given a pandas dataframe as a database,
-    for each image in the database, compute the features
-    and flatten them into a final dataframe that can be
-    used to train on.
-
-    :param database: The input database to operate with
-    :returns: A full database of contours to train with
-    '''
-    dataframes = pd.DataFrame()
-    for index, image in open_images(database, **kwargs):
-        _logger.debug("converting [%d] to features", index)
-        features  = image_to_features(image)
-        dataframe = features_to_dataframe(index, features)
-        dataframes.append(dataframe)
-    return dataframes
-
-def database_to_contexts(database):
-    ''' A generator to convert an input image collection
-    database to a FeatureContext container.
-
-    :param database: The images database to convert
-    :returns: A generator around the conversion
-    '''
-    for index, path in database.Path.iteritems():
-        params = {
-            'region': database.ix[index].Crop,
-            'image' : open_if_path(path, hsv=True),
-            'index' : index,
-        }
-        yield FeatureContext(**params)
- 
-def apply_features(database):
-    ''' Given a database of images, apply the current
-    set of feature descriptors to the images and store
-    the results.
-
-    :param database: The database to run the features against
-    '''
-    contexts = database_to_contexts(database)
-    features = apply_features_to_contexts(contexts)
-    return features
-
-def apply_crop_rules(results):
-    ''' Given the feature results for a collection of contours
-    for a single image, apply the learned ruleset to select the
-    best contour for the given image.
-
-    :param results: A collection of [(context, { name : value })]
-    :returns: The resulting selection with the given confidence
-    '''
-    # TODO learn these rules with a large dataset, then svm or
-    # linear regression
-    A = pd.DataFrame([x for _,x in results])
-    B = A[A.contour_area > A.contour_area.max()               * 0.10]
-    C = B[B.contour_blue_count > A.contour_blue_count.max()   * 0.10]
-    D = C[C.contour_white_count > A.contour_white_count.max() * 0.01]
-    E = D[D.contour_centrality < A.contour_centrality.max()   * 0.50]
-    F = E[E.region_aspect_ratio < A.region_aspect_ratio.max() * 0.10]
-    return A,B,C,D,E,F
-
-#---------------------------------------------------------------------------# 
-# initialize our program settings
-#---------------------------------------------------------------------------# 
-
-def get_options():
-    ''' A helper method to parse the command line options
-
-    :returns: The options manager
-    '''
-    parser = OptionParser()
-
-    parser.add_option("-p", "--path",
-        help="The path to append to the files path",
-        dest="path", default="")
-
-    parser.add_option("-d", "--debug",
-        help="Enable debug tracing",
-        action="store_true", dest="debug", default=False)
-
-    parser.add_option("-i", "--input",
-        help="The input database to operate with",
-        dest="database", default='')
-
-    parser.add_option("-o", "--output",
-        help="The output database to store features at",
-        dest="output", default=None)
-
-    (opt, arg) = parser.parse_args()
-    return opt
-
-#------------------------------------------------------------
-# main
-#------------------------------------------------------------
-
-def main():
-    ''' A main driver for collection features from a given
-    database of images. The database is assumed to be a
-    pandas dataframe that is serialized in json.
-    '''
-    option = get_options()
-
-    # global configuration
-    params   = {
-        'root': option.path or '',
-    }
-
-    if option.debug:
-        logging.basicConfig(level=logging.DEBUG)
-
-    database = pd.read_json(option.database)
-    features = database_to_features(database, **params)
-    storage  = option.output or (option.database + ".features")
-    features.to_json(storage)
-
-#------------------------------------------------------------
-# exports
-#------------------------------------------------------------
-
-__all__ = [
-    'FEATURES',
-    'apply_features_to_contexts',
-    'apply_features_to_context',
-    'contour_to_context',
-    'image_to_features',
-    'images_to_features',
-    'features_to_dataframe',
-    'database_to_features',
-    'database_to_contexts',
-    'apply_features',
-    'apply_crop_rules',
-    'main',
 ]

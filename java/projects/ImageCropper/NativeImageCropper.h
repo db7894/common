@@ -7,6 +7,7 @@ namespace bashwork {
 namespace vision {
     cv::Mat  get_region_mask(const cv::Mat &image);
     cv::Rect get_largest_rectangle(const cv::Mat &image);
+    cv::vector<cv::vector<cv::Point>> get_image_contours(const cv::Mat &image);
 };
 };
 

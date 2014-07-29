@@ -77,15 +77,3 @@ def width_to_point4(rectangle):
     '''
     x, y, w, h = rectangle
     return [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
-
-#------------------------------------------------------------
-# exports
-#------------------------------------------------------------
-__all__ = [
-    'point2_to_width',
-    'point2_to_point4',
-    'point4_to_point2',
-    'point4_to_width',
-    'width_to_point2',
-    'width_to_point4',
-]

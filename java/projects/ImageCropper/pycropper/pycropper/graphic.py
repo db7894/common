@@ -157,12 +157,3 @@ def select_rectangle(path, **kwargs):
 
     cv2.destroyAllWindows()
     return select.get_result()
-
-#------------------------------------------------------------
-# exports
-#------------------------------------------------------------
-__all__ = [
-    'PointSelector',
-    'RectangleSelector',
-    'select_rectangle',
-]

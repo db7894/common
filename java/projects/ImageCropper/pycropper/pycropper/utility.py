@@ -14,6 +14,14 @@ _logger = logging.getLogger(__name__)
 # utilities 
 #------------------------------------------------------------
 
+def random_color(size=3):
+    ''' Return a random color from the supplied range.
+
+    :param size: The depth of the color
+    :returns: A new random color
+    '''
+    return np.random.randint(0, 255, size).tolist()
+
 def resize_image(image, ratio):
     ''' Given an image, resize it by the supplied rate.
 
@@ -31,26 +39,28 @@ def open_if_path(path, **kwargs):
     :param path: The path to an image or an image
     :returns: A new numpy image
     '''
+    if not isinstance(path, unicode):
+        return path # already opened
+
+    _logger.debug("opening image at: %s", path)
     is_gray = kwargs.get('gray', False)
     is_hsv  = kwargs.get('hsv', False)
-    im_base = cv2.imread(path) if isinstance(path, unicode) else path
-    if isinstance(path, unicode):
-        _logger.debug("opening image at: %s", path)
+    im_base = cv2.imread(path)
     if is_gray: return cv2.cvtColor(im_base, cv2.COLOR_BGR2GRAY)
     if is_hsv:  return cv2.cvtColor(im_base, cv2.COLOR_BGR2HSV)
     return im_base
 
-def open_images(database, **kwargs):
+def open_images(paths, **kwargs):
     ''' Given a collection of paths, open all the paths
     and return an image handle to that image.
 
-    :param database: The input database to operate with
+    :param paths: The collection of paths to open [(index, path)]
     :param root: An optional path to append to each image's path
     :returns: A generator of (index, image)
     '''
     pathdir = kwargs.get('root', '')
 
-    for index, path in database.Path.iteritems():
+    for index, path in paths:
         path  = os.path.join(pathdir, path)
         image = open_if_path(path, **kwargs)
         yield (index, image)
@@ -67,8 +77,7 @@ def generate_pick_mask(image, **kwargs):
     opening_kernel  = kwargs.get('opening_kernel', np.ones((5, 5), np.uint8))
     should_blur     = kwargs.get('should_blur', True)
 
-    im_base = open_if_path(image)
-    im_base = cv2.cvtColor(im_base, cv2.COLOR_BGR2HSV)
+    im_base = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     im_near = cv2.inRange(im_base, lower_threshold, upper_threshold)
     if should_blur:
         return cv2.morphologyEx(im_near, cv2.MORPH_OPEN, opening_kernel)
@@ -96,8 +105,7 @@ def get_image_lines(image, **kwargs):
     hough_len     = kwargs.get('hough-max-length', 30)
     hough_gap     = kwargs.get('hough-min-gap', 10)
 
-    im_base = open_if_path(image)
-    im_blur = cv2.blur(im, blur_kernel)
+    im_blur = cv2.blur(image, blur_kernel)
     im_cann = cv2.Canny(im_blur, cann_low_thr, cann_high_thr, apertureSize=cann_size)
     lines   = cv2.HoughLinesP(im_cann, hough_rho, hough_theta, hough_thr, hough_len, hough_gap)[0]
     return lines
@@ -150,9 +158,7 @@ def get_image_corners(image, **kwargs):
     :param image: The image to retrieve the corners of
     :returns: The corners of the supplied image
     '''
-    # TODO kwargs parameters
-    im_base = open_if_path(image)
-    im_gray = np.float32(im_base)
+    im_gray = np.float32(image)
     im_corn = cv2.cornerHarris(im_gray, 2, 3, 0.04)
     return im_corn
 
@@ -178,9 +184,11 @@ def get_image_contours(image, **kwargs):
     cann_low_thr  = kwargs.get('canny-low-threshold', 100)
     cann_high_thr = kwargs.get('canny-high-threshold', 100)
     cann_size     = kwargs.get('canny-aperture-size', 3)
+    blur_kernel   = kwargs.get('blur-kernel', (3, 3))
 
-    im_base = open_if_path(image)
-    im_cann = cv2.Canny(im_base, cann_low_thr, cann_high_thr, apertureSize=cann_size)
+    im_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    im_blur = cv2.blur(im_gray, blur_kernel)
+    im_cann = cv2.Canny(im_blur, cann_low_thr, cann_high_thr, apertureSize=cann_size)
     contours, hierarchy = cv2.findContours(im_cann, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     return contours
 
@@ -387,31 +395,3 @@ def count_pixels_in_range(image, low, high):
     }
     im_mask = generate_pick_mask(image, **params)
     return cv2.countNonZero(im_mask)
-
-#------------------------------------------------------------
-# exports
-#------------------------------------------------------------
-__all__ = [
-    'add_image_lines',
-    'add_image_points',
-    'count_pixels_in_range',
-    'find_all_intersections',
-    'find_intersection',
-    'generate_pick_mask',
-    'get_biggest_rectangle',
-    'get_center_point',
-    'get_image_contours',
-    'get_image_corners',
-    'get_image_crop',
-    'get_image_crop_edges',
-    'get_image_lines',
-    'get_image_rectangle_fuzzy',
-    'get_image_rectangle_tight',
-    'get_largest_contours',
-    'get_polygon',
-    'get_warped_rectangle',
-    'open_if_path',
-    'open_images',
-    'resize_image',
-    'show_image_crop',
-]

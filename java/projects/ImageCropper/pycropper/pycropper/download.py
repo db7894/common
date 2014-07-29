@@ -72,7 +72,7 @@ def save_images(links, **kwargs):
 # initialize our program settings
 #---------------------------------------------------------------------------# 
 
-def get_options():
+def _get_options():
     ''' A helper method to parse the command line options
 
     :returns: The options manager
@@ -116,18 +116,9 @@ def sample_data(data, rate=1.0):
 #---------------------------------------------------------------------------# 
 
 def main():
-    option = get_options()
+    option = _get_options()
     output = os.path.abspath(option.path)
     links  = json.load(open(option.database))
     links  = sample_data(links, option.sample)
     paths  = save_images(linkes, path=path)
     _logger.debug("Downloaded {} files".format(len(paths)))
-
-#------------------------------------------------------------
-# exports
-#------------------------------------------------------------
-__all__ = [
-    'retrieve_image',
-    'save_image',
-    'save_images',
-]

@@ -1,0 +1,9 @@
+region_skew= ~90 or ~180
+contour_area > 0.1 * max ~= 1300
+region_pixel_intensity > ~150
+x region_area_ratio > ~0.01 
+contour_blue_count > 0.1 * max ~= 1000
+region_centrality < 0.25 * max ~= 0.1
+contour_centrality < 0.25 * max ~= 0.1
+region_aspect_ratio < .1 * mean ~= 0.1
+contour_white_count > 0.01 * max ~= 8500
