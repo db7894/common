@@ -1,20 +1,20 @@
 '''
+- release all, retry, try all not first fail (compute then all())
+- split lock pojo and context manager
+  * no client in the DynamoDBLock
+  * how to overload time method
 - logging
-- should dynamo methods create a lock instance (orm)
 - atomic time operations / cache operations
   * check if we need to synchronize operations
 - get updates timestamp
-- heartbeat thread / heartbeat method
-  * if update failed, remove from cache
-  * shutdown method to close all locks and stop thread
+- fix tangled worker thread (internal or seperate)
+- shutdown method to close all locks and stop thread
 - check if table exists works correctly
-- add range key if needed
-- add additional attributes if needed
 - unit tests, failure tests
-- add methods to lock instance
 - make sure to/from dynamodb types are okay (serialize/deserialize)
 - try to get lock for N time at rate of M (retryable class)
 - thunk update data for when the lock is released
+  * callback on release
 - acquire is update w/ expect { is_locked: False }
   * doesn't matter which version
   * doesn't matter which owner
@@ -23,17 +23,74 @@
   * name is same
 - otherwise, if someone updated the version
   * we get the new lock and retry
+- extra schema
+  * add range key if needed
+  * add additional attributes if needed
 '''
 import time
 import uuid
 import socket
 import json
+from threading import Thread
 from copy import copy
 from datetime import timedelta
 from boto.dynamodb2.fields import HashKey
 from boto.dynamodb2.types import STRING
 from boto.dynamodb2.items import Item
 from boto.dynamodb2.table import Table
+
+#--------------------------------------------------------------------------------
+# Logging
+#--------------------------------------------------------------------------------
+
+import logging
+_logger = logging.getLogger(__name__)
+
+#--------------------------------------------------------------------------------
+# Worker Thread
+#--------------------------------------------------------------------------------
+
+class DynamoDBLockWorker(object):
+    ''' The worker that runs to periodically update lock leases as long
+    as the system is alive. This prevents long running processes from
+    losing their locks by possibly fast clients.
+    '''
+
+    def __init__(self, **kwargs):
+        ''' Initializes a new instance of the DynamoDBLock class
+
+        :param client: The client to perform management with
+        :param cycle: The length of each cycle in seconds (default 1 minutes)
+        :param locks: The dictionary of locks to manage (default the client locks)
+        '''
+        self.client = kwargs.get('client')
+        self.locks  = kwargs.get('locks', self.client.locks)
+        self.cycle  = kwargs.get('cycle', timedelta(minutes=1).total_seconds())
+        self.thread = Thread(target=self.worker, args=(self,))
+
+    def stop(self):
+        ''' Stops the worker thread '''
+        self.is_running = False
+        self.thread.join()
+
+    def start(self):
+        ''' Starts the worker thread '''
+        self.is_running = True
+        self.thread.start()
+
+    def worker(self): 
+        ''' The worker thread used to update the lock leases
+        for the currently handled locks.
+        '''
+        while self.is_running:
+            start = self.client.get_new_timestamp()
+            for lock in self.locks.values():
+                try:
+                    self.client.touch_lock(lock)
+                except LockNotGrantedException, ex: 
+                    del self.locks[lock.name]
+            elapsed = self.client.get_new_timestamp() - start
+            time.sleep(max(self.cycle - elapsed, 0))
 
 #--------------------------------------------------------------------------------
 # Exceptions
@@ -52,12 +109,6 @@ class DynamoDBLockSchema(object):
     new names in the constructor.
     '''
 
-    __slots__ = [
-        'name', 'duration', 'is_locked',
-        'owner', 'version', 'payload', 'table_name',
-        'read_capacity', 'write_capacity'
-    ]
-
     def __init__(self, **kwargs):
         ''' Initializes a new instance of the DynamoDBLock class
 
@@ -72,6 +123,46 @@ class DynamoDBLockSchema(object):
         self.table_name     = kwargs.get('table_name', 'Locks')
         self.read_capacity  = kwargs.get('read_capacity', 1)
         self.write_capacity = kwargs.get('write_capacity', 1)
+
+    # ------------------------------------------------------------
+    # schema operations
+    # ------------------------------------------------------------
+    # These methods convert to and from the underlying table
+    # schema
+    # ------------------------------------------------------------
+
+    def to_schema(self, params):
+        ''' Given a dict of query params, convert them to the
+        underlying schema, make sure they are valid, and remove
+        paramaters that are not used.
+
+        :param params: The paramaters to query with
+        :returns: The converted query parameters
+        '''
+        query = {}
+        if 'name'      in params: query[self.schema.name]      = params['name']
+        if 'duration'  in params: query[self.schema.duration]  = params['duration']
+        if 'is_locked' in params: query[self.schema.is_locked] = params['is_locked']
+        if 'owner'     in params: query[self.schema.owner]     = params['owner']
+        if 'version'   in params: query[self.schema.version]   = params['version']
+        if 'payload'   in params: query[self.schema.payload]   = params['payload']
+        return query
+
+    def to_dict(self, schema):
+        ''' Given a lock record, convert it to a dict of
+        the query parameter names.
+
+        :param schema: The record to convert to a dict
+        :returns: The converted dict with query parameter names
+        '''
+        return {
+            'name':      schema[self.schema.name],
+            'duration':  schema[self.schema.duration],
+            'is_locked': schema[self.schema.is_locked],
+            'owner':     schema[self.schema.owner],
+            'version':   schema[self.schema.version],
+            'payload':   schema[self.schema.payload],
+        }
 
     def __str__(self):
         return json.dumps(self.__dict__)
@@ -109,7 +200,7 @@ class DynamoDBLock(object):
         as we need to wait for the new client to finish its work. This
         causes us to wait at least another duration of time.
         '''
-        self.timestamp = self.client._get_new_timestamp()
+        self.timestamp = self.client.get_new_timestamp()
 
     def is_expired(self):
         ''' Check if the current lock is expired and needs to be
@@ -117,7 +208,7 @@ class DynamoDBLock(object):
 
         :returns: True if expired, False otherwise
         '''
-        current = self.client._get_new_timestamp()
+        current = self.client.get_new_timestamp()
         return (self.timestamp + self.delta) > current
 
     def __hash__(self):
@@ -140,10 +231,11 @@ class DynamoDBLockClient(object):
         :param owner: The owner of the locks created by this client
         '''
         self.locks   = kwargs.get('locks', {})
-        self.owner   = kwargs.get('owner', self._get_new_owner())
+        self.owner   = kwargs.get('owner', self.get_new_owner())
         self.schema  = kwargs.get('schema', DynamoDBLockSchema())
         self.table   = kwargs.get('table', self._create_table())
         self.timeout = kwargs.get('timeout', long(timedelta(minutes=5) * 1000))
+        self.worker  = kwargs.get('worker', DynamoDBLockWorker(client=self))
 
     def is_lock_alive(self, lock):
         ''' Given a lock, test if it is still active
@@ -255,10 +347,23 @@ class DynamoDBLockClient(object):
         return lock
 
     # ------------------------------------------------------------
-    # new data operations
+    # magic methods
+    # ------------------------------------------------------------
+    # These are the context managers that allow for the `with`
+    # style of using locks (to avoid the try-finally pattern)
     # ------------------------------------------------------------
 
-    def _get_new_owner(self):
+    __enter__ = acquire_lock
+    __exit__  = release_lock
+
+    # ------------------------------------------------------------
+    # new data operations
+    # ------------------------------------------------------------
+    # These can be overridden by users to supply custom methods of
+    # managing time, version, and ownership.
+    # ------------------------------------------------------------
+
+    def get_new_owner(self):
         ''' Helper method to retrieve a new owner name that is
         not only unique to the server, but unique to the application
         on this server.
@@ -267,7 +372,7 @@ class DynamoDBLockClient(object):
         '''
         return socket.gethostname() + str(uuid.uuid4())
 
-    def _get_new_version(self):
+    def get_new_version(self):
         ''' Helper method to retrieve a new version number
         for a lock. This can be overloaded to provide a custom
         protocol.
@@ -276,49 +381,13 @@ class DynamoDBLockClient(object):
         '''
         return str(uuid.uuid4())
 
-    def _get_new_timestamp(self):
+    def get_new_timestamp(self):
         ''' Helper method to retrieve the current time since
         the epoch in milliseconds.
 
         :returns: The current time in milliseconds
         '''
         return long(time.time() * 1000)
-
-    # ------------------------------------------------------------
-    # schema operations
-    # ------------------------------------------------------------
-
-    def _dict_to_schema(self, params):
-        ''' Given a dict of query params, convert them to the
-        underlying schema, make sure they are valid, and remove
-        paramaters that are not used.
-
-        :param params: The paramaters to query with
-        :returns: The converted query parameters
-        '''
-        query = {}
-        if 'name'      in params: query[self.schema.name]      = params['name']
-        if 'duration'  in params: query[self.schema.duration]  = params['duration']
-        if 'is_locked' in params: query[self.schema.is_locked] = params['is_locked']
-        if 'owner'     in params: query[self.schema.owner]     = params['owner']
-        if 'version'   in params: query[self.schema.version]   = params['version']
-        if 'payload'   in params: query[self.schema.payload]   = params['payload']
-        return query
-
-    def _schema_to_dict(self, record):
-        ''' Given a lock record, convert it to a dict of
-        the query parameter names.
-
-        :param record: The record to convert to a dict
-        :returns: The converted dict with query parameter names
-        '''
-        return {
-            'duration':  record[self.schema.duration],
-            'is_locked': record[self.schema.is_locked],
-            'owner':     record[self.schema.owner],
-            'version':   record[self.schema.version],
-            'payload':   record[self.schema.payload],
-        }
 
     # ------------------------------------------------------------
     # dynamo operations
@@ -350,17 +419,25 @@ class DynamoDBLockClient(object):
         :param name: The name of the lock to retrieve
         :returns: The lock if it exists, None otherwise
         '''
-        query  = { self.schema.name: name, 'consistent': True }
+        query  = {
+            self.schema.name: name,
+            'consistent': True,
+        }
         record = self.table.get_item(**query)
         if not record:
             return None
 
-        params = self._schema_to_dict(record)
+        params = self.schema.to_dict(record)
         return DynamoDBLock(**params)
 
     def _delete_entry(self, name, version):
         ''' Attempt to delete the lock from dynamodb with
         the supplied name.
+        
+        We only allow a lock to be deleted if we know the
+        current version number and we are the current owner
+        of the lock. In order to delete another users lock, we
+        must update it such that we are the owner.
 
         :param name: The name of the lock to delete
         :returns: True if successful, False otherwise
@@ -378,33 +455,45 @@ class DynamoDBLockClient(object):
         :param duration: The amount of time to hold the lock
         :returns: True if successful, False otherwise
         '''
-        params = self._dict_to_schema(kwargs)
-        params.update({
-            self.schema.name: name,
-            self.schema.duration: duration,
-            self.schema.owner: self.owner,
-            self.schema.version: self._get_new_version(),
+        record = self.schema.to_schema(kwargs)
+        record.update({
+            self.schema.name:      name,
+            self.schema.duration:  duration,
+            self.schema.owner:     self.owner,
+            self.schema.version:   self.get_new_version(),
             self.schema.is_locked: True,
         })
-        is_created = self.table._put_item(params)
-        return (is_created, params[self.schema.version])
 
-    def _update_entry(self, name, current, **kwargs):
+        if self.table._put_item(record):
+            params = self.schema.to_dict(record)
+            return DynamoDBLock(**params)
+        return None
+
+    def _update_entry(self, name, current, force=False, **kwargs):
         ''' Attempt to update the underlying lock on dynamodb
         with the supplied values.
+
+        In order to update an entry, at least the version number
+        must be the same. If we are overwriting a timed out lock
+        we change ourself to the new owner, otherwise, we must be
+        the current owner to update.
+
+        Every update will automatically bump the version number
+        of the underlying lock so clients can refresh their lease.
 
         :param name: The name of the lock to update
         :param version: The current version of the lock
         :returns: True if successful, False otherwise
         '''
-        params  = self._dict_to_schema(kwargs)
-        params[self.schema.version] = self._get_new_version()
-        expect  = {
-            self.schema.owner:   self.owner,
+        params = self.schema.to_schema(kwargs)
+        params[self.schema.version] = self.get_new_version()
+
+        expect = {
             self.schema.version: version,
-        })
+            self.schema.name:    name,
+        }
+        if not force:
+            expect[self.schema.owner] = self.owner
+
         is_updated = self.table._update_item(name, params, expects=expect)
         return (is_updated, params[self.schema.version])
-
-    __enter__ = acquire_lock
-    __exit__  = release_lock

@@ -12,11 +12,25 @@ namespace vision {
      * @param image The image that this contour is associated with
      * @param contour The contour to build a context for
      */
-    ContourContext::ContourContext(const cv::Mat& image, const cv::vector<cv::Point> contour) :
-      _image(image),
+    ContourContext::ContourContext(const std::pair<cv::Mat, cv::Mat>& parts, const cv::vector<cv::Point>& contour) :
       _contour(contour),
-      _rotated(cv::minAreaRect(contour))
-    { }
+      _blue_mask(std::get<0>(parts)),
+      _white_mask(std::get<1>(parts)),
+      _size(_blue_mask.size())
+    {}
+
+    /**
+     * @summary Perform any complex initialization of the context
+     * @return void
+     */
+    void ContourContext::initialize() {
+        _rotated = cv::minAreaRect(_contour);
+        _perimiter = cv::arcLength(_contour, true) * constant::poly_tolerance;
+        cv::approxPolyDP(_contour, _polygon, _perimiter, true);
+        _rectangle = cv::boundingRect(_polygon);
+        _contour_mask = cv::Mat::zeros(_size, CV_8UC1);
+        cv::drawContours(_contour_mask, cv::vector<cv::vector<cv::Point>>(1, _contour), -1, cv::Scalar(255), CV_FILLED);
+    }
 
     /**
      * @summary Given an image contour, extract a number of features for it
@@ -28,8 +42,9 @@ namespace vision {
         features.insert(std::make_pair(Feature::ContourArea, feature_contour_area()));
         features.insert(std::make_pair(Feature::ContourSkew, feature_contour_skew()));
         features.insert(std::make_pair(Feature::ContourCentrality, feature_contour_centrality()));
-        features.insert(std::make_pair(Feature::ContourBlueCount, feature_contour_blue_count()));
-        features.insert(std::make_pair(Feature::ContourWhiteCount, feature_contour_white_count()));
+        features.insert(std::make_pair(Feature::ContourConvex, feature_contour_convex()));
+        features.insert(std::make_pair(Feature::ContourBlueCount, feature_contour_pixel_count(_blue_mask)));
+        features.insert(std::make_pair(Feature::ContourWhiteCount, feature_contour_pixel_count(_white_mask)));
 
         return features;
     }
@@ -42,11 +57,12 @@ namespace vision {
 
         double result = 0.0;
 
-        result += feature_contour_area();
-        result += feature_contour_skew();
-        result += feature_contour_centrality();
-        result += feature_contour_blue_count();
-        result += feature_contour_white_count();
+        result += feature_contour_area()                   * constant::feature_weight_area;
+        result += feature_contour_skew()                   * constant::feature_weight_skew;
+        result += feature_contour_centrality()             * constant::feature_weight_centrality;
+        result += feature_contour_convex()                 * constant::feature_weight_convexity;
+        result += feature_contour_pixel_count(_blue_mask)  * constant::feature_weight_blue_count;
+        result += feature_contour_pixel_count(_white_mask) * constant::feature_weight_white_count;
 
         return result;
     }
@@ -68,20 +84,16 @@ namespace vision {
     }
     
     double ContourContext::feature_contour_centrality() {
-        cv::Point2f size(_image.size());
+        cv::Point2f size(_size);
         return cv::norm((size * 0.5) - _rotated.center);
     }
-    
-    double ContourContext::feature_contour_blue_count() {
-        cv::Mat mask;
-        cv::inRange(_image, constant::low_blue_threshold, constant::max_blue_threshold, mask);
-        return cv::countNonZero(mask);
+
+    double ContourContext::feature_contour_convex() {
+        return (double)cv::isContourConvex(_polygon);
     }
     
-    double ContourContext::feature_contour_white_count() {
-        cv::Mat mask;
-        cv::inRange(_image, constant::low_white_threshold, constant::max_white_threshold, mask);
-        return cv::countNonZero(mask);
+    double ContourContext::feature_contour_pixel_count(const cv::Mat& mask) {
+        return cv::countNonZero(mask & _contour_mask);
     }
 
 }; // namespace </vision>

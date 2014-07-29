@@ -12,38 +12,56 @@ namespace vision {
     enum class Feature {
         ContourArea,
         ContourSkew,
+        ContourConvex,
         ContourCentrality,
         ContourBlueCount,
         ContourWhiteCount
     };
 
+    inline std::ostream &operator<<(std::ostream& stream, const Feature feature) {
+        switch (feature) {
+            case Feature::ContourArea:       stream << "area   "; break;
+            case Feature::ContourSkew:       stream << "skew   "; break;
+            case Feature::ContourConvex:     stream << "convex "; break;
+            case Feature::ContourCentrality: stream << "central"; break;
+            case Feature::ContourBlueCount:  stream << "blues  "; break;
+            case Feature::ContourWhiteCount: stream << "whites "; break;
+        }
+        return stream;
+    }
+
     class ContourContext : boost::noncopyable {
     public:
 
-        ContourContext(const cv::Mat& image, const cv::vector<cv::Point> contour);
+        ContourContext(const std::pair<cv::Mat, cv::Mat>& parts, const cv::vector<cv::Point>& contour);
+        void initialize();
         std::map<Feature, double> get_features();
         double get_score();
 
-        cv::Mat get_image() { return _image; }
-        cv::RotatedRect get_rotated() { return _rotated; }
-        cv::vector<cv::Point> get_contour() { return _contour; }
+        cv::vector<cv::Point> get_polygon() { return _polygon; }
+        cv::Rect get_rectangle() { return _rectangle; }
+        cv::RotatedRect get_rotated_rectangle() { return _rotated; }
 
     private:
 
         double feature_contour_area();
+        double feature_contour_convex();
         double feature_contour_skew();
         double feature_contour_centrality();
-        double feature_contour_blue_count();
-        double feature_contour_white_count();
+        double feature_contour_pixel_count(const cv::Mat& mask);
 
-        cv::Mat _image;
         cv::vector<cv::Point> _contour;
+        cv::vector<cv::Point> _polygon;
+        cv::Mat _blue_mask;
+        cv::Mat _white_mask;
+        cv::Mat _contour_mask;
+        cv::Size _size;
         cv::RotatedRect _rotated;
+        double _perimiter;
+        cv::Rect _rectangle;
     };
 
-    std::map<Feature, double> get_features(const cv::Mat &image);
 };
 };
 
 #endif // IMAGE_FEATURES_H_
-

@@ -31,6 +31,11 @@ namespace constant {
     cv::Mat  morphology_kernel     = cv::getStructuringElement(cv::MORPH_RECT, kernel_size);
 
     /**
+     * Control the approximation of the polygon given a contour.
+     */
+    const double poly_tolerance    = 0.1;
+
+    /**
      * Control the operation of the canny edge detection. These options are a
      * tradeoff between precision and processing complexity. For method, no 
      * approximation will get more bounding points (which is useful for contours
@@ -48,10 +53,23 @@ namespace constant {
      * are not filtered.
      */
     const int canny_method         = CV_CHAIN_APPROX_NONE;
-    const int canny_mode           = CV_RETR_LIST;
+    const int canny_mode           = CV_RETR_EXTERNAL;
     const int low_edge_threshold   = 100;
-    const int max_edge_threshold   = 100;
+    const int max_edge_threshold   = 250;
     const int edge_kernel_size     = 3;
+
+
+    /**
+     * Control the value that each feature adds to the overall score of
+     * the contour it is applicable to.
+     * TODO converts to learned weights + constant
+     */
+    const double feature_weight_area        =  1.0;
+    const double feature_weight_skew        = -1.0;
+    const double feature_weight_convexity   =  1000.0;
+    const double feature_weight_centrality  = -1.0;
+    const double feature_weight_blue_count  =  1.0;
+    const double feature_weight_white_count =  1.0;
 
 } // namespace </constant>
 } // namespace </vision>

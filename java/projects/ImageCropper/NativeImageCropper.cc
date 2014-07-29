@@ -5,6 +5,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "Common.h"
+#include "ImageFeatures.h"
 #include "NativeImageCropper.h"
 
 namespace po = boost::program_options; 
@@ -21,6 +22,7 @@ namespace vision {
      * @return void
      */
     cv::Mat get_region_mask(const cv::Mat &image) {
+
         cv::Mat mask;
         cv::Mat hsv_image;
         cv::Mat dirty_mask;
@@ -39,24 +41,76 @@ namespace vision {
      */
     cv::vector<cv::vector<cv::Point>> get_image_contours(const cv::Mat &image) {
 
+        cv::Mat im_gray;
         cv::Mat im_blur;
         cv::Mat im_edge;
-        cv::Mat im_open;
         cv::vector<cv::vector<cv::Point>> contours;
         cv::vector<cv::Vec4i> hierarchy;
         cv::Rect rectangle;
 
-        cv::GaussianBlur(image, im_blur, constant::kernel_size, 0, 0);
+        cv::cvtColor(image, im_gray, CV_BGR2GRAY);
+        cv::GaussianBlur(im_gray, im_blur, constant::kernel_size, 0, 0);
         cv::Canny(image, im_edge, constant::low_edge_threshold, constant::max_edge_threshold, constant::edge_kernel_size);
-        cv::morphologyEx(im_edge, im_open, cv::MORPH_OPEN, constant::morphology_kernel);
-        cv::findContours(im_open, contours, hierarchy, constant::canny_mode, constant::canny_method);
+        cv::imshow("canny", im_edge);
+        cv::findContours(im_edge, contours, hierarchy, constant::canny_mode, constant::canny_method);
+        std::cout << "length: " << contours.size() << std::endl;
 
         return contours;
     }
 
     /**
-     * @summary Given an image, find the biggest rectangle ROI
+     * @summary Given an image, isolate it into two masks of blue and white
+     * @param image The image to seperate into the blue and white parts
+     * @return A pair of (blue, white) image parts
+     */
+    std::pair<cv::Mat, cv::Mat> get_blue_and_white_parts(const cv::Mat& image) {
+
+        cv::Mat im_hsv;
+        cv::Mat im_blue;
+        cv::Mat im_white;
+
+        cv::cvtColor(image, im_hsv, CV_BGR2HSV);
+        cv::inRange(im_hsv, constant::low_white_threshold, constant::max_white_threshold, im_white);
+        cv::inRange(im_hsv, constant::low_blue_threshold, constant::max_blue_threshold, im_blue);
+        cv::imshow("original mask", image);
+        cv::imshow("blue mask", im_blue);
+        cv::imshow("white mask", im_white);
+        return std::make_pair(im_blue, im_white);
+    }
+
+    /**
+     * @summary Given an image, find the best scoring rectangle
      * @param image The image to extract a rectangle ROI from
+     * @return The best scoring rectangle ROI
+     */
+    std::pair<double, cv::Rect> get_best_scoring_rectangle(const cv::Mat& image) {
+
+        double best_score = -1.0;
+        cv::Rect best_rectangle;
+        cv::vector<cv::vector<cv::Point>> contours = get_image_contours(image);
+        std::pair<cv::Mat, cv::Mat> parts = get_blue_and_white_parts(image);
+
+        for (auto contour : contours) {
+            ContourContext context(parts, contour);
+            context.initialize();
+
+            double score = context.get_score();
+            if (score > best_score) {
+                best_score = score;
+                best_rectangle = context.get_rectangle();
+                for (auto entry : context.get_features()) {
+                    std::cout << entry.first << " : " << entry.second << std::endl;
+                }
+                std::cout << "score   : " << score << std::endl << std::endl;
+            }
+        }
+
+        return (best_score < 0)
+            ? std::make_pair(0.0, cv::Rect())
+            : std::make_pair(best_score, best_rectangle);
+    }
+
+    /**
      * @return The largest rectangle ROI
      */
     cv::Rect get_largest_rectangle(const cv::Mat &image) {
@@ -111,13 +165,22 @@ namespace {
     void process_image(const fs::path& file, bool is_debug=false) {
         cv::Mat image = cv::imread(file.string(), CV_LOAD_IMAGE_COLOR);
         if (image.data) {
-            cv::Mat mask = bw::get_region_mask(image);
-            cv::Rect rectangle = bw::get_largest_rectangle(mask);
+
+            // old method
+            //double score = 1.0;
+            //cv::Mat mask = bw::get_region_mask(image);
+            //cv::Rect rectangle = bw::get_largest_rectangle(mask);
+
+            // new method
+            std::pair<double, cv::Rect> pair = bw::get_best_scoring_rectangle(image);
+            double score = std::get<0>(pair);
+            cv::Rect rectangle = std::get<1>(pair);
+
             if (rectangle.area() > 0) {
                 if (is_debug) {
                     display_image(file, image, rectangle);
                 }
-                std::cout << file << " : " << rectangle << std::endl;
+                std::cout << file << " : " << score << " : " << rectangle << std::endl;
             } else {
                 std::cout << file << " : " << "no rectangle found" << std::endl;
             }
@@ -168,7 +231,7 @@ int main(int argc, char** argv) {
                     process_image(*it, is_debug);
             }
         } else {
-            process_image(root);
+            process_image(root, is_debug);
         }
         if (is_debug) {
             cv::waitKey(0);
