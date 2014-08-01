@@ -9,19 +9,30 @@
 namespace bashwork {
 namespace vision {
 
+    /**
+     * @summary Represents the feature associated with a value
+     */
     enum class Feature {
         ContourArea,
         ContourSkew,
+        ContourRatio,
         ContourConvex,
         ContourCentrality,
         ContourBlueCount,
         ContourWhiteCount
     };
 
+    /**
+     * @summary Given a Feature enumeration, print out its string value
+     * @param stream The output stream to write to
+     * @param feature The enum feature to wrtie to stream
+     * @return The stream we wrote to
+     */
     inline std::ostream &operator<<(std::ostream& stream, const Feature feature) {
         switch (feature) {
             case Feature::ContourArea:       stream << "area   "; break;
             case Feature::ContourSkew:       stream << "skew   "; break;
+            case Feature::ContourRatio:      stream << "ratio  "; break;
             case Feature::ContourConvex:     stream << "convex "; break;
             case Feature::ContourCentrality: stream << "central"; break;
             case Feature::ContourBlueCount:  stream << "blues  "; break;
@@ -30,6 +41,9 @@ namespace vision {
         return stream;
     }
 
+    /**
+     * @summary Context manager for performing contour feature extration
+     */
     class ContourContext : boost::noncopyable {
     public:
 
@@ -45,8 +59,9 @@ namespace vision {
     private:
 
         double feature_contour_area();
-        double feature_contour_convex();
         double feature_contour_skew();
+        double feature_contour_ratio();
+        double feature_contour_convex();
         double feature_contour_centrality();
         double feature_contour_pixel_count(const cv::Mat& mask);
 

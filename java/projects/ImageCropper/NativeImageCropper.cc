@@ -51,7 +51,7 @@ namespace vision {
         cv::cvtColor(image, im_gray, CV_BGR2GRAY);
         cv::GaussianBlur(im_gray, im_blur, constant::kernel_size, 0, 0);
         cv::Canny(image, im_edge, constant::low_edge_threshold, constant::max_edge_threshold, constant::edge_kernel_size);
-        cv::imshow("canny", im_edge);
+        //cv::imshow("canny", im_edge);
         cv::findContours(im_edge, contours, hierarchy, constant::canny_mode, constant::canny_method);
         std::cout << "length: " << contours.size() << std::endl;
 
@@ -73,8 +73,10 @@ namespace vision {
         cv::inRange(im_hsv, constant::low_white_threshold, constant::max_white_threshold, im_white);
         cv::inRange(im_hsv, constant::low_blue_threshold, constant::max_blue_threshold, im_blue);
         cv::imshow("original mask", image);
-        cv::imshow("blue mask", im_blue);
-        cv::imshow("white mask", im_white);
+        //cv::imshow("blue mask", im_blue);
+        //cv::imshow("white mask", im_white);
+        //cv::waitKey(0);
+        //cv::destroyAllWindows();
         return std::make_pair(im_blue, im_white);
     }
 
@@ -99,9 +101,12 @@ namespace vision {
                 best_score = score;
                 best_rectangle = context.get_rectangle();
                 for (auto entry : context.get_features()) {
+                    //std::cout << entry.second << ",";
                     std::cout << entry.first << " : " << entry.second << std::endl;
                 }
-                std::cout << "score   : " << score << std::endl << std::endl;
+                cv::imshow(std::to_string(score), image(context.get_rectangle()));
+                //std::cout << std::endl;
+                std::cout << " score   : " << score << std::endl << std::endl;
             }
         }
 

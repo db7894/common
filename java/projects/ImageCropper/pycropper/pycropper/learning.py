@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 from optparse import OptionParser
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
@@ -35,7 +36,7 @@ class TrainContext(object):
         :returns: An initialized TrainContext
         '''
         splits = train_test_split(values, labels)
-        Xt, Yt, xt, yt = splits
+        Xt, xt, Yt, yt = splits
         return klass(x_train=Xt, y_train=Yt, x_test=xt, y_test=yt)
 
     def __init__(self, **kwargs):
@@ -91,7 +92,7 @@ def train_svm_classifier(context):
     grid_search.fit(context.x_train, context.y_train)
     _logger.info(grid_search.best_params_)
     _logger.info(grid_search.best_score_)
-
+    return svm
 
 def load_database(database):
     ''' Given a path to the images database,

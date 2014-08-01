@@ -1,21 +1,5 @@
-'''
-- fix tangled worker thread (internal or seperate)
-- unit tests, failure tests
-- try to get lock for N time at rate of M (retryable class)
-- thunk update data for when the lock is released
-  * callback on release
-- merge existing stale lock data with our data? (flag)
-- extra schema
-  * rename name to key
-  * add additional attributes if needed
-'''
-import time
-import uuid
-import socket
-import json
-from threading import Thread, Event
+from time import sleep
 from copy import copy
-from datetime import timedelta
 
 from boto.exception import JSONResponseError
 from boto.dynamodb2.types import Dynamizer
@@ -25,276 +9,19 @@ from boto.dynamodb2.items import Item
 from boto.dynamodb2.table import Table
 from boto.dynamodb2.exceptions import ConditionalCheckFailedException, ItemNotFound
 
+from .policy import DynamoDBLockPolicy
+from .schema import DynamoDBLockSchema
+from .worker import DynamoDBLockWorker
+
 #--------------------------------------------------------------------------------
-# Logging
+# logging
 #--------------------------------------------------------------------------------
 
 import logging
 _logger = logging.getLogger(__name__)
 
 #--------------------------------------------------------------------------------
-# Worker Thread
-#--------------------------------------------------------------------------------
-
-class DynamoDBLockWorker(Thread):
-    ''' The worker that runs to periodically update lock leases as long
-    as the system is alive. This prevents long running processes from
-    losing their locks by possibly fast clients.
-    '''
-
-    def __init__(self, **kwargs):
-        ''' Initializes a new instance of the DynamoDBLock class
-
-        :param client: The client to perform management with
-        :param period: The length of each cycle in seconds (default 1 minutes)
-        :param locks: The dictionary of locks to manage (default the client locks)
-        '''
-        super(DynamoDBLockWorker, self).__init__()
-
-        self.client = kwargs.get('client')
-        self.policy = kwargs.get('policy', DynamoDBLockPolicy())
-        self.locks  = kwargs.get('locks', self.client.locks)
-        self.period = kwargs.get('period', timedelta(minutes=1).total_seconds())
-        self.is_stopped = Event()
-
-    def stop(self, timeout=None):
-        ''' Stop the underlying worker thread and join on its
-        completion for the specified timeout.
-
-        :param timeout: The amount of time to wait for the shutdown
-        '''
-        self.is_stopped.set()
-        self.join(timeout)
-
-    def run(self): 
-        ''' The worker thread used to update the lock leases
-        for the currently handled locks.
-        '''
-        while not self.is_stopped.is_set():
-            start = self.policy.get_new_timestamp()
-            for lock in self.locks.values():
-                if not self.client.touch_lock(lock):
-                    del self.locks[lock.name]
-            elapsed = self.policy.get_new_timestamp() - start
-            time.sleep(max(self.period - elapsed, 0))
-
-#--------------------------------------------------------------------------------
-# Lock Policy Class
-#--------------------------------------------------------------------------------
-class DynamoDBLockPolicy(object):
-
-    def __init__(self, **kwargs):
-        ''' Initailize a new instance of the DynamoDBLockPolicy class
-
-        :param acquire_timeout: The amount of time to wait trying to get a lock
-        :param retry_period: The time to wait between retries to the server
-        :param lock_duration: The default amount of time needed to hold the lock
-        :param delete_lock: True to delete locks on release, false otherwise
-        '''
-        acquire_timeout = kwargs.get('acquire_timeout', timedelta(minutes=5))
-        retry_period    = kwargs.get('retry_period', timedelta(seconds=10))
-        lock_duration   = kwargs.get('lock_duration', timedelta(minutes=5))
-
-        self.acquire_timeout = long(acquire_timeout.total_seconds() * 1000)
-        self.retry_period    = long(retry_period.total_seconds())
-        self.lock_duration   = long(lock_duration.total_seconds() * 1000)
-        self.delete_lock     = kwargs.get('delete_lock', True)
-
-    # ------------------------------------------------------------
-    # New Data Operations
-    # ------------------------------------------------------------
-    # These can be overridden by users to supply custom methods of
-    # managing time, version, and ownership.
-    # ------------------------------------------------------------
-
-    def is_name_valid(self, name):
-        ''' Helper method to check if the supplied name is valid
-        to use as a key or not.
-
-        :param name: The name to check for validity
-        :returns: True if a valid name, False otherwise
-        '''
-        return bool(name)
-
-    def get_new_owner(self):
-        ''' Helper method to retrieve a new owner name that is
-        not only unique to the server, but unique to the application
-        on this server.
-
-        :returns: A new owner name to operate with
-        '''
-        return "%s.%s" % (socket.gethostname(), uuid.uuid4())
-
-    def get_new_version(self):
-        ''' Helper method to retrieve a new version number
-        for a lock. This can be overloaded to provide a custom
-        protocol.
-
-        :returns: A new version number
-        '''
-        return str(uuid.uuid4())
-
-    def get_new_timestamp(self):
-        ''' Helper method to retrieve the current time since
-        the epoch in milliseconds.
-
-        :returns: The current time in milliseconds
-        '''
-        return long(time.time() * 1000)
-
-    # ------------------------------------------------------------
-    # Magic Methods
-    # ------------------------------------------------------------
-
-    def __str__(self):
-        return json.dumps(self.__dict__)
-
-    __repr__ = __str__
-
-#--------------------------------------------------------------------------------
-# Database Schema Class
-#--------------------------------------------------------------------------------
-
-class DynamoDBLockSchema(object):
-    ''' A collection of the schema names for the underlying
-    locks table. This can be overridden by simply supplying
-    new names in the constructor.
-    '''
-
-    def __init__(self, **kwargs):
-        ''' Initializes a new instance of the DynamoDBLock class
-
-        :param name: The database schema name for this field
-        :param range_key: The database schema name for this field
-        :param duration: The database schema name for this field
-        :param is_locked: The database schema name for this field
-        :param owner: The database schema name for this field
-        :param version: The database schema name for this field
-        :param payload: The database schema name for this field
-        :param table_name: The name of the database locks table
-        :param read_capacity: The expected read capacity for the table
-        :param write_capacity: The expected write capacity for the table
-        '''
-        self.name           = kwargs.get('name',       'N')
-        self.range_key      = kwargs.get('range_key',  'R')
-        self.duration       = kwargs.get('duration',   'D')
-        self.is_locked      = kwargs.get('is_locked',  'L')
-        self.owner          = kwargs.get('owner',      'O')
-        self.version        = kwargs.get('version',    'V')
-        self.payload        = kwargs.get('payload',    'P')
-        self.table_name     = kwargs.get('table_name', 'Locks')
-        self.read_capacity  = kwargs.get('read_capacity', 1)
-        self.write_capacity = kwargs.get('write_capacity', 1)
-
-    # ------------------------------------------------------------
-    # schema operations
-    # ------------------------------------------------------------
-    # These methods convert to and from the underlying table
-    # schema
-    # ------------------------------------------------------------
-
-    def to_schema(self, params):
-        ''' Given a dict of query params, convert them to the
-        underlying schema, make sure they are valid, and remove
-        paramaters that are not used.
-
-        :param params: The paramaters to query with
-        :returns: The converted query parameters
-        '''
-        schema = {}
-        if 'name'      in params: schema[self.name]      = params['name']
-        if 'range_key' in params: schema[self.range_key] = params['range_key']
-        if 'duration'  in params: schema[self.duration]  = params['duration']
-        if 'is_locked' in params: schema[self.is_locked] = params['is_locked']
-        if 'owner'     in params: schema[self.owner]     = params['owner']
-        if 'version'   in params: schema[self.version]   = params['version']
-        if 'payload'   in params: schema[self.payload]   = params['payload']
-        return schema
-
-    def to_dict(self, schema):
-        ''' Given a lock record, convert it to a dict of
-        the query parameter names.
-
-        :param schema: The record to convert to a dict
-        :returns: The converted dict with query parameter names
-        '''
-        params = {}
-        if self.name      in params: params['name']      = schema[self.name]
-        if self.range_key in params: params['range_key'] = schema[self.range_key]
-        if self.duration  in params: params['duration']  = schema[self.duration]
-        if self.is_locked in params: params['is_locked'] = schema[self.is_locked]
-        if self.owner     in params: params['owner']     = schema[self.owner]
-        if self.version   in params: params['version']   = schema[self.version]
-        if self.payload   in params: params['payload']   = schema[self.payload]
-        return params
-
-    def __str__(self):
-        return json.dumps(self.__dict__)
-
-    __repr__ = __str__
-
-#--------------------------------------------------------------------------------
-# Lock Instance Class
-#--------------------------------------------------------------------------------
-
-class DynamoDBLock(object):
-    ''' Represents a single instance of a lock along with the
-    relevant information needed track its state.
-    '''
-    #TODO named tuple for immutability, reduce copies
-
-    def __init__(self, **kwargs):
-        ''' Initializes a new instance of the DynamoDBLock class
-
-        :param duration: The relative duration of the held lock
-        '''
-        self.name      = kwargs.get('name')
-        self.version   = kwargs.get('version')
-        self.owner     = kwargs.get('owner')
-        self.duration  = kwargs.get('duration')
-        self.timestamp = kwargs.get('timestamp', self.policy.get_new_timestamp())
-        self.is_locked = kwargs.get('is_locked', False)
-        self.payload   = kwargs.get('payload', None)
-
-    @property
-    def is_expired(self):
-        ''' Check if the current lock is expired and needs to be
-        re-aquired.
-
-        :returns: True if expired, False otherwise
-        '''
-        return (self.timestamp + self.duration) < self.policy.get_new_timestamp()
-
-    def __hash__(self):
-        return hash(self.name + self.owner)
-
-    def __str__(self):
-        return json.dumps(self.__dict__)
-
-    __repr__ = __str__
-
-#--------------------------------------------------------------------------------
-# Lock Context Manager
-#--------------------------------------------------------------------------------
-
-class DynamoDBLockContext(object):
-
-    def __init__(self, **kwargs):
-        '''
-        '''
-        self.client = kwargs.get('client')
-        self.name   = kwargs.get('name')
-
-    def __enter__(self):
-        self.lock = self.client.acquire_lock(name)
-        return self
-
-    def __exit__(self, ex_type, value, traceback):
-        self.client.release_lock(self.lock)
-
-
-#--------------------------------------------------------------------------------
-# Client Class
+# classes
 #--------------------------------------------------------------------------------
 
 class DynamoDBLockClient(object):
@@ -532,7 +259,7 @@ class DynamoDBLockClient(object):
                 return copy(created_lock)
             elif not no_wait:
                 _logger.debug("waiting %d to acquire lock %s, total wait %d", refresh_time, name, waited_time)
-                time.sleep(refresh_time)
+                sleep(refresh_time)
                 waited_time += refresh_time
             else: tried_one_time = True
 
@@ -708,10 +435,3 @@ class DynamoDBLockClient(object):
         except ConditionalCheckFailedException, ex:
             _logger.exception("failed to create item: %s", name)
         return None
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    locker = DynamoDBLockClient()
-    #lock = locker.acquire_lock("custom-lock")
-    lock = locker.try_acquire_lock("custom-lock")
-    print "resulting lock: %s" % lock

@@ -64,12 +64,21 @@ namespace constant {
      * the contour it is applicable to.
      * TODO converts to learned weights + constant
      */
-    const double feature_weight_area        =  1.0;
-    const double feature_weight_skew        = -1.0;
-    const double feature_weight_convexity   =  1000.0;
-    const double feature_weight_centrality  = -1.0;
-    const double feature_weight_blue_count  =  1.0;
-    const double feature_weight_white_count =  1.0;
+    //const double feature_weight_area        =  1.0;
+    //const double feature_weight_skew        =  1.0;
+    //const double feature_weight_ratio       =  1.0;
+    //const double feature_weight_convexity   =  1.0;
+    //const double feature_weight_centrality  =  1.0;
+    //const double feature_weight_blue_count  =  1.0;
+    //const double feature_weight_white_count =  1.0;
+
+    const double feature_weight_area        =  0.00016350211757061003;
+    const double feature_weight_skew        = -0.014795337585809247;
+    const double feature_weight_ratio       =  0.0036044734233280245;
+    const double feature_weight_convexity   = -0.0067858144990055975;
+    const double feature_weight_centrality  = -0.009098536081147302;
+    const double feature_weight_blue_count  =  0.0006283861393372748;
+    const double feature_weight_white_count =  2.3104130897115495e-06;
 
 } // namespace </constant>
 } // namespace </vision>

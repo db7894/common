@@ -41,8 +41,9 @@ namespace vision {
 
         features.insert(std::make_pair(Feature::ContourArea, feature_contour_area()));
         features.insert(std::make_pair(Feature::ContourSkew, feature_contour_skew()));
-        features.insert(std::make_pair(Feature::ContourCentrality, feature_contour_centrality()));
+        features.insert(std::make_pair(Feature::ContourRatio, feature_contour_ratio()));
         features.insert(std::make_pair(Feature::ContourConvex, feature_contour_convex()));
+        features.insert(std::make_pair(Feature::ContourCentrality, feature_contour_centrality()));
         features.insert(std::make_pair(Feature::ContourBlueCount, feature_contour_pixel_count(_blue_mask)));
         features.insert(std::make_pair(Feature::ContourWhiteCount, feature_contour_pixel_count(_white_mask)));
 
@@ -59,8 +60,9 @@ namespace vision {
 
         result += feature_contour_area()                   * constant::feature_weight_area;
         result += feature_contour_skew()                   * constant::feature_weight_skew;
-        result += feature_contour_centrality()             * constant::feature_weight_centrality;
+        result += feature_contour_ratio()                  * constant::feature_weight_ratio;
         result += feature_contour_convex()                 * constant::feature_weight_convexity;
+        result += feature_contour_centrality()             * constant::feature_weight_centrality;
         result += feature_contour_pixel_count(_blue_mask)  * constant::feature_weight_blue_count;
         result += feature_contour_pixel_count(_white_mask) * constant::feature_weight_white_count;
 
@@ -80,16 +82,26 @@ namespace vision {
     }
     
     double ContourContext::feature_contour_skew() {
-        return _rotated.angle;
+        double angle = std::abs(_rotated.angle);
+        return std::min(angle, 90.0 - angle);
+    }
+
+    double ContourContext::feature_contour_ratio() {
+        if ((_rotated.size.height == 0)
+         || (_rotated.size.width  == 0)) return 0.0;
+
+        return (_rotated.size.height > _rotated.size.width)
+            ?  (_rotated.size.height / _rotated.size.width)
+            :  (_rotated.size.width  / _rotated.size.height);
+    }
+
+    double ContourContext::feature_contour_convex() {
+        return (double)cv::isContourConvex(_polygon);
     }
     
     double ContourContext::feature_contour_centrality() {
         cv::Point2f size(_size);
         return cv::norm((size * 0.5) - _rotated.center);
-    }
-
-    double ContourContext::feature_contour_convex() {
-        return (double)cv::isContourConvex(_polygon);
     }
     
     double ContourContext::feature_contour_pixel_count(const cv::Mat& mask) {
