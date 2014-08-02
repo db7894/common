@@ -30,10 +30,11 @@ class DynamoDBLockWorker(Thread):
         '''
         super(DynamoDBLockWorker, self).__init__()
 
+        self.daemon = True
         self.client = kwargs.get('client')
         self.policy = kwargs.get('policy', DynamoDBLockPolicy())
         self.locks  = kwargs.get('locks', self.client.locks)
-        self.period = kwargs.get('period', timedelta(minutes=1).total_seconds())
+        self.period = kwargs.get('period', timedelta(seconds=10).total_seconds())
         self.is_stopped = Event()
 
     def stop(self, timeout=None):
@@ -43,16 +44,18 @@ class DynamoDBLockWorker(Thread):
         :param timeout: The amount of time to wait for the shutdown
         '''
         self.is_stopped.set()
-        self.join(timeout)
+        if self.is_alive(): self.join(timeout)
 
     def run(self): 
         ''' The worker thread used to update the lock leases
         for the currently handled locks.
         '''
         while not self.is_stopped.is_set():
+            _logger.debug("starting next round of worker: %d locks", len(self.locks))
             start = self.policy.get_new_timestamp()
             for lock in self.locks.values():
                 if not self.client.touch_lock(lock):
                     del self.locks[lock.name]
-            elapsed = self.policy.get_new_timestamp() - start
+            elapsed = (self.policy.get_new_timestamp() - start) / 1000
+            _logger.debug("worker sleeping:  %d %d %d", elapsed, self.period, start)
             time.sleep(max(self.period - elapsed, 0))

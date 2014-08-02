@@ -58,7 +58,7 @@ class DynamoDBLockClient(object):
         ''' Stop the heartbeat thread and close all of the existing
         lock handles that we have outstanding leases to.
         '''
-        self.worker.stop()
+        self.worker.stop(timeout=self.policy.retry_period)
         self.release_all_locks()
 
     # ------------------------------------------------------------
@@ -115,14 +115,16 @@ class DynamoDBLockClient(object):
         :returns: The new lock if it was updated, None otherwise
         '''
         if not self.is_lock_valid(lock):
+            _logger.debug("failed touching invalid lock:\n%s", str(lock))
             return None
 
         new_lock = self._update_entry(lock)
         if new_lock:
+            _logger.debug("success touching lock:\n%s", str(lock))
             self.locks[lock.name] = new_lock
         return new_lock
 
-    def release_lock(self, lock, delete=None, **kwargs):
+    def release_lock(self, lock, delete=None, **params):
         ''' Release the supplied lock and apply any supplied udpates
         to the underlying name.
         
@@ -133,7 +135,8 @@ class DynamoDBLockClient(object):
         :param delete: True to also delete locks, False to mark them unlocked
         :returns: True if the lock was released, False otherwise
         '''
-        if not self.is_lock_valid(lock.name):
+        if not self.is_lock_valid(lock):
+            _logger.debug("failed releasing invalid lock:\n%s", str(lock))
             return False
 
         delete = delete if (delete != None) else self.policy.delete_lock
@@ -146,8 +149,8 @@ class DynamoDBLockClient(object):
         # lock version is still what we expect it to be.
         # ------------------------------------------------------------
         if not delete:
-            kwargs['is_locked'] = False
-            new_lock = self._update_entry(lock, update=kwargs)
+            params['is_locked'] = False
+            new_lock = self._update_entry(lock, update=params)
             is_released = bool(new_lock)
 
         # ------------------------------------------------------------
@@ -223,7 +226,7 @@ class DynamoDBLockClient(object):
             # data if we so choose.
             # ------------------------------------------------------------
             elif not current_lock.is_locked:
-                kwargs['owner'] = self.owner
+                params['owner'] = self.owner
                 expect = ['is_locked', 'version', 'name']
                 created_lock = self._update_entry(current_lock, expect=expect, update=params)
 
@@ -236,7 +239,7 @@ class DynamoDBLockClient(object):
             # are allowed to take control of the lock if we can.
             # ------------------------------------------------------------
             elif (watching_lock
-             and (self.is_lock_expird(watching_lock))
+             and (self.is_lock_expired(watching_lock))
              and (watching_lock.version == current_lock.version)):
                 params['owner'] = self.owner
                 expect = ['version', 'name']
@@ -250,7 +253,7 @@ class DynamoDBLockClient(object):
             # timeout to match the lease of the lock.
             # ------------------------------------------------------------
             elif not watching_lock:
-                timeout += current_lock.duration
+                lock_timeout += current_lock.duration
                 watching_lock = current_lock
 
             # ------------------------------------------------------------
@@ -280,7 +283,7 @@ class DynamoDBLockClient(object):
                 self.locks[name] = created_lock
                 return created_lock
             elif not no_wait:
-                _logger.debug("waiting %d to acquire lock %s, total wait %d", refresh_time, name, waited_time)
+                _logger.debug("waiting %d secs to acquire lock %s, total wait %d secs", refresh_time, name, waited_time)
                 sleep(refresh_time)
                 waited_time += refresh_time
             else: tried_one_time = True
@@ -320,6 +323,7 @@ class DynamoDBLockClient(object):
         :returns: The lock at the supplied name or None
         '''
         if not self.policy.is_name_valid(name):
+            _logger.debug("cannot retrieve lock with invalid name: %s", name)
             return None
 
         # ------------------------------------------------------------
@@ -350,7 +354,7 @@ class DynamoDBLockClient(object):
         # ------------------------------------------------------------
         if current_lock:
             current_lock = current_lock._replace(version=None)
-        if not current_lock.is_locked: current_lock = None
+            if not current_lock.is_locked: current_lock = None
 
         return current_lock
 
@@ -368,7 +372,7 @@ class DynamoDBLockClient(object):
         '''
         try:
             table = Table(self.schema.table_name)
-            _logger.debug("current table description: %s", table.describe())
+            _logger.debug("current table description:\n%s", table.describe())
         except JSONResponseError, ex:
             _logger.exception("table %s does not exist, creating it", self.schema.table_name)
             table = Table.create(self.schema.table_name,
@@ -377,7 +381,7 @@ class DynamoDBLockClient(object):
                     'read':  self.schema.read_capacity,
                     'write': self.schema.write_capacity,
                 })
-            _logger.debug("current table description: %s", table.describe())
+            _logger.debug("current table description:\n%s", table.describe())
         return table
 
     def _retrieve_entry(self, name):
@@ -395,6 +399,7 @@ class DynamoDBLockClient(object):
         try:
             record = self.table.get_item(**query)
             params = self.schema.to_dict(record)
+            params['timestamp'] = self.policy.get_new_timestamp()
             return DynamoDBLock(**params)
         except ItemNotFound, ex:
             _logger.exception("failed to retrieve item: %s", name)
@@ -413,11 +418,12 @@ class DynamoDBLockClient(object):
         :returns: True if successful, False otherwise
         '''
         expected = { 'name': lock.name, 'version': lock.version }
-        expected = self.schema.to_schema(kwargs)
-        expected = { '%s__eq' % key : val for key, val in expected }
+        expected = self.schema.to_schema(expected)
+        expected = { '%s__eq' % key : val for key, val in expected.items() }
+        params   = { self.schema.name : lock.name }
 
         try:
-            return self.table.delete_item(name=name, expected=expected)
+            return self.table.delete_item(expected=expected, **params)
         except ConditionalCheckFailedException, ex:
             _logger.exception("failed to delete item: %s", name)
         return False
@@ -433,9 +439,9 @@ class DynamoDBLockClient(object):
             'name':      name,
             'owner':     self.owner,
             'version':   self.policy.get_new_version(),
-            'is_locked': True,
-            'duration':  params.get('duation', self.policy.lock_duration),
+            'duration':  params.get('duration', self.policy.lock_duration),
             'timestamp': self.policy.get_new_timestamp(),
+            'is_locked': True,
         })
 
         # ------------------------------------------------------------
@@ -450,6 +456,7 @@ class DynamoDBLockClient(object):
 
         try:
             self.table._put_item(record, expects=expects)
+            if 'payload' not in params: params['payload'] = None
             return DynamoDBLock(**params)
         except (JSONResponseError, ConditionalCheckFailedException):
             _logger.exception("failed to create lock entry for: %s", name)
@@ -472,15 +479,22 @@ class DynamoDBLockClient(object):
         :returns: True if successful, False otherwise
         '''
         version = self.policy.get_new_version()
+        name    = { self.schema.name : lock.name }
+
         updates = { 'version' : version, 'timestamp': self.policy.get_new_timestamp() }
         if update: updates.update(update)
+        updated = self.schema.to_schema(updates)
+        updated = self.table._encode_keys(updated)
+        updated = { k : { 'Value': v, 'Action': 'PUT' } for k, v in updated.items() }
+
         expects = expect or ['version', 'owner', 'name']
         expects = { key : getattr(lock, key) for key in expects }
         expects = self.schema.to_schema(expects)
-        updated = self.schema.to_schema(updates)
+        expects = self.table._encode_keys(expects)
+        expects = { k : { 'Value': v } for k, v in expects.items() }
 
         try:
-            self.table._update_item(lock.name, updated, expects=expects)
+            self.table._update_item(name, updated, expects=expects)
             return lock._replace(**updates)
         except ConditionalCheckFailedException:
             _logger.exception("failed to create lock entry for: %s", name)

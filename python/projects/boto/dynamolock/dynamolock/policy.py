@@ -31,9 +31,9 @@ class DynamoDBLockPolicy(object):
         :param lock_duration: The default amount of time needed to hold the lock
         :param delete_lock: True to delete locks on release, false otherwise
         '''
-        acquire_timeout  = kwargs.get('acquire_timeout', timedelta(minutes=5))
+        acquire_timeout  = kwargs.get('acquire_timeout', timedelta(seconds=10))
         retry_period     = kwargs.get('retry_period', timedelta(seconds=10))
-        lock_duration    = kwargs.get('lock_duration', timedelta(minutes=5))
+        lock_duration    = kwargs.get('lock_duration', timedelta(minutes=1))
         self.delete_lock = kwargs.get('delete_lock', True)
 
         self.acquire_timeout = long(acquire_timeout.total_seconds() * 1000)

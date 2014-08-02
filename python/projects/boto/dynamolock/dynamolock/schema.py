@@ -59,7 +59,7 @@ class DynamoDBLockSchema(object):
         '''
         schema = {}
         if 'name'      in params: schema[self.name]      = params['name']
-        if 'range_key' in params: schema[self.range_key] = params['range_key']
+       #if 'range_key' in params: schema[self.range_key] = params['range_key']
         if 'duration'  in params: schema[self.duration]  = params['duration']
         if 'is_locked' in params: schema[self.is_locked] = params['is_locked']
         if 'owner'     in params: schema[self.owner]     = params['owner']
@@ -74,15 +74,15 @@ class DynamoDBLockSchema(object):
         :param schema: The record to convert to a dict
         :returns: The converted dict with query parameter names
         '''
-        params = {}
-        if self.name      in params: params['name']      = schema[self.name]
-        if self.range_key in params: params['range_key'] = schema[self.range_key]
-        if self.duration  in params: params['duration']  = schema[self.duration]
-        if self.is_locked in params: params['is_locked'] = schema[self.is_locked]
-        if self.owner     in params: params['owner']     = schema[self.owner]
-        if self.version   in params: params['version']   = schema[self.version]
-        if self.payload   in params: params['payload']   = schema[self.payload]
-        return params
+        return {
+            'name'      : schema.get(self.name,      None),
+        #   'range_key' : schema.get(self.range_key, None),
+            'duration'  : schema.get(self.duration,  None),
+            'is_locked' : schema.get(self.is_locked, None),
+            'owner'     : schema.get(self.owner,     None),
+            'version'   : schema.get(self.version,   None),
+            'payload'   : schema.get(self.payload,   None),
+        }
 
     def __str__(self):
         return json.dumps(self.__dict__)
