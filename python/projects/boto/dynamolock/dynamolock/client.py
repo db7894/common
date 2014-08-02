@@ -175,6 +175,9 @@ class DynamoDBLockClient(object):
     def release_all_locks(self, delete=None, **params):
         ''' Release all the currently held locks by this instance of
         the lock client (cached).
+        
+        All the supplied params that are applicable are passed on to the
+        underlying operation.
 
         :param delete: True to also delete locks, False to mark them unlocked
         :returns: True if all locks were released, False otherwise
@@ -184,8 +187,11 @@ class DynamoDBLockClient(object):
         return all(released) # so we don't short circuit any evaluation
 
     def acquire_lock(self, name, no_wait=False, **params):
-        ''' Attempt to acquire the lock with the paramaters specified
-        in the initial lock policy.
+        ''' Attempt to acquire the lock with the paramaters
+        specified in the initial lock policy.
+        
+        All the supplied params that are applicable are passed on
+        to the underlying operation.
 
         :param name: The name of the lock to acquire
         :param no_wait: Try to acquire the lock without waiting
@@ -300,6 +306,9 @@ class DynamoDBLockClient(object):
     def try_acquire_lock(self, name, **params):
         ''' Attempt to acquire the lock without waiting, instead
         simply fail fast.
+        
+        All the supplied params that are applicable are passed on
+        to the underlying operation.
 
         :param name: The name of the lock to acquire
         :returns: The lock on success, None on failure
@@ -431,6 +440,10 @@ class DynamoDBLockClient(object):
     def _create_entry(self, name, **params):
         ''' Attempt to update the underlying lock on dynamodb
         with the supplied values.
+        
+        All the supplied params that are applicable are passed
+        on to the underlying operation, although all but payload
+        will simply be overwritten.
 
         :param name: The name of the lock to update
         :returns: True if successful, False otherwise
@@ -474,8 +487,9 @@ class DynamoDBLockClient(object):
         Every update will automatically bump the version number
         of the underlying lock so clients can refresh their lease.
 
-        :param name: The name of the lock to update
-        :param version: The current version of the lock
+        :param lock: The lock to update
+        :param expect: A list of fields you expect to not have changed
+        :param update: A dictionary of fields to update
         :returns: True if successful, False otherwise
         '''
         version = self.policy.get_new_version()

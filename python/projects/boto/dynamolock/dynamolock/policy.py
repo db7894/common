@@ -20,7 +20,22 @@ class DynamoDBLockPolicy(object):
     Along with the timing policy, this class also includes the policy
     for getting a new version, new timestamp, new owner identifer,
     and checking if a lock name is valid. All of these can be
-    overridden to customize the use case for the system.
+    overridden to customize the use case for the system::
+
+        import os
+        import time
+        from dynamolock import DynamoDBLockPolicy
+
+        class MyPolicy(DynamoDBLockPolicy):
+
+            def is_name_valid(self, name):
+                return name.startswith("application.")
+
+            def get_new_owner(self):
+                return "%s:%d" % (os.getenv('HOST'), os.getpid())
+
+            def get_new_version(self):
+                return time.time()
     '''
 
     def __init__(self, **kwargs):

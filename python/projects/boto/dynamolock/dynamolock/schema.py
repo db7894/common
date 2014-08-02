@@ -14,7 +14,11 @@ _logger = logging.getLogger(__name__)
 class DynamoDBLockSchema(object):
     ''' A collection of the schema names for the underlying
     locks table. This can be overridden by simply supplying
-    new names in the constructor.
+    new names in the constructor::
+
+        from dynamolock import DynamoDBLockSchema
+
+        schema = DynamoDBLockScema(name="key")
     '''
 
     def __init__(self, **kwargs):
