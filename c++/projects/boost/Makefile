@@ -6,9 +6,8 @@ OBJECTS  = $(SOURCES:%.cc=%)
 
 CC      = clang++
 CXX     = clang++
-CFLAGS  = `pkg-config --cflags opencv` -I /usr/local/include/opencv2
-CFLAGS += -std=c++11 -stdlib=libc++ 
-LIBS    = `pkg-config --libs opencv`
+CFLAGS  = -std=c++11 -stdlib=libc++ 
+LIBS    = -lboost_system -lboost_filesystem -lboost_program_options
 
 all: $(OBJECTS)
 

@@ -8,12 +8,12 @@ LIBRARY  = libImageCropper.dylib
 
 JAVAC    = javac
 JAVAH    = javah
-CC       = g++
-CXX      = g++
+CC       = clang++
+CXX      = clang++
 CFLAGS   = `pkg-config --cflags opencv` -I /usr/local/include/opencv2
 CFLAGS  += -std=c++11 -Wall
 CFLAGS  += -I /System/Library/Frameworks/JavaVM.framework/Headers
-LIBS     = `pkg-config --libs opencv`
+LIBS     = `pkg-config --libs opencv` -L /usr/local/lib
 LIBS    += -lboost_system -lboost_filesystem -lboost_program_options
 
 all: $(PROJECT) $(LIBRARY)
