@@ -13,7 +13,7 @@ int match(char *regexp, char *text) {
 
     do {
         if (matchhere(regexp, text))
-                return 1;
+            return 1;
     } while (*text++ != '\0');
     return 0;
 }

@@ -3,6 +3,7 @@ import numpy as np
 from optparse import OptionParser
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LinearRegression
 from sklearn.cross_validation import train_test_split
 from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import GridSearchCV
@@ -93,6 +94,15 @@ def train_svm_classifier(context):
     _logger.info(grid_search.best_params_)
     _logger.info(grid_search.best_score_)
     return svm
+
+def train_linear_regressor(context):
+    ''' This trains a linear regressor by performing a 
+    brute force search on the margin parameter C.
+
+    :param context: The training context to operate with
+    '''
+    regressor   = train_classifier(LinearRegression(), context)
+    return regressor
 
 def load_database(database):
     ''' Given a path to the images database,

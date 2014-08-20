@@ -65,6 +65,20 @@ def ransom_note(note, magazines):
         except StopIteration: return False
     return True
 
+def front_zero_pad(string, length):
+    ''' Given a numbeic string, pad it with zeros
+    until it is the requested length. Note, a handy
+    way to do this in java is::
+
+       String zeros = "000000";
+       return zeros.substring(s.length()) + s;
+
+    :param string: The string to front pad with zeros
+    :param length: The resulting length of the string
+    :returns: The string front-padded with zeros
+    '''
+    return "0" * (length - len(string)) + string
+
 def str_to_int(string):
     '''
     >>> str_to_int('12345')
