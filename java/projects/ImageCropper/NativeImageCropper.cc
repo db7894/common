@@ -63,20 +63,25 @@ namespace vision {
      * @param image The image to seperate into the blue and white parts
      * @return A pair of (blue, white) image parts
      */
-    std::pair<cv::Mat, cv::Mat> get_blue_and_white_parts(const cv::Mat& image) {
+    std::pair<cv::Mat, cv::Mat> get_blue_and_white_masks(const cv::Mat& image) {
 
         cv::Mat im_hsv;
         cv::Mat im_blue;
         cv::Mat im_white;
+        //cv::Mat im_open;
 
         cv::cvtColor(image, im_hsv, CV_BGR2HSV);
         cv::inRange(im_hsv, constant::low_white_threshold, constant::max_white_threshold, im_white);
         cv::inRange(im_hsv, constant::low_blue_threshold, constant::max_blue_threshold, im_blue);
+        //cv::morphologyEx(im_blue, im_open, cv::MORPH_OPEN, constant::morphology_kernel);
+#if 0
         cv::imshow("original mask", image);
-        //cv::imshow("blue mask", im_blue);
-        //cv::imshow("white mask", im_white);
-        //cv::waitKey(0);
-        //cv::destroyAllWindows();
+        cv::imshow("blue mask", im_blue);
+        cv::imshow("white mask", im_white);
+        //cv::imshow("open mask", im_open);
+        cv::waitKey(0);
+        cv::destroyAllWindows();
+#endif
         return std::make_pair(im_blue, im_white);
     }
 
@@ -90,23 +95,32 @@ namespace vision {
         double best_score = -1.0;
         cv::Rect best_rectangle;
         cv::vector<cv::vector<cv::Point>> contours = get_image_contours(image);
-        std::pair<cv::Mat, cv::Mat> parts = get_blue_and_white_parts(image);
+        std::pair<cv::Mat, cv::Mat> masks = get_blue_and_white_masks(image);
+        cv::Size image_size = image.size();
+        cv::Mat blue_mask   = std::get<0>(masks);
+        cv::Mat white_mask  = std::get<1>(masks);
 
         for (auto contour : contours) {
-            ContourContext context(parts, contour);
-            context.initialize();
+            ContourContext context(contour, image_size);
+            context.initialize(blue_mask, white_mask);
+            if (!context.is_valid()) continue;
 
             double score = context.get_score();
             if (score > best_score) {
                 best_score = score;
                 best_rectangle = context.get_rectangle();
+            }
+            {
+                //cv::imshow(std::to_string(score), image(context.get_rectangle()));
+                //cv::imshow(std::to_string(score), context.get_contour_mask());
                 for (auto entry : context.get_features()) {
                     //std::cout << entry.second << ",";
                     std::cout << entry.first << " : " << entry.second << std::endl;
                 }
-                cv::imshow(std::to_string(score), image(context.get_rectangle()));
-                //std::cout << std::endl;
-                std::cout << " score   : " << score << std::endl << std::endl;
+                std::cout << "convex  : " << cv::isContourConvex(contour) << std::endl;
+                std::cout << "rect    : " << context.get_rectangle() << std::endl;
+                std::cout << "ro_rect : " << context.get_rectangle_size() << std::endl;
+                std::cout << "score   : " << score << std::endl << std::endl;
             }
         }
 
@@ -152,16 +166,62 @@ namespace vision {
 namespace {
 
     /**
+     * @summary Save the resulting cropped image to disk
+     * @param file The file that needs to be saved
+     * @param image The image to save
+     * @param rectangle The rectangle to take out of the image
+     */
+    void save_image(const fs::path& file, const cv::Mat& image, const cv::Rect& rectangle) {
+        std::string path = ("./cropping" / file.filename()).string();
+        cv::Mat crop = image(rectangle);
+        std::cout << "saving result to: " << path << std::endl;
+        cv::imwrite(path, crop);
+    }
+
+    /**
      * @summary Quickly display an image for debugging
+     * @param file The filename of the image to display
      * @param image The image to display
-     * @param name The name of the window to display the image in
+     * @param rectangle The rectangle to take out of the image
      */
     void display_image(const fs::path& file, const cv::Mat& image, const cv::Rect& rectangle) {
-        std::string name = file.string();
-        cv::Mat crop = image(rectangle);
+        cv::Point safe_center(std::max(rectangle.x, 0), std::max(rectangle.y, 0));
+        cv::Rect safe_rectangle(safe_center, rectangle.size());
+        cv::Mat cropped = image(safe_rectangle);
+
+        std::string name = file.filename().string();
         cv::namedWindow(name, cv::WINDOW_AUTOSIZE);
-        cv::imshow(name, crop);
+        cv::imshow(name, cropped);
     }
+
+#if 0
+
+    /**
+     * @summary Quickly display an image for debugging
+     * @param file The filename of the image to display
+     * @param image The image to display
+     * @param rectangle The rectangle to take out of the image
+     */
+    void display_image(const fs::path& file, const cv::Mat& image, const cv::RotatedRect& rectangle) {
+        std::string name = file.filename().string();
+
+        cv::Mat rotated, cropped;
+        float angle = rectangle.angle;
+        cv::Size size = rectangle.size;
+        if (angle < -45.) {
+            angle += 90.0;
+            std::swap(size.width, size.height);
+        }
+
+        cv::Mat matrix = getRotationMatrix2D(rectangle.center, angle, 1.0);
+        //cv::Mat region = image(rectangle.boundingRect());
+        cv::warpAffine(image, rotated, matrix, image.size(), cv::INTER_CUBIC);
+        cv::getRectSubPix(rotated, size, rectangle.center, cropped);
+
+        cv::namedWindow(name, cv::WINDOW_AUTOSIZE);
+        cv::imshow(name, cropped);
+    }
+#endif
 
     /**
      * @summary Process the supplied file with the current algorithm
@@ -185,6 +245,7 @@ namespace {
                 if (is_debug) {
                     display_image(file, image, rectangle);
                 }
+                save_image(file, image, rectangle);
                 std::cout << file << " : " << score << " : " << rectangle << std::endl;
             } else {
                 std::cout << file << " : " << "no rectangle found" << std::endl;

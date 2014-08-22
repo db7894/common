@@ -14,12 +14,14 @@ namespace vision {
      */
     enum class Feature {
         ContourArea,
+        ContourEdges,
+        ContourPerimiter,
         ContourSkew,
         ContourRatio,
-        ContourConvex,
+        ContourCorners,
         ContourCentrality,
         ContourBlueCount,
-        ContourWhiteCount
+        ContourOtherCount
     };
 
     /**
@@ -32,11 +34,13 @@ namespace vision {
         switch (feature) {
             case Feature::ContourArea:       stream << "area   "; break;
             case Feature::ContourSkew:       stream << "skew   "; break;
+            case Feature::ContourEdges:      stream << "edges  "; break;
+            case Feature::ContourPerimiter:  stream << "perim  "; break;
             case Feature::ContourRatio:      stream << "ratio  "; break;
-            case Feature::ContourConvex:     stream << "convex "; break;
+            case Feature::ContourCorners:    stream << "corners"; break;
             case Feature::ContourCentrality: stream << "central"; break;
             case Feature::ContourBlueCount:  stream << "blues  "; break;
-            case Feature::ContourWhiteCount: stream << "whites "; break;
+            case Feature::ContourOtherCount: stream << "other  "; break;
         }
         return stream;
     }
@@ -47,33 +51,36 @@ namespace vision {
     class ContourContext : boost::noncopyable {
     public:
 
-        ContourContext(const std::pair<cv::Mat, cv::Mat>& parts, const cv::vector<cv::Point>& contour);
-        void initialize();
+        ContourContext(const cv::vector<cv::Point>& contour, const cv::Size& image_size);
+        void initialize(const cv::Mat& blue_mask, const cv::Mat& white_mask);
         std::map<Feature, double> get_features();
         double get_score();
+        bool is_valid();
 
-        cv::vector<cv::Point> get_polygon() { return _polygon; }
-        cv::Rect get_rectangle() { return _rectangle; }
-        cv::RotatedRect get_rotated_rectangle() { return _rotated; }
+        cv::vector<cv::Point> get_contour() const { return _contour_hull; }
+        cv::Rect get_rectangle() const { return _rectangle; }
+        cv::RotatedRect get_rotated_rectangle() const { return _rotated_rectangle; }
+        cv::Size get_rectangle_size() const { return _rotated_rectangle.size; }
+        cv::Point get_rectangle_center() const { return _rotated_rectangle.center; }
+        cv::Mat get_contour_mask() const { return _contour_mask; }
 
     private:
 
-        double feature_contour_area();
-        double feature_contour_skew();
-        double feature_contour_ratio();
-        double feature_contour_convex();
-        double feature_contour_centrality();
-        double feature_contour_pixel_count(const cv::Mat& mask);
+        double _contour_perimiter;
+        double _contour_area;
+        double _contour_skew;
+        double _contour_ratio;
+        double _contour_centrality;
+        double _contour_blue_pixel_count;
+        double _contour_other_pixel_count;
+        double _contour_edge_difference;
 
         cv::vector<cv::Point> _contour;
-        cv::vector<cv::Point> _polygon;
-        cv::Mat _blue_mask;
-        cv::Mat _white_mask;
+        cv::vector<cv::Point> _contour_hull;
+        cv::Size _image_size;
         cv::Mat _contour_mask;
-        cv::Size _size;
-        cv::RotatedRect _rotated;
-        double _perimiter;
         cv::Rect _rectangle;
+        cv::RotatedRect _rotated_rectangle;
     };
 
 };

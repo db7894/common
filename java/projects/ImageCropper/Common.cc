@@ -27,7 +27,7 @@ namespace constant {
      * edge detection. The larger the kernel, the less the noise. However,
      * if it is too large, the image one needs to detect may be affected.
      */
-    cv::Size kernel_size           = cv::Size(5, 5);
+    cv::Size kernel_size           = cv::Size(9, 9);
     cv::Mat  morphology_kernel     = cv::getStructuringElement(cv::MORPH_RECT, kernel_size);
 
     /**
@@ -58,27 +58,33 @@ namespace constant {
     const int max_edge_threshold   = 250;
     const int edge_kernel_size     = 3;
 
+    /**
+     * Control the various thresholding of the features
+     * based on extreme values that are indicative of invalid
+     * regions.
+     */
+    const int    contour_min_corner_threshold  =    3;
+    const int    contour_max_corner_threshold  =    8;
+    const double contour_ratio_threshold       =    2.0;
+    const double contour_edge_difference       =  -50.0;
+    const double contour_blue_pixel_threshold  = 1000.0;
+    const double contour_min_width_threshold   =   50.0;
+    const double contour_min_height_threshold  =   50.0;
+    const double contour_max_width_threshold   = 1000.0;
+    const double contour_max_height_threshold  = 1000.0;
+
 
     /**
      * Control the value that each feature adds to the overall score of
      * the contour it is applicable to.
-     * TODO converts to learned weights + constant
      */
-    //const double feature_weight_area        =  1.0;
-    //const double feature_weight_skew        =  1.0;
-    //const double feature_weight_ratio       =  1.0;
-    //const double feature_weight_convexity   =  1.0;
-    //const double feature_weight_centrality  =  1.0;
-    //const double feature_weight_blue_count  =  1.0;
-    //const double feature_weight_white_count =  1.0;
-
-    const double feature_weight_area        =  0.00016350211757061003;
-    const double feature_weight_skew        = -0.014795337585809247;
-    const double feature_weight_ratio       =  0.0036044734233280245;
-    const double feature_weight_convexity   = -0.0067858144990055975;
-    const double feature_weight_centrality  = -0.009098536081147302;
-    const double feature_weight_blue_count  =  0.0006283861393372748;
-    const double feature_weight_white_count =  2.3104130897115495e-06;
+    const double feature_weight_area        =    0.1;
+    const double feature_weight_skew        =  -10.0;
+    const double feature_weight_ratio       = -100.0;
+    const double feature_weight_perimiter   =    0.0;
+    const double feature_weight_centrality  =   -0.1;
+    const double feature_weight_blue_count  =    1.0;
+    const double feature_weight_other_count =   -0.1;
 
 } // namespace </constant>
 } // namespace </vision>
