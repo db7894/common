@@ -17,19 +17,25 @@ namespace constant = bashwork::vision::constant;
  */
 namespace {
 
+    // This calculates the perimiter of the given convex-hull contour.
     inline double get_contour_perimiter(const cv::vector<cv::Point>& contour) {
         return cv::arcLength(contour, true) * constant::poly_tolerance;
     }
 
+    // This calculates the minimum area of the given convex-hull contour.
     inline double get_contour_area(const cv::vector<cv::Point>& contour) {
         return cv::contourArea(contour);
     }
-   
+  
+    // This calculates the rotation of the min-area rectangle around the
+    // convex-hull contour. Ideally it should be version close to 0.
     inline double get_contour_skew(const cv::RotatedRect& rectangle) {
         double angle = std::abs(rectangle.angle);
         return std::min(angle, 90.0 - angle);
     }
 
+    // This calculates the rectangle ratio of the min-area rectangle around
+    // the convex-hull contour. Ideally it should be very close to 1.
     inline double get_contour_ratio(const cv::RotatedRect& rectangle) {
         if ((rectangle.size.height == 0)
          || (rectangle.size.width  == 0)) return 0.0;
@@ -38,19 +44,31 @@ namespace {
             ?  (rectangle.size.height / rectangle.size.width)
             :  (rectangle.size.width  / rectangle.size.height);
     }
-    
+
+    // This is simply the distance from the center of the original image
+    // to the center of the discovered min-area rectangle. This will not be
+    // 0 most of the time, but this can be used to exclude large artifacts on
+    // the edges of images.
     inline double get_contour_centrality(const cv::RotatedRect& rectangle, const cv::Size& size) {
         return cv::norm((cv::Point2f(size) * 0.5) - rectangle.center);
     }
 
+    // This calculates the set union between a mask and a given contour;
+    // say how many blue pixels are on.
     inline double get_contour_pixel_count(const cv::Mat& mask, const cv::Mat& contour) {
         return cv::countNonZero(mask & contour);
     }
 
+    // This calculates the set difference between a mask and a given contour;
+    // say how many pixels are not white.
     inline double get_contour_other_pixel_count(const cv::Mat& mask, const cv::Mat& contour) {
         return cv::countNonZero(contour) - cv::countNonZero(mask & contour);
     }
 
+    // This calculates the total distance between the four points of the min-area rectangle
+    // and the supplied convex-hull contour. In case of a perfect rectangle, the result should
+    // be 0. In the case of a non-rectangular polygon, the difference should be a large negative
+    // number.
     inline double get_edge_difference(const cv::RotatedRect& rectangle, const cv::vector<cv::Point> contour) {
         double difference = 0.0;
         cv::Point2f points[4];
@@ -86,12 +104,6 @@ namespace vision {
         cv::convexHull(cv::Mat(_contour), _contour_hull, false);
         cv::drawContours(_contour_mask, cv::vector<cv::vector<cv::Point>>(1, _contour_hull), -1, cv::Scalar(255), CV_FILLED);
         _rotated_rectangle = cv::minAreaRect(_contour_hull);
-        //cv::Point2f points[4];
-        //_rotated_rectangle.points(points);
-        //_contour_edge_difference = 0.0;
-        //for (auto point : points) {
-        //    _contour_edge_difference += cv::pointPolygonTest(_contour_hull, point, true);
-        //}
         _rectangle = cv::boundingRect(_contour_hull);
 
         // calculate the features so we can use them in validation
@@ -105,6 +117,7 @@ namespace vision {
         _contour_other_pixel_count = get_contour_other_pixel_count(white_mask, _contour_mask)
                                    - _contour_blue_pixel_count;
 
+        // other objects we can calulate the min-area rectangle on
         //cv::vector<cv::Point> _polygon;
         //cv::approxPolyDP(_contour, _polygon, _perimiter, true);
         //_rectangle = cv::boundingRect(_polygon);
@@ -121,7 +134,7 @@ namespace vision {
             && (_contour_hull.size()           > constant::contour_min_corner_threshold)
             //&& (_contour_hull.size()           < constant::contour_max_corner_threshold)
             && (_contour_ratio                 < constant::contour_ratio_threshold)
-            //&& (_contour_blue_pixel_count      > constant::contour_blue_pixel_threshold)
+            && (_contour_blue_pixel_count      > constant::contour_blue_pixel_threshold)
             && (_rotated_rectangle.size.width  > constant::contour_min_width_threshold)
             && (_rotated_rectangle.size.height > constant::contour_min_height_threshold)
             && (_rotated_rectangle.size.width  < constant::contour_max_width_threshold)
@@ -158,6 +171,7 @@ namespace vision {
 
         result += _contour_area              * constant::feature_weight_area;
         result += _contour_skew              * constant::feature_weight_skew;
+        result += _contour_edge_difference   * constant::feature_weight_edges;
         result += _contour_ratio             * constant::feature_weight_ratio;
         result += _contour_perimiter         * constant::feature_weight_perimiter;
         result += _contour_centrality        * constant::feature_weight_centrality;

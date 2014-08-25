@@ -61,13 +61,15 @@ namespace constant {
     /**
      * Control the various thresholding of the features
      * based on extreme values that are indicative of invalid
-     * regions.
+     * regions. Tune these carefully and keep in mind that occlusions,
+     * rotations, external entities, and various lighting conditions
+     * will affect the idealized values!
      */
     const int    contour_min_corner_threshold  =    3;
-    const int    contour_max_corner_threshold  =    8;
+    const int    contour_max_corner_threshold  =   15;
     const double contour_ratio_threshold       =    2.0;
     const double contour_edge_difference       =  -50.0;
-    const double contour_blue_pixel_threshold  = 1000.0;
+    const double contour_blue_pixel_threshold  =  100.0;
     const double contour_min_width_threshold   =   50.0;
     const double contour_min_height_threshold  =   50.0;
     const double contour_max_width_threshold   = 1000.0;
@@ -80,10 +82,11 @@ namespace constant {
      */
     const double feature_weight_area        =    0.1;
     const double feature_weight_skew        =  -10.0;
+    const double feature_weight_edges       =   10.0;
     const double feature_weight_ratio       = -100.0;
     const double feature_weight_perimiter   =    0.0;
     const double feature_weight_centrality  =   -0.1;
-    const double feature_weight_blue_count  =    1.0;
+    const double feature_weight_blue_count  =    0.1;
     const double feature_weight_other_count =   -0.1;
 
 } // namespace </constant>

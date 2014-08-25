@@ -8,6 +8,8 @@
 #include "ImageFeatures.h"
 #include "NativeImageCropper.h"
 
+#define DEBUG_BUILD
+
 namespace po = boost::program_options; 
 namespace fs = boost::filesystem;
 namespace bw = bashwork::vision;
@@ -51,7 +53,9 @@ namespace vision {
         cv::cvtColor(image, im_gray, CV_BGR2GRAY);
         cv::GaussianBlur(im_gray, im_blur, constant::kernel_size, 0, 0);
         cv::Canny(image, im_edge, constant::low_edge_threshold, constant::max_edge_threshold, constant::edge_kernel_size);
-        //cv::imshow("canny", im_edge);
+#ifdef DEBUG_BUILD
+        cv::imshow("canny", im_edge);
+#endif
         cv::findContours(im_edge, contours, hierarchy, constant::canny_mode, constant::canny_method);
         std::cout << "length: " << contours.size() << std::endl;
 
@@ -74,7 +78,7 @@ namespace vision {
         cv::inRange(im_hsv, constant::low_white_threshold, constant::max_white_threshold, im_white);
         cv::inRange(im_hsv, constant::low_blue_threshold, constant::max_blue_threshold, im_blue);
         //cv::morphologyEx(im_blue, im_open, cv::MORPH_OPEN, constant::morphology_kernel);
-#if 0
+#ifdef DEBUG_BUILD
         cv::imshow("original mask", image);
         cv::imshow("blue mask", im_blue);
         cv::imshow("white mask", im_white);
@@ -111,10 +115,11 @@ namespace vision {
                 best_rectangle = context.get_rectangle();
             }
             {
-                //cv::imshow(std::to_string(score), image(context.get_rectangle()));
-                //cv::imshow(std::to_string(score), context.get_contour_mask());
+#ifdef DEBUG_BUILD
+                cv::imshow(std::to_string(score) + "-crop", image(context.get_rectangle()));
+                cv::imshow(std::to_string(score) + "-mask", context.get_contour_mask());
+#endif
                 for (auto entry : context.get_features()) {
-                    //std::cout << entry.second << ",";
                     std::cout << entry.first << " : " << entry.second << std::endl;
                 }
                 std::cout << "convex  : " << cv::isContourConvex(contour) << std::endl;
@@ -172,7 +177,7 @@ namespace {
      * @param rectangle The rectangle to take out of the image
      */
     void save_image(const fs::path& file, const cv::Mat& image, const cv::Rect& rectangle) {
-        std::string path = ("./cropping" / file.filename()).string();
+        std::string path = ("./dataset-crops" / file.filename()).string();
         cv::Mat crop = image(rectangle);
         std::cout << "saving result to: " << path << std::endl;
         cv::imwrite(path, crop);
@@ -245,7 +250,9 @@ namespace {
                 if (is_debug) {
                     display_image(file, image, rectangle);
                 }
+#ifndef DEBUG_BUILD
                 save_image(file, image, rectangle);
+#endif 
                 std::cout << file << " : " << score << " : " << rectangle << std::endl;
             } else {
                 std::cout << file << " : " << "no rectangle found" << std::endl;

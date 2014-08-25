@@ -37,6 +37,7 @@ namespace constant {
 
     extern const double feature_weight_area;
     extern const double feature_weight_skew;
+    extern const double feature_weight_edges;
     extern const double feature_weight_ratio;
     extern const double feature_weight_perimiter;
     extern const double feature_weight_centrality;
