@@ -23,7 +23,9 @@ void publisher(bs::lockless_queue<int>& queue) {
 void subscriber(bs::lockless_queue<int>& queue) {
     int total = 0;
     int result;
+
     while (queue.pop(result)) {
+        std::cout << "sub(" << result << ")" << std::endl;
         total += result;
     }
     std::cout << "total sum: " << total << std::endl;

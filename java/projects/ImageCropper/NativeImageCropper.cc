@@ -8,7 +8,7 @@
 #include "ImageFeatures.h"
 #include "NativeImageCropper.h"
 
-#define DEBUG_BUILD
+//#define DEBUG_BUILD
 
 namespace po = boost::program_options; 
 namespace fs = boost::filesystem;
@@ -177,7 +177,12 @@ namespace {
      * @param rectangle The rectangle to take out of the image
      */
     void save_image(const fs::path& file, const cv::Mat& image, const cv::Rect& rectangle) {
-        std::string path = ("./dataset-crops" / file.filename()).string();
+        fs::path save_path("./dataset-crops");
+        if (!fs::exists(save_path)) {
+            fs::create_directory(save_path);
+        }
+
+        std::string path = (save_path / file.filename()).string();
         cv::Mat crop = image(rectangle);
         std::cout << "saving result to: " << path << std::endl;
         cv::imwrite(path, crop);

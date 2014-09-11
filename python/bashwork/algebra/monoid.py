@@ -8,7 +8,7 @@
    - hyperloglog
    - bloom filter
    - sliding window
-   - tuple of (monoida, monoidb, monoidc)
+   - fix plus_lift vs plus_without_lift issues with some monoids (set, counter)
    - https://github.com/twitter/algebird/blob/develop/algebird-core/src/main/scala/com/twitter/algebird/DecayedValue.scala
    - the other utilities of algebird (summing queue)
 '''
@@ -266,8 +266,8 @@ class PriorityQueueMonoid(Monoid):
         :param count: The count of items to keep
         '''
         self.count = max(1, count)
+        self.zero  = []
 
-    def zero(self, v): return []
     def lift(self, v): return [v]
     def plus(self, l, r):
         heap = list(heqpq.merge(l, r))
@@ -275,17 +275,32 @@ class PriorityQueueMonoid(Monoid):
             heapq.heappop(heap)
         return heap
 
+class MultiMonoid(Monoid):
+    ''' This is a collection of monoids such that
+    applying a value will result in N results:
+
+    .. code-block:: python
+
+        >>> monoid = MultiMonoid(IntMonoid, SetMonoid)
+        >>> monoid.sum(range(5)
+        (5, set(1,2,3,4))
+    '''
+
+    def __init__(self, *monoids):
+        self.monoids = tuple(monoids)
+        self.zero    = [m.zero for m in self.monoids]
+
+    def lift(self, v):
+        return tuple(m.lift(v) for m in self.monoids)
+
+    def plus(self, ls, rs):
+        return tuple(m.plus(l, r) for l, m, r in zip(ls, self.monoids, rs))
+
 
 NoneMonoid     = NoneGroup
 IntMonoid      = IntField
 FloatMonoid    = FloatField
 BooleanMonoid  = BooleanField
-
-PriorityQueueMonoid = Monoid(**{
-    'zero': [],
-    'lift': lambda x: [x],
-    'plus': operator.and_,
-})
 
 AndMonoid = Monoid(**{
     'zero': True,

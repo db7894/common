@@ -19,10 +19,7 @@ public:
     typedef std::size_t version_t;
     typedef T* pointer_t;
 
-    versioned_pointer(void) noexcept
-    {}
-
-    explicit versioned_pointer(pointer_t pointer, version_t version=0):
+    explicit versioned_pointer(pointer_t pointer=nullptr, version_t version=0):
         _pointer(pointer),
         _version(version)
     {}
@@ -58,14 +55,14 @@ public:
     }
 
     // smart pointer support
-    T & operator*() const { return *get_pointer(); }
-    T * operator->() const { return get_pointer(); }
+    T & operator*()  const { return *get_pointer(); }
+    T * operator->() const { return  get_pointer(); }
     operator bool(void) const { return _pointer != nullptr; }
 
 
 private:
-    version_t _version;
     pointer_t _pointer;
+    version_t _version;
 };
 
 } // </namspace detail>

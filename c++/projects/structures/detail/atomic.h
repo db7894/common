@@ -1,4 +1,4 @@
-#define USE_BOOST_ATOMIC
+//#define USE_BOOST_ATOMIC
 #ifdef USE_BOOST_ATOMIC
 #  include <boost/atomic.hpp>
 #else

@@ -41,30 +41,31 @@ class ConsistentHash(object):
         :param replicas: The number of virtual replicas to use
         :param hasher: The hash method to use
         '''
-        self.index = list() # sorted hash keys
-        self.nodes = dict() # hash-key => node
+        self.circle   = list() # sorted hash keys
+        self.mapping  = dict() # hash-key => node
         self.replicas = max(1, replicas)
-        self.hasher = hasher or (lambda x: sha256(x).digest())
+        self.hasher   = hasher or (lambda x: sha256(x).digest())
 
     def add_node(self, node):
         ''' Given a node, add it to the circle
 
         :param node: The node to add to the circle
         '''
-        for i in range(self.replicas):
-            key = self.hasher("{}:{}".format(node, i))
-            self.nodes[key] = node
-            insort_right(self.index, key)
+        for idx in range(self.replicas):
+            key = self.hasher("{}:{}".format(node, idx))
+            self.mapping[key] = node
+            insort_right(self.circle, key)
 
     def del_node(self, node):
         ''' Given a node, deleted it from the circle
 
         :param node: The node to remove from the circle
         '''
-        for i in range(self.replicas):
-            key = self.hasher("{}:{}".format(node, i))
-            del self.nodex[key]
-            self.index.remove(key)
+        for idx in range(self.replicas):
+            key = self.hasher("{}:{}".format(node, idx))
+            if key in self.mapping:
+                del self.mapping[key]
+                self.circle.remove(key)
 
     def get_node(self, key):
         ''' Given a key, return the node this key belongs to
@@ -72,16 +73,16 @@ class ConsistentHash(object):
         :param key: The key to find the best node for
         :returns: The node the key should attatch to or None
         '''
-        if len(self.index) == 0:
+        if len(self.circle) == 0:
             return None
 
         key = self.hasher(key)
-        if key in self.nodes:
-            return self.nodes[key]
+        if key in self.mapping:
+            return self.mapping[key]
 
-        end = bisect_right(self.index, key)
-        end = 0 if end >= len(self.index) else end
-        return self.nodes[self.index[end]]
+        end = bisect_right(self.circle, key)
+        end = 0 if end >= len(self.circle) else end
+        return self.mapping[self.circle[end]]
 
 
 # ------------------------------------------------------------
@@ -93,14 +94,14 @@ if __name__ == "__main__":
 
     c = 10
     s = 100000
-    m = ConsistentHash()
+    m = ConsistentHash(replicas=5)
     for i in range(c):
         m.add_node("cache{}.host.com".format(i))
 
     hits = defaultdict(int)
     for i in range(s):
         hits[m.get_node(urandom(15))] += 1
-    hits = dict((k, v/float(s)) for k,v in hits.items())
+    hits = { k : v/float(s) for k,v in hits.items() }
     for k,v in hits.items():
         print "{}\t{}".format(k, v)
 
@@ -112,5 +113,3 @@ if __name__ == "__main__":
     print "mean\t\t{}".format(mean)
     print "variance\t{}".format(vary)
     print "std-deviation\t{}".format(stdv)
-
-

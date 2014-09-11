@@ -27,5 +27,7 @@ def gcd_sub(a, b):
     return a
 
 def lcm(a, b):
+    ''' Least common multiple based on the gcd
+    '''
     return (a * b) / gcd(a, b)
 
