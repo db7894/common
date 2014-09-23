@@ -29,6 +29,8 @@ namespace constant {
     extern const double contour_max_width_threshold;
     extern const double contour_max_height_threshold;
 
+    extern const int blur_kernel_size;
+
     extern cv::Size kernel_size;
     extern cv::Mat  morphology_kernel;
 

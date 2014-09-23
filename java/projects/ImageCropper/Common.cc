@@ -23,6 +23,12 @@ namespace constant {
     cv::Scalar max_blue_threshold  = cv::Scalar(155, 255, 255);
 
     /**
+     * Control the window to be examined to control the median blur
+     * to remove noise from the edge detection.
+     */
+    const int blur_kernel_size     = 3;
+
+    /**
      * Control the amount of noise removed from the image before performing
      * edge detection. The larger the kernel, the less the noise. However,
      * if it is too large, the image one needs to detect may be affected.

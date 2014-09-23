@@ -33,7 +33,7 @@ def retrieve_image(link, **kwargs):
 
     try:
         if not os.path.exists(path):
-            _logger.debug("Downloading {}".format(len(name)))
+            _logger.debug("Downloading {}".format(name))
             data = urllib.urlopen(link).read()
             return (path, Image.open(StringIO(data)))
     except Exception, ex:
@@ -66,7 +66,7 @@ def save_images(links, **kwargs):
     :returns: The paths to the saved images
     '''
     threads = kwargs.get('threads', 5)
-    return Parallel(n_jobs=threads)(delayed(save_image)(link **kwargs) for link in links)
+    return Parallel(n_jobs=threads)(delayed(save_image)(link, **kwargs) for link in links)
 
 #---------------------------------------------------------------------------# 
 # initialize our program settings
@@ -90,6 +90,10 @@ def _get_options():
     parser.add_option("-s", "--sample",
         help="The sample size to download",
         dest="sample", default=1.0)
+
+    parser.add_option("-t", "--threads",
+        help="The number of threads to download with",
+        dest="threads", default=5)
 
     parser.add_option("-i", "--input",
         help="The input database to operate with",
@@ -117,8 +121,12 @@ def sample_data(data, rate=1.0):
 
 def main():
     option = _get_options()
+
+    if option.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     output = os.path.abspath(option.path)
     links  = json.load(open(option.database))
     links  = sample_data(links, option.sample)
-    paths  = save_images(linkes, path=path)
+    paths  = save_images(links, path=output, threads=option.threads)
     _logger.debug("Downloaded {} files".format(len(paths)))

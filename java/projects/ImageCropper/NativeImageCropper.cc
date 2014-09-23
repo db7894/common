@@ -51,8 +51,9 @@ namespace vision {
         cv::Rect rectangle;
 
         cv::cvtColor(image, im_gray, CV_BGR2GRAY);
-        cv::GaussianBlur(im_gray, im_blur, constant::kernel_size, 0, 0);
-        cv::Canny(image, im_edge, constant::low_edge_threshold, constant::max_edge_threshold, constant::edge_kernel_size);
+        //cv::GaussianBlur(im_gray, im_blur, constant::kernel_size, 0, 0);
+        cv::medianBlur(im_gray, im_blur, constant::blur_kernel_size);
+        cv::Canny(im_blur, im_edge, constant::low_edge_threshold, constant::max_edge_threshold, constant::edge_kernel_size);
 #ifdef DEBUG_BUILD
         cv::imshow("canny", im_edge);
 #endif
