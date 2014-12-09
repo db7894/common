@@ -113,24 +113,26 @@ class MarkovChain(object):
             else: return node            # or choose the selected node
         return max_node                  # otherwise return highest probability node
 
-def chain_from_text(text):
+def chain_from_text(text, size=2):
     ''' Given a collection of text, generate a
     markov chain from the contents.
 
     :param text: The text to train with
+    :param size: The number of previous data to use
     :returns: The resulting markov chain
     '''
-    from nltk import work_tokenize, sent_tokenize
+    from nltk import word_tokenize, sent_tokenize
 
     data = [word_tokenize(sent) for sent in sent_tokenize(text)]
-    return MarkovChain.train(data)
+    return MarkovChain.train(data, size=size)
 
-def chain_from_file(path):
+def chain_from_file(path, size=2):
     ''' Given a file path, open it and genrate a
     markov chain from the contents.
 
     :param path: The path to the file to train with
+    :param size: The number of previous data to use
     :returns: The resulting markov chain
     '''
     text = open(path, 'r').read()
-    return chain_from_text(text)
+    return chain_from_text(text, size=size)

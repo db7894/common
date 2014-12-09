@@ -1,6 +1,7 @@
 import os
 import json
 import pandas as pd
+import msgpack as msgpack
 
 try:
     import cPickle as pickle
@@ -11,12 +12,14 @@ except ImportError:
 #-----------------------------------------------------------
 # Logging
 #-----------------------------------------------------------
+
 import logging
 log = logging.getLogger(__name__)
 
 #-----------------------------------------------------------
 # Datasets
 #-----------------------------------------------------------
+
 class Cache(object):
     ''' A base class cache that can be used to supply
     methods to the higher level caches.
@@ -87,7 +90,7 @@ class PickleFileCache(FileCache):
     def __init__(self, **kwargs):
         ''' Initialize a new instance of the cache.
         '''
-        super(PickelCache, self).__init__(ext=".pickle", **kwargs)
+        super(PickelFileCache, self).__init__(ext=".pickle", **kwargs)
 
     def save(self, path, data):
         ''' Given a path and some data to cache, cache
@@ -120,7 +123,7 @@ class JsonFileCache(FileCache):
     def __init__(self, **kwargs):
         ''' Initialize a new instance of the cache.
         '''
-        super(JsonCache, self).__init__(ext=".json", **kwargs)
+        super(JsonFileCache, self).__init__(ext=".json", **kwargs)
     
     def save(self, path, data):
         ''' Given a path and some data to cache, cache
@@ -144,6 +147,38 @@ class JsonFileCache(FileCache):
         with open(path, 'r') as handle:
             return json.load(handle)
 
+class MsgPackFileCache(FileCache):
+    ''' A cache that persists the supplied data as a msgpack
+    blob to disk.
+    '''
+
+    def __init__(self, **kwargs):
+        ''' Initialize a new instance of the cache.
+        '''
+        super(MsgPackFileCache, self).__init__(ext=".pack", **kwargs)
+    
+    def save(self, path, data):
+        ''' Given a path and some data to cache, cache
+        that data.
+
+        :param path: The path to store the data at
+        :param data: The data to store at the supplied path
+        '''
+        path = os.path.join(self.root, path + self.ext)
+        with open(path, 'w') as handle:
+            msgpack.packb(data, use_bin_type=True)
+
+    def load(self, path):
+        ''' Given a path, attempt to load the supplied
+        data at the path.
+
+        :param path: The path to load from the cache
+        :returns: The data (if it exists) at the cache
+        '''
+        path = os.path.join(self.root, path + self.ext)
+        with open(path, 'r') as handle:
+            return msgpack.unpackb(handle)
+
 
 class PandasFileCache(FileCache):
     ''' A cache that persists the supplied pandas data as
@@ -153,7 +188,7 @@ class PandasFileCache(FileCache):
     def __init__(self, **kwargs):
         ''' Initialize a new instance of the cache.
         '''
-        super(PandasCache, self).__init__(ext=".json", **kwargs)
+        super(PandasFileCache, self).__init__(ext=".hdf", **kwargs)
     
     def save(self, path, data):
         ''' Given a path and some data to cache, cache
