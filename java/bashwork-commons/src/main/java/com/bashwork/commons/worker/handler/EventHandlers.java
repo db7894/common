@@ -82,7 +82,7 @@ public class EventHandlers {
      * @param router The routing function to route an event
      * @return An initialized event handler.
      */
-    public static <K, T> EventHandler<T>routingHandler(final Map<K, EventHandler<T>> routes,
+    public static <K, T> EventHandler<T>routingHandler(final Map<K, EventHandler<? extends T>> routes,
         final Function<T, K> router) {
         
         return new EventHandler<T>() {
@@ -111,7 +111,7 @@ public class EventHandlers {
      * @param fallback The handler for an un-routable event
      * @return An initialized event handler.
      */
-    public static <K, T> EventHandler<T>routingHandler(final Map<K, EventHandler<T>> routes,
+    public static <K, T> EventHandler<T>routingHandler(final Map<K, EventHandler<? extends T>> routes,
         final Function<T, K> router, final EventHandler<T> fallback) {
         
         return new EventHandler<T>() {
