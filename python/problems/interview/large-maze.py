@@ -60,7 +60,7 @@ def save_maze_solution(name, solution):
 
 if __name__ == '__main__':
     start, end  = (400, 984), (398, 25)
-    name     = 'large-maze.jpg'
+    name     = 'images/large-maze.jpg'
     maze     = Image.open(name).convert("RGB")
     data     = maze.load()
     solution = maze_path_search(start, end, data)
