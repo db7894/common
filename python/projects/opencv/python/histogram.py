@@ -14,9 +14,9 @@ def numpy_color_histogram(path):
     '''
     '''
     image  = cv2.imread(path)
-    #image  = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-    ranges = [(0, 256), (0, 256), (0, 256)]          # RGB Ranges
-    #ranges = [(0, 180), (0, 256), (0, 256)]          # HSV Ranges
+    image  = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+    #ranges = [(0, 256), (0, 256), (0, 256)]          # RGB Ranges
+    ranges = [(0, 180), (0, 256), (0, 256)]          # HSV Ranges
     colors = ['b', 'g', 'r']
     for channel, color in enumerate(colors):
         histogram = cv2.calcHist([image], [channel], None, [ranges[channel][1]], ranges[channel])
@@ -28,7 +28,7 @@ def opencv_color_histogram(path):
     '''
     '''
     im_base   = cv2.imread(path)
-    #im_base   = cv2.cvtColor(im_base, cv2.COLOR_RGB2HSV)
+    im_base   = cv2.cvtColor(im_base, cv2.COLOR_RGB2HSV)
     histogram = np.zeros((300, 256, 3))
     bins      = np.arange(256).reshape(256, 1)
     colors    = [(255, 0, 0), (0, 255, 0), (0, 0, 255)] # RGB Colors
