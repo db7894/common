@@ -26,7 +26,7 @@ def get_arguments():
         default=None, help="the source of data to generate with")
     parser.add_argument('-n', '--ngrams', dest="ngrams",
         default=3, help="the number of ngrams to use in the model")
-    parser.add_argument('-s', '--size', dest="size",
+    parser.add_argument('-s', '--size', dest="size", type=int,
         default=500, help="the size of the resulting article to generate")
     arguments = parser.parse_args()
     return arguments
