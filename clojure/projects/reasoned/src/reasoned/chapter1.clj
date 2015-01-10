@@ -142,6 +142,10 @@
     [(== q 'virgin) s#] ;; is returned
     [s# u#]))           ;; result (oil _.0 virgin)
 
+;; ------------------------------------------------------------
+;; When run is called with a positive number, the number of
+;; results will be equal to or less than that number.
+;; ------------------------------------------------------------
 (run 2 (q)
   (conde
     [(== q 'extra) s#]  ;; is not returned
@@ -150,4 +154,77 @@
     [(== q 'oil) s#]    ;; no more results are allowed
     [s# u#]))           ;; result (extra olive)
 
-;;  TODO page 21
+(run* (q)
+  (fresh [x y]
+    (== x 'split)
+    (== y 'pea)
+    (== (lcons x (lcons y '())) q))) ;; result is (split pea)
+
+(run* (q)
+  (fresh [x y]
+    (conde                           ;; result is (
+      [(== x 'split) (== y 'pea)]    ;;   (split pea)
+      [(== x 'navy) (== y 'bean)])   ;;   (navy bean))
+    (== (lcons x (lcons y '())) q)))
+
+(run* (q)
+  (fresh [x y]
+    (conde                           ;; result is (
+      [(== x 'split) (== y 'pea)]    ;;   (split pea soup)
+      [(== x 'navy) (== y 'bean)])   ;;   (navy bean soup))
+    (== (lcons x (lcons y (lcons 'soup '()))) q)))
+
+;; (doc fresh)
+;; (doc conde)
+
+(run* (q)
+  (fresh [x y]
+    (conde                           ;; result is (
+      [(== x 'split) (== y 'pea)]    ;;   (split pea soup)
+      [(== x 'navy) (== y 'bean)])   ;;   (navy bean soup))
+    (== (list x y 'soup) q)))        ;; using list instead of cons
+
+(def teacup (fn [x]
+  (conde
+    [(== 'tea x) s#]
+    [(== 'cup x) s#])))
+
+(run* (q)
+  (teacup q))                         ;; (tea cup)
+
+(run* (q)
+  (fresh [x y]
+    (conde
+      [(teacup x)(== y true) s#]    ;; two results (tea true) (cup true)
+      [(== x false) (== y true)])   ;; one result (false  true)
+    (== (list x y) q)))             ;; ((false true) (tea true) (cup true))
+
+(run* (q)
+  (fresh [x y z]
+    (conde
+      [(== y x)(fresh [x](== z x))]  ;; although it looks like these are the same
+      [(fresh [x](== y x))(== z x)]) ;; instances, they are in fact not
+    (== (lcons y (lcons z '())) q))) ;; ((_0 _1) (_0 _1))
+
+(run* (q)
+  (fresh [x y z]
+    (conde
+      [(== y x)(fresh [x](== z x))]  ;; although it looks like these are the same
+      [(fresh [x](== y x))(== z x)]) ;; instances, they are in fact not
+    (== x false)                     ;; so _0 is a seperate variable
+    (== (lcons y (lcons z '())) q))) ;; ((_0 _1) (_0 _1))
+
+(run* (q) 
+  (let [a (== true q)                ;; each of these are expressions
+        b (== false q)]              ;; but we only use b as the goal
+    b))                              ;; (false)
+
+
+(run* (q)
+  (let [a (== true q)                ;; fresh and cond are also expressions
+        b (fresh [x]                 ;; we only use the fresh b as the goal
+            (== x q)
+            (== false x))
+        c (conde
+            [(== true q) s#])]
+    b))                              ;; (false)
