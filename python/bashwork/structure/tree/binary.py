@@ -17,20 +17,16 @@ class BinaryNode(object):
         self.value = value
         self.left  = left
         self.right = right
-
         self.attrs = kwargs
-        self.attrs['value'] = self.value
-        self.attrs['left']  = self.left
-        self.attrs['right'] = self.right
 
     def __getitem__(self, k):    return self.attrs.get(k, None)
     def __setitem__(self, k, v): self.attrs[k] = v
-    def __eq__(self, other):     return other and (other.value == self.value)
-    def __ne__(self, other):     return other and (other.value != self.value)
-    def __lt__(self, other):     return other and (other.value  < self.value)
-    def __le__(self, other):     return other and (other.value <= self.value)
-    def __gt__(self, other):     return other and (other.value  > self.value)
-    def __ge__(self, other):     return other and (other.value >= self.value)
+    def __eq__(self, other):     return other and (self.value == other.value)
+    def __ne__(self, other):     return other and (self.value != other.value)
+    def __lt__(self, other):     return other and (self.value  < other.value)
+    def __le__(self, other):     return other and (self.value <= other.value)
+    def __gt__(self, other):     return other and (self.value  > other.value)
+    def __ge__(self, other):     return other and (self.value >= other.value)
     def __hash__(self):          return hash(self.value)
     def __repr__(self):          return str(self.value)
     def __str__(self):           return str(self.value)
@@ -444,7 +440,7 @@ def is_mirror_tree_recur(treea, treeb):
     if not treea and treeb: return False
     if not treeb and treea: return False
     if not treeb and not treea: return True
-    return (treea.value == treeb.value and
+    return (treea == treeb and
             is_mirror_tree_recur(treea.left, treeb.right) and
             is_mirror_tree_recur(treea.right, treeb.left))
 
@@ -491,7 +487,7 @@ def are_trees_equal_recur(treea, treeb):
     '''
     if not treea and not treeb: return True
     if not treea  or not treeb: return False
-    if treea.value != treeb.value: return False
+    if treea != treeb: return False
     return (are_trees_equal_recur(treea.left,  treeb.left) and
             are_trees_equal_recur(treea.right, treeb.right))
 
@@ -526,7 +522,7 @@ def find_path(tree, node):
     trail    = {}   # parent node adjacency graph
     path     = []   # the resulting path to the node
     for current in dfs_preorder_iter(tree):
-        if not current or (current.value == node.value):
+        if not current or (current == node):
             break
         trail[current.right] = current
         trail[current.left]  = current
@@ -535,6 +531,21 @@ def find_path(tree, node):
         path.insert(0, current)
         current = trail.get(current, None)
     return path
+
+def find_path_binary(tree, node):
+    ''' Given a binary tree, find a path from the root
+    node to the given node element.
+
+    :param tree: The tree to search for a path
+    :param node: The node to find a path to
+    :returns: A path from the root of the tree to the node
+    '''
+    path = []
+    while tree and (tree != node):
+        path.append(tree)
+        if   tree > node: tree = tree.left
+        elif tree < node: tree = tree.right
+    return path + [node] if (tree == node) else []
 
 def get_all_paths(tree):
     ''' Given a tree, return all the paths from
@@ -553,17 +564,42 @@ def get_all_paths(tree):
         else: yield path
 
 def find_common_ancestor(tree, nodea, nodeb):
-    ''' Given two trees, check if one is a subtree of
-    the other.
+    ''' Given a tree and two nodes, find the common
+    ancestor of the two nodes.
 
+    :param tree: The tree to search for a path
+    :param nodea: The first node to find a path to
+    :param nodeb: The second node to find a path to
+    :returns: The common node or None if none exist
     '''
-    patha = find_path(tree, nodea)
-    pathb = find_path(tree, nodeb)
+    patha = find_path_binary(tree, nodea)
+    pathb = find_path_binary(tree, nodeb)
     match = None
+
     for a, b in zip(patha, pathb):
-        if a.value != b.value: break
-        match = a
+        if a != b: break # first difference in the path
+        else: match = a  # current path match
     return match
+
+def find_node_distance(tree, nodea, nodeb):
+    ''' Given a tree and two nodes in the tree, find
+    the minimal distance between the two nodes.
+
+    :param tree: The tree to search for a path
+    :param nodea: The first node to find a path to
+    :param nodeb: The second node to find a path to
+    :returns: The minimal distance between the two nodes
+    '''
+    patha = find_path_binary(tree, nodea)
+    pathb = find_path_binary(tree, nodeb)
+
+    if not patha or not pathb:
+        return None
+
+    while patha and pathb:
+        a, b = patha.pop(0), pathb.pop(0)
+        if a != b: break
+    return len(patha) + len(pathb) + 2
 
 def lca(tree, nodea, nodeb):
     ''' Given two trees, check if one is a subtree of
@@ -571,8 +607,8 @@ def lca(tree, nodea, nodeb):
 
     '''
     if not tree: return None               # no LCA
-    if tree.value == nodea.value: return tree
-    if tree.value == nodeb.value: return tree
+    if tree == nodea: return tree
+    if tree == nodeb: return tree
     left  = lca(tree.left,  nodea, nodeb)  # search left side for LCA
     right = lca(tree.right, nodea, nodeb)  # search right side for LCA
     if left and right: return tree         # we are at LCA pivot
@@ -589,7 +625,7 @@ def is_a_subtree(tree, node):
     '''
     if not tree: return False
     if not node: return True
-    if (tree.value == node.value and
+    if (tree == node and
         are_trees_equal(tree, node)): return True
 
     return (is_a_subtree(tree.left, node) or

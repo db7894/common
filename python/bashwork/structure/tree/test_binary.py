@@ -168,6 +168,13 @@ class BinaryTreeTest(unittest.TestCase):
         expect = 4
         self.assertEqual(actual, expect)
 
+    def test_find_path_binary(self):
+        tree   = Node(5, Node(2, Node(1), Node(3, right=Node(4))), Node(6))
+        node   = Node(4)
+        actual = find_path_binary(tree, node).pop().value
+        expect = 4
+        self.assertEqual(actual, expect)
+
     def test_get_all_paths(self):
         tree   = Node(5, Node(2, Node(1), Node(3, right=Node(4))), Node(6))
         actual = [[n.value for n in path] for path in get_all_paths(tree)]
@@ -180,6 +187,14 @@ class BinaryTreeTest(unittest.TestCase):
         nodeb  = Node(1)
         actual = find_common_ancestor(tree, nodea, nodeb).value
         expect = 2
+        self.assertEqual(actual, expect)
+
+    def test_find_node_distance(self):
+        tree   = Node(5, Node(2, Node(1), Node(3, right=Node(4))), Node(6))
+        nodea  = Node(4)
+        nodeb  = Node(1)
+        actual = find_node_distance(tree, nodea, nodeb)
+        expect = 3
         self.assertEqual(actual, expect)
 
     def test_lca(self):
