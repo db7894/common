@@ -1,0 +1,23 @@
+# facing west, wall on north
+0 NxWS -> X 2 # dead-end  : turn around
+0 NxWx -> S 3 # corner    : turn left
+0 N*x* -> W 0 # open-hall : go straight
+0 x*** -> N 1 # opening   : turn right
+
+# facing north, wall on east
+1 NEWx -> X 3 # dead-end  : turn around
+1 NExx -> W 0 # corner    : turn left
+1 xE** -> N 1 # open-hall : go straight
+1 *x** -> E 2 # opening   : turn right
+
+# facing east, wall on south
+2 NExS -> X 0 # dead-end  : turn around
+2 xExS -> N 1 # corner    : turn left
+2 *x*S -> E 2 # open-hall : go straight
+2 ***x -> S 3 # opening   : turn right
+
+# facing south, wall on west
+3 xEWS -> X 1 # dead-end  : turn around
+3 xxWS -> E 2 # corner    : turn left
+3 **Wx -> S 3 # open-hall : go straight
+3 **x* -> W 0 # opening   : turn right

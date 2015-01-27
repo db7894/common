@@ -5,8 +5,6 @@ import logging
 from random import randint
 from collections import namedtuple
 
-logger = logging.getLogger("picobot")
-
 # ------------------------------------------------------------
 # utilities
 # ------------------------------------------------------------
@@ -23,6 +21,53 @@ def file_iterator(path):
             yield line.strip()
 
 # ------------------------------------------------------------
+# constants
+# ------------------------------------------------------------
+
+logger = logging.getLogger("picobot")
+
+class Command(object):
+    ''' A collection of the commands that can be
+    issued in the rule sets. These should be used
+    when parsing the command file to compile the
+    rules.
+    '''
+    Space   = 'x'
+    Any     = '*'
+    Comment = '#'
+    North   = 'N'
+    East    = 'E'
+    West    = 'W'
+    South   = 'S'
+
+class Move(object):
+    ''' A colledtion of the moves that are available
+    in the picobot world. These should be used when
+    actually running the game to examine the world.
+    '''
+    North = 'N'
+    East  = 'E'
+    West  = 'W'
+    South = 'S'
+    Space = 'x'
+    Still = 'X'
+
+class Marker(object):
+    ''' A collection of markers that are found in the
+    pico maze world.
+    '''
+    Bot     = 'o'
+    Wall    = '#'
+    Visited = '.'
+    Space   = ' '
+
+class State(object):
+    ''' A collection of the common states found in the
+    picobot world.
+    '''
+    Start = '0'
+
+# ------------------------------------------------------------
 # game compilation
 # ------------------------------------------------------------
 
@@ -37,7 +82,7 @@ def compile_rule(walls, move, state):
     :param state: The state to enter
     :returns: A new rule instance
     '''
-    rule = walls.replace('*', '.')
+    rule = walls.replace(Command.Any, '.')
     rule = re.compile(rule)
     return Rule(rule=rule, move=move, state=state, text=walls)
 
@@ -50,10 +95,10 @@ def compile_rules(path):
     '''
     rules = {}
     for line in file_iterator(path):
-        if not line or line.startswith('#'):
+        if not line or line.startswith(Command.Comment):
             continue
 
-        line = line.split('#')[0] # remove comments
+        line  = line.split(Command.Comment)[0]
         parts = line.split()
         prev, wall, _, move, curr = parts[:5] 
         # TODO check if matching rule exists
@@ -75,22 +120,26 @@ def compile_maze(path):
 
     Y, X = len(maze) - 1 , len(maze[0]) - 1
     for y in range(0, Y + 1):
-        if maze[y][0] != 'x' or maze[y][X] != 'x':
+        if maze[y][0] != Marker.Wall or maze[y][X] != Marker.Wall:
             raise Exception("The supplied maze is invalid as it has wall gaps")
 
     for x in range(0, X + 1):
-        if maze[0][x] != 'x' or maze[Y][x] != 'x':
+        if maze[0][x] != Marker.Wall or maze[Y][x] != Marker.Wall:
             raise Exception("The supplied maze is invalid as it has wall gaps")
 
     return maze
 
-def print_maze(maze):
+def print_maze(maze, point):
     ''' Given a picobot maze, print it to console.
 
     :param maze: The maze to print to console
+    :param point: The current point of the bot in the maze
     '''
     if logger.isEnabledFor(logging.DEBUG):
-        for line in maze:
+        y, x = point
+        for index, line in enumerate(maze):
+            if index == y:
+                line = line[0:x] + [Marker.Bot] + line[x + 1:]
             print ' '.join(line)
         print
 
@@ -109,7 +158,7 @@ def get_starting_point(maze):
     Y, X = len(maze) - 2, len(maze[0]) - 2
     y, x = 0, 0
 
-    while maze[y][x] == 'x':
+    while maze[y][x] == Marker.Wall:
         y = randint(1, Y)
         x = randint(1, X)
     return y, x
@@ -124,10 +173,10 @@ def get_current_walls(maze, point):
     :returns: The current wall state to apply a rule to
     '''
     y, x = point
-    N = 'N' if (maze[y - 1][x] == 'x') else 'x'
-    E = 'E' if (maze[y][x + 1] == 'x') else 'x'
-    W = 'W' if (maze[y][x - 1] == 'x') else 'x'
-    S = 'S' if (maze[y + 1][x] == 'x') else 'x'
+    N = Move.North if (maze[y - 1][x] == Marker.Wall) else Move.Space
+    E = Move.East  if (maze[y][x + 1] == Marker.Wall) else Move.Space
+    W = Move.West  if (maze[y][x - 1] == Marker.Wall) else Move.Space
+    S = Move.South if (maze[y + 1][x] == Marker.Wall) else Move.Space
     return ''.join([N, E, W, S])
 
 def is_solved(maze):
@@ -137,7 +186,7 @@ def is_solved(maze):
     :param maze: The current state of the maze
     :returns: True if the maze is solved, False otherwise
     '''
-    return all(' ' not in line for line in maze)
+    return all(Marker.Space not in line for line in maze)
 
 def update_state(rule, maze, point):
     ''' Given the rule to apply, the current maze state, and
@@ -151,15 +200,16 @@ def update_state(rule, maze, point):
     '''
     y, x = point
 
-    if   rule.move == 'N': y -= 1
-    elif rule.move == 'E': x += 1
-    elif rule.move == 'W': x -= 1
-    elif rule.move == 'S': y += 1
+    if   rule.move == Move.North: y -= 1
+    elif rule.move == Move.East:  x += 1
+    elif rule.move == Move.West:  x -= 1
+    elif rule.move == Move.South: y += 1
 
-    maze[y][x] = '.' # mark the spot as visited
-    print_maze(maze)
+    point = (y, x)
+    maze[y][x] = Marker.Visited
+    print_maze(maze, point)
 
-    return rule.state, (y, x)
+    return rule.state, point
 
 def run_picobot(maze, rules):
     ''' Run the picobot until success or failure
@@ -168,7 +218,7 @@ def run_picobot(maze, rules):
     :param maze: The maze to run the picobot on
     :param rules: The rules to drive the picobot
     '''
-    state = '0'
+    state = State.Start
     point = get_starting_point(maze)
 
     while not is_solved(maze):
@@ -179,6 +229,7 @@ def run_picobot(maze, rules):
                 break
         else:
             raise Exception("No matching rules for {}:'{}' @ {}".format(state, walls, point))
+    print "solved the supplied maze"
 
 # ------------------------------------------------------------
 # setup
@@ -211,10 +262,9 @@ def main():
     if options.debug:
         logging.basicConfig(level=logging.DEBUG)
 
-    rules   = compile_rules(options.rules)
-    maze    = compile_maze(options.maze)
+    rules = compile_rules(options.rules)
+    maze  = compile_maze(options.maze)
     run_picobot(maze, rules)
-    print "solved the supplied maze"
 
 if __name__ == "__main__":
     main()
