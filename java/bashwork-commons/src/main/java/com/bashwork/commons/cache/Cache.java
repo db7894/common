@@ -4,4 +4,5 @@ public interface Cache<TKey, TValue> {
 	
 	TValue get(TKey key);
 	boolean set(TKey key, TValue value);
+	boolean exists(TKey key);
 }
