@@ -1,0 +1,12 @@
+# find bottom left corner
+0 xxxx -> W 0
+0 xxWx -> S 0
+0 xxWS -> X 1
+
+# paint right
+1 *x** -> E 1
+1 xEx* -> N 2
+
+# paint left
+2 x*xx -> W 2
+2 xxWx -> N 1
