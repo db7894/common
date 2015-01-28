@@ -1,0 +1,27 @@
+# get to the top most point
+0 NEWx -> S 3 # dead-end  : start swiping
+0 xxx* -> N 0 # open      : go north
+0 NEx* -> W 0 # corner    : move west
+0 NxW* -> E 0 # corner    : move east
+
+# swipe to the right, then down
+1 NExx -> S 3 # dead-end  : move down
+1 *x** -> E 1 # open      : move right
+1 *ExS -> W 6 # corner    : move right, down
+
+# swipe to the left, then down
+2 NxWx -> S 4 # dead-end  : move down
+2 **x* -> W 2 # open      : move left
+2 *xWS -> E 5 # corner    : move right, down
+
+# align right, then swipe left
+3 xxxx -> E 2 # open      : move left
+
+# align left, then swipe right
+4 xxxx -> W 1 # open      : move right
+
+# align down, then swipe right
+5 xxxx -> S 1 # open      : move down, right
+
+# align down, then swipe left
+6 xxxx -> S 2 # open      : move down, left
