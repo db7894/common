@@ -1,6 +1,6 @@
 # find bottom left corner
-0 xxxx -> W 0
-0 xxWx -> S 0
+0 **x* -> W 0
+0 **Wx -> S 0
 0 xxWS -> X 1
 
 # paint right
