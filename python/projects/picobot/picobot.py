@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import re
+from time import sleep
 import argparse
 import logging
 from random import randint
@@ -8,6 +9,22 @@ from collections import namedtuple
 # ------------------------------------------------------------
 # utilities
 # ------------------------------------------------------------
+try:
+    import curses
+except ImportError:
+    class curses(object):
+        ''' This is simply a fake wrapper around curses
+        so that users without curses can still play the
+        game.
+        '''
+
+        def clear(self): pass
+        def addstr(self, y, x, text): print text
+        def refresh(self): print
+        
+        @classmethod
+        def wrapper(klass, method):
+            return method(klass())
 
 def file_iterator(path):
     ''' Given a path, return an iterator around
@@ -129,19 +146,20 @@ def compile_maze(path):
 
     return maze
 
-def print_maze(maze, point):
+def update_screen(screen, maze, point):
     ''' Given a picobot maze, print it to console.
 
+    :param screen: The curses screen to operate with
     :param maze: The maze to print to console
     :param point: The current point of the bot in the maze
     '''
-    if logger.isEnabledFor(logging.DEBUG):
-        y, x = point
-        for index, line in enumerate(maze):
-            if index == y:
-                line = line[0:x] + [Marker.Bot] + line[x + 1:]
-            print ' '.join(line)
-        print
+    y, x = point
+    for index, line in enumerate(maze):
+        if index == y:
+            line = line[0:x] + [Marker.Bot] + line[x + 1:]
+        screen.addstr(index, 0, ' '.join(line))
+    screen.refresh()
+    sleep(0.01) # so we don't just blink and finish
 
 # ------------------------------------------------------------
 # game logic
@@ -207,25 +225,27 @@ def update_state(rule, maze, point):
 
     point = (y, x)
     maze[y][x] = Marker.Visited
-    print_maze(maze, point)
 
     return rule.state, point
 
-def run_picobot(maze, rules):
+def run_picobot(screen, maze, rules):
     ''' Run the picobot until success or failure
     on the supplied maze with the supplied rules.
 
+    :param screen: The curses screen to operate with
     :param maze: The maze to run the picobot on
     :param rules: The rules to drive the picobot
     '''
     state = State.Start
     point = get_starting_point(maze)
+    screen.clear()
 
     while not is_solved(maze):
         walls = get_current_walls(maze, point)
         for rule in rules[state]:
             if rule.rule.match(walls):
                 state, point = update_state(rule, maze, point)
+                update_screen(screen, maze, point)
                 break
         else:
             raise Exception("No matching rules for {}:'{}' @ {}".format(state, walls, point))
@@ -264,7 +284,8 @@ def main():
 
     rules = compile_rules(options.rules)
     maze  = compile_maze(options.maze)
-    run_picobot(maze, rules)
+    game  = lambda screen: run_picobot(screen, maze, rules)
+    curses.wrapper(game)
 
 if __name__ == "__main__":
     main()
