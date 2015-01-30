@@ -9,6 +9,17 @@ class Trie(object):
     VALUE = object()
     SKIP  = set(list(' ,.;:-\'"`'))
 
+    @classmethod
+    def create(klass, words):
+        ''' Initialize a new trie with the supplied words
+
+        :param words: The words to initialize the trie with
+        :returns: The initialize trie
+        '''
+        trie = klass()
+        trie.add_words(words)
+        return trie
+
     def __init__(self, root=None):
         ''' Initialize a new instance of the trie
 
