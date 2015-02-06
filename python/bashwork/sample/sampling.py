@@ -1,7 +1,9 @@
 import heapq
+import math
 from sys import maxint
 from collections import Counter
 from random import randint, seed, random
+from itertools import islice
 
 def popular_exact(coll, size):
     ''' Given a collection, sample the N most
@@ -86,3 +88,22 @@ def largest_difference(stream):
         minimum = min(minimum, entry)
         result  = max(result, entry - minimum)
     return result
+
+def gap_sample(coll, prob):
+    ''' Given a collection, randomly sample with
+    the supplied probability. This works with streams
+    and still maintains O(pn) by using the probability
+    to skip a gap of elements instead of running a trial
+    on each element.
+
+    :param coll: The collection to sample
+    :param prob: The probability to sample with
+    :returns: The randomly sampled elements of the collection
+    '''
+    try:
+        coll = iter(coll)
+        while True:
+            size = int(math.log(random()) / (-prob))
+            next(islice(coll, size, size), None) # skip N elements
+            yield next(coll)
+    except StopIteration: pass

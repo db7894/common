@@ -161,6 +161,19 @@ def gen_take_while(stream, predicate):
             break
         yield entry
 
+def gen_skip(stream, count):
+    ''' Given a stream of data, skip the supplied
+    number of elements, then continue the stream.
+
+    :param stream: A stream of entries to filter
+    :param count: The number of elements to skip
+    :returns: All the elements after the skipped number
+    '''
+    def predicate():
+        count -= 1
+        return count > 0
+    return gen_drop_while(stream, predicate)
+
 def gen_count(start, step=1):
     ''' Generate an infinite count of numbers
     with the supplied step size starting at the
