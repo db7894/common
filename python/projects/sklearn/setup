@@ -1,3 +1,6 @@
+'''
+.. todo:: http://scikit-learn.org/stable/documentation.html
+'''
 import pandas as pd
 import statsmodels.api as sm
 import pylab as pl

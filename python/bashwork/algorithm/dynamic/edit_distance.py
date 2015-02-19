@@ -1,5 +1,5 @@
 import sys
-from common import get_dictionary
+from bashwork.utility.lookup import Words
 
 def edit_distance(this, that):
     n, m = len(this) - 1, len(that) - 1
@@ -13,7 +13,7 @@ def edit_distance(this, that):
     return edits[n,m]
 
 if __name__ == "__main__":
-    dictionary = get_dictionary()
+    dictionary = Words.get_word_list()
     this = 'evantualie'
     words, value = [], sys.maxint
     for w in dictionary:
