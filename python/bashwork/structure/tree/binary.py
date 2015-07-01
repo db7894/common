@@ -688,6 +688,21 @@ def serialize_tree(tree):
     '''
     return json.dumps(tree_to_array(tree))
 
+def serialize_tree_list(tree):
+    ''' Given a tree, serialize it to a list
+
+    :param tree: The tree to serialize to a list
+    :returns: The serialzied tree list
+    '''
+    def serialize(node):
+        if node == None: return [None]
+
+        xs = [node.value]
+        xs.extend(serialize(node.left))
+        xs.extend(serialize(node.right))
+        return xs
+    return serialize(tree)
+
 
 def deserialize_tree(string):
     ''' Given a serialized array convert it to a tree.
@@ -696,6 +711,20 @@ def deserialize_tree(string):
     :returns: The deserialzied tree
     '''
     return array_to_tree(json.loads(string))
+
+def deserialize_tree_list(coll):
+    ''' Given a serialized tree convert it to a tree.
+
+    :param tree: The list to deserialize to a tree
+    :returns: The deserialzied tree
+    '''
+    def deserialize(xs):
+        if not xs: return None
+        node = BinaryNode(value=xs.pop(0))
+        node.left  = deserialize(xs)
+        node.right = deserialize(xs)
+        return node
+    return deserialize(coll)
 
 def invert_tree(tree):
     def invert(node, left, right):

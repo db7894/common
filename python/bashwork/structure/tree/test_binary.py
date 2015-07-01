@@ -233,11 +233,21 @@ class BinaryTreeTest(unittest.TestCase):
         expect = [1, 2, 3, 4, 5, 6]
         self.assertEquals(actual, expect)
 
-    #def test_tree_serialize_loop(self):
-    #    tree = BinaryNode.create(range(10))
-    #    loop = deserialize_tree(serialize_tree(tree)) 
-    #    print tree_to_array(tree), tree_to_array(loop)
-    #    self.assertTrue(are_trees_equal(tree, loop))
+    def test_tree_serialize_list(self):
+        tree = BinaryNode.create(range(10))
+        actual = serialize_tree_list(tree)
+        expect = [5, 2, 1, 0,
+            None, None, None, 4, 3,
+            None, None, None, 8, 7, 6,
+            None, None, None, 9,
+            None, None
+        ]
+        self.assertEquals(actual, expect)
+
+    def test_tree_deserialize_list(self):
+        expect = BinaryNode.create(range(10))
+        actual = deserialize_tree_list(serialize_tree_list(expect))
+        self.assertEquals(actual, expect)
 
     def test_invert_tree(self):
         pass
