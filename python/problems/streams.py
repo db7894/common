@@ -1,5 +1,6 @@
 import sys
-#from bashwork.sample.sampling import largest_difference
+from bashwork.sample.sampling import largest_difference
+import heapq
 
 def largest_stock_payout(stocks):
     ''' { 'stock-name': [stock-values] } '''
@@ -55,3 +56,29 @@ def max_sum_of_sub_arrays(stream):
         sums = max(sums + value, value)
         best = max(sums, best)
     return best
+
+def streaming_median(stream):
+    ''' Given an umlimited stream of numbers, compute
+    the exact median of the values::
+
+    >>> streaming_median(range(101))
+    50
+
+    :param stream: The stream of incoming numbers
+    :returns: The median of the given stream
+    '''
+    max_heap, min_heap = [], []
+    for el in stream:
+        if min_heap and el > min_heap[0]:
+            heapq.heappush(min_heap, el)
+        else: heapq.heappush(max_heap, -el)
+
+        if abs(len(min_heap) - len(max_heap)) > 1:
+            if len(min_heap) > len(max_heap):
+                heapq.heappush(max_heap, -heapq.heappop(min_heap))
+            else:
+                heapq.heappush(min_heap, -heapq.heappop(max_heap))
+
+    if   len(min_heap) > len(max_heap): return min_heap[0]
+    elif len(max_heap) > len(max_heap): return -max_heap[0]
+    else: return (min_heap[0] - max_heap[0]) / 2
