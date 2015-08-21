@@ -20,12 +20,15 @@ class Node(object):
             raise StopIteration()
         return self.link
 
-    def __hash__(self):
-        return hash(self.value)
-
-    def __repr__(self):
-        return "{}->{}".format(self.value, str(self.link))
-    __str__ = __repr__
+    def __eq__(self, other): return other and (self.value == other.value)
+    def __ne__(self, other): return other and (self.value != other.value)
+    def __lt__(self, other): return other and (self.value  < other.value)
+    def __le__(self, other): return other and (self.value <= other.value)
+    def __gt__(self, other): return other and (self.value  > other.value)
+    def __ge__(self, other): return other and (self.value >= other.value)
+    def __hash__(self):      return hash(self.value)
+    def __repr__(self):      return str(self.value)
+    def __str__(self):       return str(self.value)
 
 
 def merge_sorted_lists(xs, ys):
@@ -123,6 +126,35 @@ def find_merge_point(xs, ys):
         if x: visited.add(x)
         if y: visited.add(y)
     return None
+
+def find_loop_match(xs, ys):
+    ''' Find a point at which two lists loop
+    (not the first loop point, but the chasing
+    pointers node).
+    '''
+    if not xs or not ys:
+        return None
+    if xs == ys: return ys
+    return find_loop_match(xs.link, ys.link.link)
+
+def find_merge_point_2(xs, ys):
+    ''' Given two linked lists, find the node
+    at which they merge:
+
+    >>> me = Node(6, Node(7, Node(8, Node(9))))
+    >>> me.link.link.link = me
+    >>> xs = Node(0, Node(1, Node(3, me)))
+    >>> ys = Node(2, Node(4, Node(5, me)))
+    >>> find_merge_point(xs, ys)
+    6->7->None
+    '''
+    ms = find_loop_match(xs, ys)
+    if not ms: return None
+
+    while ms != xs:
+        ms = ms.link
+        xs = xs.link
+    return ms
 
 def make_unique_list(head):
     ''' Given a linked list, return the list
