@@ -23,6 +23,19 @@ through the stream::
             while True:
                 item = (yield)
         except GeneratorExit: pass
+
+Coroutines can return a final value::
+
+    @coroutine
+    def generator():
+        yield
+        return result
+
+    g = generator()
+    try:
+        next(g)
+    except StopIteration as e:
+        result = e.value
 '''
 import xml.sax
 import pickle
