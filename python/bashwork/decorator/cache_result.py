@@ -5,6 +5,7 @@
 - to file
 - serialization type
 '''
+import os
 import functools
 
 try:
