@@ -1,8 +1,8 @@
 import os
 from distutils.core import setup, Extension
 
-os.environ["CC"]  = "g++-4.9"
-os.environ["CXX"] = "g++-4.9"
+os.environ["CC"]  = "g++-5"
+os.environ["CXX"] = "g++-5"
  
 setup(
     name = 'ExampleSwigPackage',
