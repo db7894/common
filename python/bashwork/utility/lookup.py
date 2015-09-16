@@ -33,7 +33,7 @@ class Words(object):
         return list(Words.get_word_list_lazy(path))
 
     @staticmethod
-    #@cache_result(path='/tmp/anagram-lookup.pickle')
+    @cache_result(path='/tmp/anagram-lookup.pickle')
     def generate_anagram_lookup(words):
         ''' Given a collection of words, generate a lookoup table
         of the words to find all anagrams.
@@ -48,7 +48,7 @@ class Words(object):
         return lookup
 
     @staticmethod
-    #@cache_result(path='/tmp/missing-lookup.pickle')
+    @cache_result(path='/tmp/missing-lookup.pickle')
     def generate_missing_lookup(words):
         ''' Given a collection of words, generate a lookoup table
         of all the words missing one letter that hash sorted to the
@@ -63,4 +63,22 @@ class Words(object):
             for letter, entry in missing:
                 sorted_word = ''.join(sorted(entry))
                 lookup[sorted_word].append((letter, word))
+        return lookup
+
+    @staticmethod
+    @cache_result(path='/tmp/single-letter-lookup.pickle')
+    def generate_single_letter_lookup(words):
+        ''' Given a collection of words, generate a lookoup table
+        of all the words with one letter changed that are also words.
+
+        :param words: The collection of words to build a lookup for
+        :returns: The lookup table of the single letter changes
+        '''
+        lookup  = { word : set() for word in words }
+        letters = [chr(ord('a') + l) for l in range(0, 26)]
+
+        for word in words:
+            for letter in letters:
+                values = (word[:i] + letter + word[i+1:] for i in range(len(word)))
+                lookup[word].update(w for w in values if w in words)
         return lookup
