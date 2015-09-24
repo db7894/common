@@ -10,25 +10,20 @@ class Node(object):
         self.link  = link
 
     def __iter__(self):
-        current = self
-        while current != None:
-            yield current
-            current = current.link
+        while self != None:
+            yield self
+            self = self.link
 
     def next(self):
-        if not self.link:
+        if self.link == None:
             raise StopIteration()
         return self.link
 
-    def __eq__(self, other): return other and (self.value == other.value)
-    def __ne__(self, other): return other and (self.value != other.value)
-    def __lt__(self, other): return other and (self.value  < other.value)
-    def __le__(self, other): return other and (self.value <= other.value)
-    def __gt__(self, other): return other and (self.value  > other.value)
-    def __ge__(self, other): return other and (self.value >= other.value)
-    def __hash__(self):      return hash(self.value)
-    def __repr__(self):      return str(self.value)
-    def __str__(self):       return str(self.value)
+    def __eq__(self, that): return (that != None) and (self.value == that.value)
+    def __ne__(self, that): return (that == None)  or (self.value != that.value)
+    def __hash__(self):     return hash(self.value)
+    def __repr__(self):     return str(self.value)
+    def __str__(self):      return str(self.value)
 
 
 def merge_sorted_lists(xs, ys):
@@ -50,8 +45,9 @@ def merge_sorted_linked_lists(xs, ys):
 
     >>> xs = Node(1, Node(3, Node(5)))
     >>> ys = Node(2, Node(4, Node(6)))
-    >>> merge_sorted_linked_lists(xs, ys)
-    1->2->3->4->5->6->None
+    >>> rs = merge_sorted_linked_lists(xs, ys)
+    >>> list(rs)
+    [1, 2, 3, 4, 5, 6]
     '''
     head = xs if xs.value < ys.value else ys
     curr = head
@@ -72,8 +68,9 @@ def reverse_list(xs):
     ''' Given a linked list, reverse it
 
     >>> xs = Node(1, Node(2, Node(3, Node(4, Node(5)))))
-    >>> reverse_list(xs)
-    5->4->3->2->1->None
+    >>> rs = reverse_list(xs)
+    >>> list(rs)
+    [5, 4, 3, 2, 1]
     '''
     last, head = xs, None
     while last:
@@ -81,6 +78,21 @@ def reverse_list(xs):
         last.link = head
         last, head = temp, last
     return head
+
+
+def reverse_list_recursive(xs):
+    ''' Given a linked list, reverse it
+
+    >>> xs = Node(1, Node(2, Node(3, Node(4, Node(5)))))
+    >>> rs = reverse_list_recursive(xs)
+    >>> list(rs)
+    [5, 4, 3, 2, 1]
+    '''
+    def recurse(curr, prev):
+        link = curr.link
+        curr.link = prev
+        return curr if link == None else recurse(link, curr)
+    return recurse(xs, None)
 
 
 def find_merge_point_naive(xs, ys):
@@ -93,8 +105,9 @@ def find_merge_point_naive(xs, ys):
     >>> me = Node(6, Node(7))
     >>> xs = Node(0, Node(1, Node(3, me)))
     >>> ys = Node(2, Node(4, Node(5, me)))
-    >>> find_merge_point_naive(xs, ys)
-    6->7->None
+    >>> rs = find_merge_point_naive(xs, ys)
+    >>> list(rs)
+    [6, 7]
     '''
     visited = set(xs)
     for y in ys:
@@ -115,8 +128,9 @@ def find_merge_point(xs, ys):
     >>> me = Node(6, Node(7))
     >>> xs = Node(0, Node(1, Node(3, me)))
     >>> ys = Node(2, Node(4, Node(5, me)))
-    >>> find_merge_point(xs, ys)
-    6->7->None
+    >>> rs = find_merge_point(xs, ys)
+    >>> list(rs)
+    [6, 7]
     '''
     visited = set()
     for x, y in izip_longest(xs, ys):
@@ -146,7 +160,7 @@ def find_merge_point_2(xs, ys):
     >>> xs = Node(0, Node(1, Node(3, me)))
     >>> ys = Node(2, Node(4, Node(5, me)))
     >>> find_merge_point(xs, ys)
-    6->7->None
+    6
     '''
     ms = find_loop_match(xs, ys)
     if not ms: return None
@@ -164,7 +178,7 @@ def make_unique_list(head):
 
     >>> xs = Node(1, Node(2, Node(1, Node(3, Node(4, Node(5, Node(3)))))))
     >>> make_unique_list(xs)
-    (1->2->3->4->5->None, 5, 2)
+    (1, 5, 2)
     '''
     if not head: return (head, 0, 0)
     seen = set([head.value])
