@@ -82,7 +82,7 @@ class Monoid(SemiGroup):
         ''' If the supplied value is zero, throw else return
         the supplied default value.
 
-        :param value: The value to heck for zero
+        :param value: The value to check for zero
         '''
         if value == self.zero:
             raise ZeroDivisionError('algebra values must not be zero')

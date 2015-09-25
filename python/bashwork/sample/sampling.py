@@ -83,11 +83,11 @@ def largest_difference(stream):
     :returns: The maximum difference in the stream
     '''
     minimum = maxint
-    result  = -1
+    maximum = -1
     for entry in stream:
         minimum = min(minimum, entry)
-        result  = max(result, entry - minimum)
-    return result
+        maximum = max(maximum, entry - minimum)
+    return maximum
 
 def gap_sample(coll, prob):
     ''' Given a collection, randomly sample with

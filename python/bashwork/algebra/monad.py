@@ -134,6 +134,7 @@ class Something(Maybe):
     def __init__(self, value): self.value = value
     def is_empty(self): return False
     def get(self): return self.value
+    def __eq__(self, that): return (that != None) and (self.value == that.value)
     def __str__(self): return "Something(%s)" % self.value
     __repr__ = __str__
 
@@ -143,6 +144,7 @@ class _Nothing(Maybe):
     def is_empty(self): return True
     def get(self): raise ValueError("missing value")
     def __str__(self): return "Nothing()"
+    def __call__(self, _=None): return self # singleton
     __repr__ = __str__
 
 Nothing = _Nothing() # only need a single instance
@@ -252,6 +254,9 @@ class Success(Either):
     def is_error(self): return False
     def right(self): return self.value
     def left(self): raise ValueError("there is no error")
+    def __eq__(self, that): return ((that != None)
+        and (that.is_error() == self.is_error())
+        and (that.value == self.value))
     def __str__(self): return "Success(%s)" % self.value
     __repr__ = __str__
 
@@ -264,6 +269,9 @@ class Failure(Either):
     def is_error(self): return True
     def right(self): raise ValueError("missing value")
     def left(self): return self.error
+    def __eq__(self, that): return ((that != None)
+        and (that.is_error() == self.is_error())
+        and (that.error == self.error))
     def __str__(self): return "Failure(%s)" % self.error
     __repr__ = __str__
 

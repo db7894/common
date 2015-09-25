@@ -1,29 +1,112 @@
 import sys
-from itertools import izip_longest
+from itertools import izip_longest, count
 
 class Node(object):
     ''' A simple linked list node element.
     '''
 
+    @classmethod
+    def create(klass, values):
+        ''' Given an iterable of values, convert them
+        to a linked list collection.
+
+        :param values: The values to convert to a linked list
+        :returns: The head of the new list
+        '''
+        vals = iter(values)
+        head = klass(vals.next())
+        node = head
+
+        for val in vals:
+            node = node.append(val)
+        return head
+
     def __init__(self, value, link=None):
+        ''' Create a new instance of a linked list node
+
+        :param value: The value of this node
+        :param link: The next node in the list
+        '''
         self.value = value
         self.link  = link
 
-    def __iter__(self):
+    def find(self, value):
+        ''' Given a value, attempt to find the node
+        containing that value.
+
+        :param value: The value to find in the list
+        :returns: The found node or None if it is missing
+        '''
         while self != None:
-            yield self
+            if self.value == value:
+                return self
             self = self.link
+        return None
+
+    def insert(self, value):
+        ''' Given a new value, insert it at the current
+        position in the list.
+
+        :param value: The value to insert into the list
+        :returns: The newly created node
+        '''
+        node = Node(value, self.link)
+        self.link = node
+        return node
+
+    def append(self, value):
+        ''' Given a new value, add it as the new last value in
+        the list.
+
+        :param value: The value to append onto the list
+        :returns: The newly created node
+        '''
+        node = Node(value)
+        last = self.last()
+        last.link = node
+        return node
+
+    def last(self):
+        ''' Return the node at the end of the list
+
+        :returns: The last node in the list
+        '''
+        while self.link != None:
+            self = self.link
+        return self
 
     def next(self):
+        ''' Return the next link in the list
+
+        :returns: The next node in the list
+        '''
         if self.link == None:
             raise StopIteration()
         return self.link
+
+    def to_list(self):
+        ''' Return the linked list as a python list.
+
+        :returns: The linked list as a python list
+        '''
+        return list(self)
+
+    def __iter__(self):
+        ''' Return an iterator around the list at this
+        current point.
+
+        :returns: An iterator around the list
+        '''
+        while self != None:
+            yield self
+            self = self.link
 
     def __eq__(self, that): return (that != None) and (self.value == that.value)
     def __ne__(self, that): return (that == None)  or (self.value != that.value)
     def __hash__(self):     return hash(self.value)
     def __repr__(self):     return str(self.value)
     def __str__(self):      return str(self.value)
+    def __repr__(self):     return str(self.value)
 
 
 def merge_sorted_lists(xs, ys):
@@ -62,6 +145,21 @@ def merge_sorted_linked_lists(xs, ys):
         rest, curr.link = rest.link, rest
         curr = curr.link
     return head
+
+
+def find_list_middle(xs):
+    ''' Given a linked list, find the middle point in one pass
+
+    >>> xs = Node(1, Node(2, Node(3, Node(4, Node(5)))))
+    >>> find_list_middle(xs)
+    3
+    '''
+    mid, end = xs, xs
+    for i in count(1):
+        end = end.link
+        if i % 2 == 0: mid = mid.link
+        if end == None: break
+    return mid
 
 
 def reverse_list(xs):
