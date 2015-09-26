@@ -1,7 +1,3 @@
-'''
-TODO
-* make functional for CAS implementations (redis)
-'''
 import struct
 import logging
 from datetime import datetime, timedelta
@@ -298,10 +294,11 @@ class AbstractTokenBucket(TokenBucket):
 #------------------------------------------------------------
 # Implementations
 #------------------------------------------------------------
+
 class RedisTokenBucket(AbstractTokenBucket):
-    ''' Note, this token bucket is currently not
+    ''' TODO, this token bucket is currently not
     safe as there is a race condition between the get
-    operation and the update.
+    operation and the update. We need to implement CAS correctly.
     '''
     
     EPOCH = datetime.utcfromtimestamp(0)

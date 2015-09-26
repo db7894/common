@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 import os
 from collections import defaultdict
-from bashwork.decorator.cache_result import cache_result
+from bashwork.decorator.cache_result import pickle_cache_result
 
 # ------------------------------------------------------------------ #
 # Word Lookup Sources
@@ -33,7 +33,7 @@ class Words(object):
         return list(Words.get_word_list_lazy(path))
 
     @staticmethod
-    @cache_result(path='/tmp/anagram-lookup.pickle')
+    @pickle_cache_result(path='/tmp/anagram-lookup.pickle')
     def generate_anagram_lookup(words):
         ''' Given a collection of words, generate a lookoup table
         of the words to find all anagrams.
@@ -48,7 +48,7 @@ class Words(object):
         return lookup
 
     @staticmethod
-    @cache_result(path='/tmp/missing-lookup.pickle')
+    @pickle_cache_result(path='/tmp/missing-lookup.pickle')
     def generate_missing_lookup(words):
         ''' Given a collection of words, generate a lookoup table
         of all the words missing one letter that hash sorted to the
@@ -66,7 +66,7 @@ class Words(object):
         return lookup
 
     @staticmethod
-    @cache_result(path='/tmp/single-letter-lookup.pickle')
+    @pickle_cache_result(path='/tmp/single-letter-lookup.pickle')
     def generate_single_letter_lookup(words):
         ''' Given a collection of words, generate a lookoup table
         of all the words with one letter changed that are also words.

@@ -10,8 +10,6 @@ or from signal handlers. The only way to make this work is
 to use a threading primitive that is checked inside the
 generator (like an event flag).
 
-TODO xml.etree.ElementTree.iterparse
-
 Generators (yield) can also effectively mimic the
 IO monad which decouples where the output goes (this
 is roughly how WSGI works)::

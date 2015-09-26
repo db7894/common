@@ -17,6 +17,16 @@ def constant(value):
     '''
     return lambda _: value
 
+def constant2(value):
+    ''' A function that given a value, will
+    return a function that will return the original value
+    regardless of its arity-2 input
+
+    :param value: The value to return from the function
+    :returns: A function that returns that value
+    '''
+    return lambda x, y: value
+
 constant_true  = constant(True)
 constant_false = constant(False)
 

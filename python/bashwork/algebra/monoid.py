@@ -18,6 +18,15 @@ import heapq
 from collections import Counter
 from bashwork import combinator
 
+#
+# it should be noted that this is merely an estimate,
+# but for finite iterables it should be correct.
+#
+try:
+    from operator import length_hint
+except ImportError:
+    length_hint = lambda x: x.__length_hint__() 
+
 #------------------------------------------------------------
 # Type Classes
 #------------------------------------------------------------
@@ -232,7 +241,7 @@ class ConstantGroup(Group):
         super(ConstantGroup, self).__init__(**{
             'zero':    value,
             'lift':    combinator.constant(value),
-            'plus':    combinator.constant(value),
+            'plus':    combinator.constant2(value),
             'negate':  combinator.constant(value),
             'minus':   combinator.constant(value),
         })
@@ -248,8 +257,8 @@ BooleanGroup   = BooleanField
 
 def __map_monoid_plus(l, r):
     clone = l.copy()
-    copy.update(r)
-    return copy
+    clone.update(r)
+    return clone
 
 def __mutable_map_monoid_plus(l, r):
     l.update(r)
@@ -270,7 +279,7 @@ class PriorityQueueMonoid(Monoid):
 
     def lift(self, v): return [v]
     def plus(self, l, r):
-        heap = list(heqpq.merge(l, r))
+        heap = list(heapq.merge(l, r))
         while len(heap) > self.count:
             heapq.heappop(heap)
         return heap
@@ -283,12 +292,12 @@ class MultiMonoid(Monoid):
 
         >>> monoid = MultiMonoid(IntMonoid, SetMonoid)
         >>> monoid.sum(range(5)
-        (5, set(1,2,3,4))
+        (10, set(1,2,3,4))
     '''
 
     def __init__(self, *monoids):
         self.monoids = tuple(monoids)
-        self.zero    = [m.zero for m in self.monoids]
+        self.zero    = tuple(m.zero for m in self.monoids)
 
     def lift(self, v):
         return tuple(m.lift(v) for m in self.monoids)
@@ -316,19 +325,19 @@ OrMonoid = Monoid(**{
 
 MapMonoid = Monoid(**{
     'zero': {},
-    'lift': combinator.identity,
+    'lift': lambda t: dict([t]),
     'plus': __map_monoid_plus,
 })
 
 MutableMapMonoid = Monoid(**{
     'zero': {},
-    'lift': combinator.identity,
+    'lift': lambda t: dict([t]),
     'plus': __mutable_map_monoid_plus,
 })
 
 CounterMonoid = Monoid(**{
     'zero': Counter(),
-    'lift': combinator.identity,
+    'lift': Counter,
     'plus': operator.add,
 })
 
@@ -349,6 +358,7 @@ IterMonoid = Monoid(**{
     'lift': lambda x: iter([x]),
     'plus': itertools.chain,
 })
+IterMonoid.is_zero = lambda x: length_hint(x) == 0
 
 SetMonoid = Monoid(**{
     'zero': set(),
