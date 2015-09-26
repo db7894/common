@@ -44,6 +44,7 @@ def application(f):
     '''
     def wrapper(g):
         return lambda x: f(x)(g(x))
+    return wrapper
 
 #------------------------------------------------------------
 # SKI Aliases

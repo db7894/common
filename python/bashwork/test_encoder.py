@@ -4,6 +4,11 @@ from bashwork.encoder import *
 
 class EncodingTest(unittest.TestCase):
 
+    def test_encoder_interface(self):
+        encoder = Encoder()
+        self.assertRaises(lambda: encoder.encode(None))
+        self.assertRaises(lambda: encoder.decode(None))
+
     def test_excel_encode(self):
         encoder = ExcelEncoder()
         self.assertEqual('', encoder.encode(0))
