@@ -33,7 +33,7 @@ class TokenBucket(object):
         :param count: The number of tokens to consume (default 1)
         :returns: True if tokens were available, False otherwise
         '''
-        raise NotImplemented("consume")
+        raise NotImplementedError("consume")
 
 class RefillPolicy(object):
     ''' An interface to a policy used to refill a given token
@@ -46,7 +46,7 @@ class RefillPolicy(object):
 
         :param entry: The entry to perform the refill for
         '''
-        raise NotImplemented("consume")
+        raise NotImplementedError("consume")
 
 #------------------------------------------------------------
 # Refill Policies
@@ -285,7 +285,7 @@ class AbstractTokenBucket(TokenBucket):
         :param identifier: The entity to retrieve the TokenBucketEntry for.
         :returns: The TokenBucketEntry for the given identifier.
         '''
-        raise NotImplemented("get_entry")
+        raise NotImplementedError("get_entry")
         
     def set_entry(self, entry):
         ''' Given a TokenBucketEntry, persist it.
@@ -293,7 +293,7 @@ class AbstractTokenBucket(TokenBucket):
         :param entry: The TokenBucketEntry to persist.
         :returns: True if successful, False otherwise.
         '''
-        raise NotImplemented("set_entry")
+        raise NotImplementedError("set_entry")
 
 #------------------------------------------------------------
 # Implementations

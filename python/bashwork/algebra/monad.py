@@ -11,7 +11,7 @@ class Monad(object):
         :param func: The function to apply to the monad
         :returns: The result of the function application
         '''
-        raise NotImplemented("map")
+        raise NotImplementedError("map")
 
     def unit(self, value):
         ''' Given a value, put that value in the
@@ -20,7 +20,7 @@ class Monad(object):
         :param value: The value to wrap in a monad
         :returns: The minimal monad context for this value
         '''
-        raise NotImplemented("unit")
+        raise NotImplementedError("unit")
 
     def flat_map(self, func):
         ''' Given a function of the following signature,
@@ -31,7 +31,7 @@ class Monad(object):
         :param func: The function to apply to the monad
         :returns: The result of the function application
         '''
-        raise NotImplemented("flat_map")
+        raise NotImplementedError("flat_map")
 
     def __rshift__(self, func): return self.flat_map(func)
 
@@ -117,14 +117,14 @@ class Maybe(Monad):
 
         :returns: The underlying value of the maybe
         '''
-        raise NotImplemented("get")
+        raise NotImplementedError("get")
 
     def is_empty(self):
         ''' Check if there is a value inside of this Maybe.
 
         :returns: True if there is a value, false otherwise
         '''
-        raise NotImplemented("is_empty")
+        raise NotImplementedError("is_empty")
 
 class Something(Maybe):
     ''' A Maybe that contains an underlying value '''
@@ -161,21 +161,21 @@ class Either(Monad):
 
         :returns: If the Either has an error or not.
         '''
-        raise NotImplemented("is_error")
+        raise NotImplementedError("is_error")
 
     def left(self):
         ''' Returns the error state if there is one
 
         :returns: The error state if there is one
         '''
-        raise NotImplemented("left")
+        raise NotImplementedError("left")
 
     def right(self):
         ''' Returns the success state if there is one
 
         :returns: The success state if there is one
         '''
-        raise NotImplemented("right")
+        raise NotImplementedError("right")
 
     def silent(self):
         ''' Ignores the error and converts an either into

@@ -16,7 +16,7 @@ class SearchProblem(object):
 
         :returns: The initial state of the search problem
         '''
-        raise NotImplemented("get_start_state")
+        raise NotImplementedError("get_start_state")
 
     def get_next_moves(self, state):
         ''' Given the current state, attemp to generate
@@ -25,7 +25,7 @@ class SearchProblem(object):
         :param state: The current state to expand
         :returns: An iterable of the next possible moves
         '''
-        raise NotImplemented("get_next_moves")
+        raise NotImplementedError("get_next_moves")
 
     def is_solution(self, state):
         ''' Checks if the supplied state is a solution
@@ -33,7 +33,7 @@ class SearchProblem(object):
         :param state: The current state to check
         :returns: True of a solution, False otherwise
         '''
-        raise NotImplemented("is_solution")
+        raise NotImplementedError("is_solution")
 
 
 class SearchState(object):

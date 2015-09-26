@@ -75,7 +75,7 @@ class HashFunction(object):
 
         :returns: An initialized HashFunction object
         '''
-        raise NotImplemented('create')
+        raise NotImplementedError('create')
 
     def hash(self, value):
         ''' Given a value, quickly compute its hash with
@@ -181,14 +181,14 @@ class Hasher(object):
         :param value: The new value to update the hash with
         :returns: The current instance to chain with
         '''
-        raise NotImplemented("update")
+        raise NotImplementedError("update")
 
     def get_hash(self):
         ''' Retrieve the current hash value
 
         :returns: A HashCode object containing the hash value
         '''
-        raise NotImplemented("digest")
+        raise NotImplementedError("digest")
 
 class GenericHasher(Hasher):
     ''' A wrapper hasher for a simple hash function that

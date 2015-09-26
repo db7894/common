@@ -11,7 +11,7 @@ class Encoder(object):
         :param value: The value to encode
         :returns: The underlying encoding of that value
         '''
-        raise NotImplemented("encode")
+        raise NotImplementedError("encode")
 
     def decode(self, string):
         ''' Given a string encoding, decode it
@@ -20,7 +20,7 @@ class Encoder(object):
         :param string: The encoded string to decode
         :returns: The decoded integer representation of that string
         '''
-        raise NotImplemented("decode")
+        raise NotImplementedError("decode")
 
 class ExcelEncoder(Encoder):
     ''' An encoder that converts to and from

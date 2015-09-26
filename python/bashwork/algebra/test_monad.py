@@ -4,6 +4,12 @@ from bashwork.algebra.monad import *
 
 class MonadsTest(unittest.TestCase):
 
+    def test_monad_interface(self):
+        monad = Monad()
+        self.assertRaises(NotImplementedError, lambda: monad.map(None))
+        self.assertRaises(NotImplementedError, lambda: monad.unit(None))
+        self.assertRaises(NotImplementedError, lambda: monad.flat_map(None))
+
     def test_maybe_something(self):
         value = 2
         monad = Something(value)

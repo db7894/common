@@ -38,8 +38,11 @@ class ContinuousDistribution(Distribution):
         '''
         return True
 
-    def get(self, value): raise NotImplemented("get")
-    def __str__(self): raise NotImplemented("str")
+    def get(self, value):
+        raise NotImplementedError("get")
+
+    def __str__(self):
+        raise NotImplementedError("__str__")
 
 #------------------------------------------------------------
 # Continuous Distributions

@@ -9,7 +9,7 @@ class Clustering(object):
         :param dataset: The dataset to train with
         :param labels: The classified labels of the given dataset
         '''
-        raise NotImplemented("train")
+        raise NotImplementedError("train")
 
     def classify(self, entry, **kwargs):
         ''' Classify a new entry with the underlying
@@ -18,4 +18,4 @@ class Clustering(object):
         :param entry: The entry to classify
         :returns: The label of the new entry
         '''
-        raise NotImplemented("entry")
+        raise NotImplementedError("entry")

@@ -9,14 +9,14 @@ class Structure(object):
 
         :param value: The value to add to the structure
         '''
-        raise NotImplemented("enqueue")
+        raise NotImplementedError("enqueue")
         
     def dequeue(self):
         ''' Removes and returns the next value in the structure
 
         :returns: The next value in the structure
         '''
-        raise NotImplemented("dequeue")
+        raise NotImplementedError("dequeue")
 
     def is_empty(self): return len(self.store) == 0
     def __eq__(self, other):   return other and (other.value == self.store)

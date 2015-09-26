@@ -11,7 +11,7 @@ class Regression(object):
         :param x: The entry to predict a value for
         :returns: The predicted value of the new entry
         '''
-        raise NotImplemented("predict")
+        raise NotImplementedError("predict")
 
     def train(self, xs, ys, **kwargs):
         ''' Given a training set and the expected results,
@@ -20,4 +20,4 @@ class Regression(object):
         :param xs: The dataset to train with
         :param ys: The expected results of the dataset
         '''
-        raise NotImplemented("train")
+        raise NotImplementedError("train")

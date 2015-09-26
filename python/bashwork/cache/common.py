@@ -32,7 +32,7 @@ class Cache(object):
         :param path: The path to store the data at
         :param data: The data to store at the supplied path
         '''
-        raise NotImplemented("save")
+        raise NotImplementedError("save")
 
     def load(self, path):
         ''' Given a path, attempt to load the supplied
@@ -41,7 +41,7 @@ class Cache(object):
         :param path: The path to load from the cache
         :returns: The data (if it exists) at the cache
         '''
-        raise NotImplemented("load")
+        raise NotImplementedError("load")
 
 
 class FileCache(Cache):

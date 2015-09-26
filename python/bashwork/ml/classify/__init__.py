@@ -12,7 +12,7 @@ class Classifier(object):
         :param dataset: The dataset to train with
         :param labels: The classified labels of the given dataset
         '''
-        raise NotImplemented("train")
+        raise NotImplementedError("train")
 
     def classify(self, entry, **kwargs):
         ''' Classify a new entry with the underlying
@@ -21,7 +21,7 @@ class Classifier(object):
         :param entry: The entry to classify
         :returns: The label of the new entry
         '''
-        raise NotImplemented("entry")
+        raise NotImplementedError("entry")
 
     def evaluate(self, dataset, labels, **kwargs):
         ''' Test the accurracy of the given classifier using

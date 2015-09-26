@@ -5,6 +5,15 @@ from bashwork.security.hashing import *
 class HashingTest(unittest.TestCase):
     ''' Code to test the hashing abstraction library '''
 
+    def test_hash_function_interface(self):
+        hasher = HashFunction()
+        self.assertRaises(NotImplementedError, lambda: hasher.create())
+
+    def test_hasher_interface(self):
+        hasher = Hasher()
+        self.assertRaises(NotImplementedError, lambda: hasher.update(None))
+        self.assertRaises(NotImplementedError, lambda: hasher.get_hash())
+
     def test_hashing_factory_algorithms(self):
         ''' test that all the hashing factory algorithms work '''
         for algorithm in Hashing.algorithms():
