@@ -339,7 +339,7 @@ class BitArray(object):
         '''
         self.__check_range(start, end)
         sidx, soff = self.__word_index(start)
-        eidx, eoff = self.__word_index(end - start - 1) + 1
+        eidx, eoff = self.__word_index(end)
 
         bits = self.array[sidx] & self.__on_to_msk[soff]
         bits = bits >> soff
@@ -351,7 +351,6 @@ class BitArray(object):
             coff += self.__blk
 
         bite  = self.array[eidx] & self.__off_to_msk[eoff]
-        import pdb;pdb.set_trace()
         bits |= bite >> (eoff)
         return bits
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from bashwork.ml.utilities import distance
+from bashwork.ml.utility import distance
 
 class DistanceTest(unittest.TestCase):
 

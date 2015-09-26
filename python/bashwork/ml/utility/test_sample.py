@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from bashwork.ml.utilities import sample
+from bashwork.ml.utility import sample
 
 class SampleTest(unittest.TestCase):
 

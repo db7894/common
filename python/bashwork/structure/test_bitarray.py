@@ -107,7 +107,6 @@ class BitArrayTest(unittest.TestCase):
         ''' Test that the bit array is compacted correctly '''
         array = BitArray()
         array.flip(127)
-        #print array.to_byte_string()
         self.assertEqual(128, array.length_of_bits)
         array.flip(127)
         self.assertEqual(0,  array.length_of_bits)
@@ -249,7 +248,7 @@ class BitArrayTest(unittest.TestCase):
         }
         barray = BitArray(block=8, array=[0xC7, 0xE2, 0x38])
         for (sidx, eidx), expected in cases.items():
-            print "expectd: %s %s" %( hex(expected), hex(barray.get_range(sidx, eidx)))
+            #print "expectd: %s %s" %( hex(expected), hex(barray.get_range(sidx, eidx)))
             self.assertEqual(expected, barray.get_range(sidx, eidx))
 
 #---------------------------------------------------------------------------#

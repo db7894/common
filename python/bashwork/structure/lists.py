@@ -6,14 +6,17 @@ class Node(object):
     '''
 
     @classmethod
-    def create(klass, values):
+    def create(klass, *values):
         ''' Given an iterable of values, convert them
         to a linked list collection.
 
         :param values: The values to convert to a linked list
         :returns: The head of the new list
         '''
-        vals = iter(values)
+        if isinstance(values[0], list):
+            vals = iter(values[0])
+        else: vals = iter(values)
+
         head = klass(vals.next())
         node = head
 
@@ -98,13 +101,12 @@ class Node(object):
         :returns: An iterator around the list
         '''
         while self != None:
-            yield self
+            yield self.value
             self = self.link
 
     def __eq__(self, that): return (that != None) and (self.value == that.value)
     def __ne__(self, that): return (that == None)  or (self.value != that.value)
     def __hash__(self):     return hash(self.value)
-    def __repr__(self):     return str(self.value)
     def __str__(self):      return str(self.value)
     def __repr__(self):     return str(self.value)
 
@@ -147,12 +149,29 @@ def merge_sorted_linked_lists(xs, ys):
     return head
 
 
+def find_from_list_end(xs, n=3):
+    ''' Given a linked list, find the nth to last
+    element in the list.
+
+    :param xs: The list to search in
+    :param n: Which node from the end of the list to get
+    :returns: The requested list node
+    '''
+    prev, curr = xs, xs
+    for _ in range(n):
+        curr = curr.link
+
+    while curr != None:
+        curr = curr.link
+        prev = prev.link
+    return prev
+
+
 def find_list_middle(xs):
     ''' Given a linked list, find the middle point in one pass
 
-    >>> xs = Node(1, Node(2, Node(3, Node(4, Node(5)))))
-    >>> find_list_middle(xs)
-    3
+    :param xs: The list to process
+    :returns: The middle of the list
     '''
     mid, end = xs, xs
     for i in count(1):
@@ -163,12 +182,10 @@ def find_list_middle(xs):
 
 
 def reverse_list(xs):
-    ''' Given a linked list, reverse it
+    ''' Given a linked list, reverse it.
 
-    >>> xs = Node(1, Node(2, Node(3, Node(4, Node(5)))))
-    >>> rs = reverse_list(xs)
-    >>> list(rs)
-    [5, 4, 3, 2, 1]
+    :param xs: The list to reverse
+    :returns: The new head pointer
     '''
     last, head = xs, None
     while last:
@@ -181,10 +198,8 @@ def reverse_list(xs):
 def reverse_list_recursive(xs):
     ''' Given a linked list, reverse it
 
-    >>> xs = Node(1, Node(2, Node(3, Node(4, Node(5)))))
-    >>> rs = reverse_list_recursive(xs)
-    >>> list(rs)
-    [5, 4, 3, 2, 1]
+    :param xs: The list to reverse
+    :returns: The new head pointer
     '''
     def recurse(curr, prev):
         link = curr.link
@@ -249,9 +264,15 @@ def find_loop_match(xs, ys):
     if xs == ys: return ys
     return find_loop_match(xs.link, ys.link.link)
 
-def find_merge_point_2(xs, ys):
+def find_merge_point_pointers(xs, ys):
     ''' Given two linked lists, find the node
-    at which they merge:
+    at which they merge. The idea here is to use
+    the chasing pointers.
+    
+    If they meet, that means that the fast pointer has
+    a head start of K.  If we reset it to the start and
+    have both pointers walk at the same speed, they will
+    meet at the loop point (K steps).
 
     >>> me = Node(6, Node(7, Node(8, Node(9))))
     >>> me.link.link.link = me
@@ -274,9 +295,8 @@ def make_unique_list(head):
     size of the list as well as the number of
     duplicates
 
-    >>> xs = Node(1, Node(2, Node(1, Node(3, Node(4, Node(5, Node(3)))))))
-    >>> make_unique_list(xs)
-    (1, 5, 2)
+    :param head: The head of the list
+    :returns: A list with only unique values
     '''
     if not head: return (head, 0, 0)
     seen = set([head.value])
@@ -291,6 +311,28 @@ def make_unique_list(head):
             seen.add(curr.value)
             prev, curr = prev.link, curr.link
     return (head, size, dups)
+
+def make_unique_list_no_storage(head):
+    ''' Given a linked list, return the list
+    as a unique list and also return the total
+    size of the list as well as the number of
+    duplicates
+
+    :param head: The head of the list
+    :returns: A list with only unique values
+    '''
+    curr = head
+    while curr != None:
+        prev, step = curr, curr.link
+        while step != None:
+            if step.value == curr.value:
+                prev.link = step.link
+                step = prev.link
+            else:
+                prev = step
+                step = step.link
+        curr = curr.link
+    return head
 
 def order_edge_nodes(nodes):
     ''' Given a collection of tuples that represent
@@ -321,10 +363,6 @@ def find_missing_number(numbers):
     ''' Given a collection of integer elements, find the
     missing element (in the set of 1..n).
 
-    >>> numbers = [1,2,3,4,5,6,8,9,10]
-    >>> find_missing_number(numbers)
-    7
-
     :param numbers: The collection of numbers to search in
     :returns: The missing number from the numbers list
     '''
@@ -337,6 +375,64 @@ def find_missing_number(numbers):
     size  = maxn - minn + 1 # n(n + 1) / 2: max_sum - min_sum
     total = (size * (size + 1) / 2) - (minn * (minn - 1) / 2)
     return total - sumn
+
+
+def delete_middle_node(node):
+    ''' Given a random middle node in a linked list, delete
+    that node without a reference to the head.
+
+    :param node: The node to delete
+    :returns: The new middle node
+    '''
+    node.value = node.link.value
+    node.link  = node.link.link
+    return node
+
+def sum_integer_nodes(number1, number2):
+    ''' Given two linked lists where each node
+    represents a number in big endian, add the
+    two numbers (with carry) and produce the result
+    as a new list.
+
+    :param number1: The first number to add
+    :param number2: The second number to add
+    :returns: The resulting number as a list
+    '''
+    def recurse(xs, ys):
+        if not xs and not ys:
+            return (0, None)
+
+        carry, leaf = recurse(xs.link, ys.link)
+        value = xs.value + ys.value + carry
+        return (value / 10, Node(value % 10, leaf))
+
+    (carry, head) = recurse(number1, number2)
+    if carry > 0: head = Node(carry, head)
+    return head
+
+def sum_integer_nodes_little_endian(number1, number2):
+    ''' Given two linked lists where each node
+    represents a number in little endian, add the
+    two numbers (with carry) and produce the result
+    as a new list.
+
+    :param number1: The first number to add
+    :param number2: The second number to add
+    :returns: The resulting number as a list
+    '''
+    def recurse(xs, ys, carry=0):
+        if not xs and not ys:
+            return Node(carry) if carry > 0 else None
+
+        total = carry
+        total += xs.value if xs else 0
+        total += ys.value if ys else 0
+        carry = total / 10
+        node = Node(total % 10)
+        node.link = recurse(xs and xs.link, ys and ys.link, carry)
+        return node
+
+    return recurse(number1, number2)
 
 if __name__ == "__main__":
     import doctest
