@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import unittest
 from bashwork.structure.graph import Graph
-from bashwork.structure.graph.traversal import *
 from bashwork.structure.graph.path import *
 
 #---------------------------------------------------------------------------#
@@ -18,23 +17,9 @@ class GraphTraversalTest(unittest.TestCase):
         self.graph.add_edge('b', 'e')
         self.graph.add_edge('d', 'e')
 
-    def test_graph_bfs_visit(self):
-        visitor = GraphPathExistsVisitor('e')
-        graph_bfs_visit(self.graph, visitor, 'a')
-        self.assertTrue(visitor.path_exists)
-
-        visitor = GraphPathExistsVisitor('a')
-        graph_bfs_visit(self.graph, visitor, 'b')
-        self.assertFalse(visitor.path_exists)
-
-    def test_graph_dfs_visit(self):
-        visitor = GraphPathExistsVisitor('e')
-        graph_dfs_visit(self.graph, visitor, 'a')
-        self.assertTrue(visitor.path_exists)
-
-        visitor = GraphPathExistsVisitor('a')
-        graph_dfs_visit(self.graph, visitor, 'b')
-        self.assertFalse(visitor.path_exists)
+    def test_graph_dfs_path_exists(self):
+        self.assertTrue(graph_dfs_path_exists(self.graph, 'a', 'e'))
+        self.assertFalse(graph_dfs_path_exists(self.graph, 'b', 'a'))
 
 #---------------------------------------------------------------------------#
 # main

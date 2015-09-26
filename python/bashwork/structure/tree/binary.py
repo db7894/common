@@ -56,8 +56,8 @@ class BinaryNode(object):
 
         :returns: True if balanced, False otherwise
         '''
-        left  = self.left.height()  if self.left  else 0
-        right = self.right.height() if self.right else 0
+        left  = self.left.height()
+        right = self.right.height()
         if abs(left - right) > 1: return False
         return ((self.left.is_balanced() if self.left else True)
             and (self.right.is_balanced() if self.right else True))
@@ -161,6 +161,20 @@ class BinaryNode(object):
         tree.left  = klass.create_with_parents(xs[:m], tree)
         tree.right = klass.create_with_parents(xs[m+1:], tree)
         return tree
+
+def simple_is_tree_balanced(tree):
+    ''' Check if the tree is balanced by just checking
+    if there exists a min / max leaf distance greater
+    than 1.
+
+    :param tree: The tree to check for balance
+    :returns: True if it is balanced, False otherwise
+    '''
+    def tree_height(node, test):
+        if not node: return 0
+        return 1 + test(tree_height(node.left, test),
+            tree_height(node.right, test))
+    return (tree_height(tree, max) - tree_height(tree, min)) <= 1
 
 #------------------------------------------------------------
 # stack/queue tree traversal

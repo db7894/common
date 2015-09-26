@@ -249,9 +249,12 @@ class BinaryTreeTest(unittest.TestCase):
         actual = deserialize_tree_list(serialize_tree_list(expect))
         self.assertEquals(actual, expect)
 
-    def test_invert_tree(self):
-        pass
+    def test_simple_is_tree_balanced(self):
+        tree = Node(5, Node(2, Node(1), Node(3, right=Node(4))), Node(6))
+        self.assertFalse(simple_is_tree_balanced(tree))
 
+        tree = array_to_tree([1, 2, 3, 4, 5, 6])
+        self.assertTrue(simple_is_tree_balanced(tree))
 
 #------------------------------------------------------------
 # test runner
