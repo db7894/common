@@ -24,6 +24,21 @@ class DistanceTest(unittest.TestCase):
         b = range(10, 20)
         self.assertEqual(100, distance.minkowski(a, b))
 
+    def test_hamming(self):
+        a = range(0, 10)
+        b = range(5, 20)
+        self.assertEqual(0, distance.hamming(a, b))
+
+    def test_overlap(self):
+        a = (0, 10)
+        b = (5, 15)
+        self.assertEqual(5, distance.overlap(a, b))
+
+    def test_does_overlap(self):
+        a = (0, 10)
+        b = (5, 15)
+        self.assertEqual(True, distance.does_overlap(a, b))
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#

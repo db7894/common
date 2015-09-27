@@ -114,10 +114,9 @@ class Node(object):
 def merge_sorted_lists(xs, ys):
     ''' Given two sorted lists, merge them
 
-    >>> xs = [1, 3, 5]
-    >>> ys = [2, 4, 6]
-    >>> merge_sorted_lists(xs, ys)
-    [1, 2, 3, 4, 5, 6]
+    :param xs: The first list to merge
+    :param ys: The second list to merge
+    :returns: The merged lists
     '''
     rs = []
     while len(xs) > 0 and len(ys) > 0:
@@ -128,11 +127,9 @@ def merge_sorted_lists(xs, ys):
 def merge_sorted_linked_lists(xs, ys):
     ''' Given two sorted linked lists, merge them
 
-    >>> xs = Node(1, Node(3, Node(5)))
-    >>> ys = Node(2, Node(4, Node(6)))
-    >>> rs = merge_sorted_linked_lists(xs, ys)
-    >>> list(rs)
-    [1, 2, 3, 4, 5, 6]
+    :param xs: The first list to merge
+    :param ys: The second list to merge
+    :returns: The merged lists
     '''
     head = xs if xs.value < ys.value else ys
     curr = head
@@ -433,7 +430,3 @@ def sum_integer_nodes_little_endian(number1, number2):
         return node
 
     return recurse(number1, number2)
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

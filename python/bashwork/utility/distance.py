@@ -53,10 +53,10 @@ def overlap(left, right):
 
 def does_overlap(left, right):
     ''' Given two segments on a 1-D plane, determine if
-    the two segements overlap and by how much.
+    the two segements overlap.
     
     :param left: The left segment (start, end)
     :param right: The right segment (start, end)
-    :returns: The amount the two segments overlap
+    :returns: True if they overlap, False otherwise.
     '''
     return right[1] >= left[0] and left[1] >= right[0]

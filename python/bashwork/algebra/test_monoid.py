@@ -8,6 +8,7 @@ class MonoidsTest(unittest.TestCase):
     def test_constant_group(self):
         v, l, vs, vl = 0, '0', [0, 0], ['0', '0']
         z = None
+
         assert NoneGroup.zero              == z
         assert NoneGroup.plus(v, v)        == None
         assert NoneGroup.lift(l)           == None
@@ -21,6 +22,7 @@ class MonoidsTest(unittest.TestCase):
     def test_int_field(self):
         v, l, vs, vl = 2, '2', [2, 2], ['2', '2']
         z, o = 0, 1
+
         assert IntField.zero              == z
         assert IntField.one               == o
         assert IntField.plus(v, v)        == 4
@@ -40,6 +42,7 @@ class MonoidsTest(unittest.TestCase):
     def test_float_field(self):
         v, l, vs, vl = 2.0, '2.0', [2.0, 2.0], ['2.0', '2.0']
         z, o = 0.0, 1.0
+
         assert FloatField.zero              == z
         assert FloatField.one               == o
         assert FloatField.plus(v, v)        == 4.0
@@ -58,6 +61,7 @@ class MonoidsTest(unittest.TestCase):
     def test_boolean_field(self):
         v, l, vs, vl = True, 'True', [True, False], ['True', 'True']
         z, o = False, True
+
         assert BooleanField.zero              == z
         assert BooleanField.one               == o
         assert BooleanField.plus(v, v)        == False
@@ -74,7 +78,9 @@ class MonoidsTest(unittest.TestCase):
         assert BooleanField.product(vs)       == False
 
     def test_and_monoid(self):
-        z, v, l, vs, vl = True, False, 'True', [True, False], ['True', 'True']
+        v, l, vs, vl = False, 'True', [True, False], ['True', 'True']
+        z = True
+
         assert AndMonoid.zero              == z
         assert AndMonoid.plus(v, v)        == False
         assert AndMonoid.lift(l)           == True
@@ -84,18 +90,21 @@ class MonoidsTest(unittest.TestCase):
         assert AndMonoid.sum_with_lift(vl) == True
 
     def test_or_monoid(self):
-        z, v, l, vs, vl = False, True, 'True', [True, False], ['True', 'True']
-        assert OrMonoid.zero              == z
-        assert OrMonoid.plus(v, v)        == True
-        assert OrMonoid.lift(l)           == True
-        assert OrMonoid.is_zero(v)        == False
-        assert OrMonoid.is_zero(z)        == True
-        assert OrMonoid.sum(vs)           == True
-        assert OrMonoid.sum_with_lift(vl) == True
+        v, l, vs, vl = True, 'True', [True, False], ['True', 'True']
+        z = False
+
+        assert OrMonoid.zero                   == z
+        assert OrMonoid.plus(v, v)             == True
+        assert OrMonoid.lift(l)                == True
+        assert OrMonoid.is_zero(v)             == False
+        assert OrMonoid.is_zero(z)             == True
+        assert OrMonoid.sum(vs)                == True
+        assert OrMonoid.sum_with_lift(vl)      == True
 
     def test_counter_monoid(self):
         v, l, vs, vl = Counter('abc'), 'abc', [Counter('abc')], ['abc', '123']
         z = Counter()
+
         assert CounterMonoid.zero              == z
         assert CounterMonoid.plus(v, v)        == Counter('abcabc')
         assert CounterMonoid.lift(l)           == Counter('abc')
@@ -107,73 +116,80 @@ class MonoidsTest(unittest.TestCase):
     def test_string_monoid(self):
         v, l, vs, vl = 'abc', 123, ['abc', '123'], [123, 456]
         z = ''
-        assert StringMonoid.zero              == z
-        assert StringMonoid.plus(v, v)        == 'abcabc'
-        assert StringMonoid.lift(l)           == '123'
-        assert StringMonoid.is_zero(v)        == False
-        assert StringMonoid.is_zero(z)        == True
-        assert StringMonoid.sum(vs)           == 'abc123'
-        assert StringMonoid.sum_with_lift(vl) == '123456'
+
+        assert StringMonoid.zero               == z
+        assert StringMonoid.plus(v, v)         == 'abcabc'
+        assert StringMonoid.lift(l)            == '123'
+        assert StringMonoid.is_zero(v)         == False
+        assert StringMonoid.is_zero(z)         == True
+        assert StringMonoid.sum(vs)            == 'abc123'
+        assert StringMonoid.sum_with_lift(vl)  == '123456'
 
     def test_list_monoid(self):
         v, l, vs, vl = ['a'], 'a', [['a', 'b'], ['c']], ['a', 'b', 'c']
         z = []
-        assert ListMonoid.zero              == z
-        assert ListMonoid.plus(v, v)        == ['a', 'a']
-        assert ListMonoid.lift(l)           == ['a']
-        assert ListMonoid.is_zero(v)        == False
-        assert ListMonoid.is_zero(z)        == True
-        assert ListMonoid.sum(vs)           == ['a', 'b', 'c']
-        assert ListMonoid.sum_with_lift(vl) == ['a', 'b', 'c']
+
+        assert ListMonoid.zero                 == z
+        assert ListMonoid.plus(v, v)           == ['a', 'a']
+        assert ListMonoid.lift(l)              == ['a']
+        assert ListMonoid.is_zero(v)           == False
+        assert ListMonoid.is_zero(z)           == True
+        assert ListMonoid.sum(vs)              == ['a', 'b', 'c']
+        assert ListMonoid.sum_with_lift(vl)    == ['a', 'b', 'c']
 
     def test_priority_queue_monoid(self):
         v, l, vs, vl = ['a'], 'a', [['a', 'b'], ['c']], ['a', 'b', 'c', 'd']
         z = []
+
         monoid = PriorityQueueMonoid(count=3)
-        assert monoid.zero              == z
-        assert monoid.plus(v, v)        == ['a', 'a']
-        assert monoid.lift(l)           == ['a']
-        assert monoid.is_zero(v)        == False
-        assert monoid.is_zero(z)        == True
-        assert monoid.sum(vs)           == ['a', 'b', 'c']
-        assert monoid.sum_with_lift(vl) == ['b', 'd', 'c']
+        assert monoid.zero                     == z
+        assert monoid.plus(v, v)               == ['a', 'a']
+        assert monoid.lift(l)                  == ['a']
+        assert monoid.is_zero(v)               == False
+        assert monoid.is_zero(z)               == True
+        assert monoid.sum(vs)                  == ['a', 'b', 'c']
+        assert monoid.sum_with_lift(vl)        == ['b', 'd', 'c']
 
     def test_set_monoid(self):
         v, l, vs, vl = {'a'}, 'a', [{'a', 'b'}, {'c'}], ['a', 'b', 'c']
         z = set()
-        assert SetMonoid.zero              == z
-        assert SetMonoid.plus(v, v)        == {'a'}
-        assert SetMonoid.lift(l)           == {'a'}
-        assert SetMonoid.is_zero(v)        == False
-        assert SetMonoid.is_zero(z)        == True
-        assert SetMonoid.sum(vs)           == {'a', 'b', 'c'}
-        assert SetMonoid.sum_with_lift(vl) == {'a', 'b', 'c'}
+
+        assert SetMonoid.zero                  == z
+        assert SetMonoid.plus(v, v)            == {'a'}
+        assert SetMonoid.lift(l)               == {'a'}
+        assert SetMonoid.is_zero(v)            == False
+        assert SetMonoid.is_zero(z)            == True
+        assert SetMonoid.sum(vs)               == {'a', 'b', 'c'}
+        assert SetMonoid.sum_with_lift(vl)     == {'a', 'b', 'c'}
 
     def test_tuple_monoid(self):
         v, l, vs, vl = ('a',), 'a', [('a', 'b'), ('c',)], ['a', 'b', 'c']
         z = tuple()
-        assert TupleMonoid.zero              == z
-        assert TupleMonoid.plus(v, v)        == ('a', 'a')
-        assert TupleMonoid.lift(l)           == ('a',)
-        assert TupleMonoid.is_zero(v)        == False
-        assert TupleMonoid.is_zero(z)        == True
-        assert TupleMonoid.sum(vs)           == ('a', 'b', 'c')
-        assert TupleMonoid.sum_with_lift(vl) == ('a', 'b', 'c')
+
+        assert TupleMonoid.zero                == z
+        assert TupleMonoid.plus(v, v)          == ('a', 'a')
+        assert TupleMonoid.lift(l)             == ('a',)
+        assert TupleMonoid.is_zero(v)          == False
+        assert TupleMonoid.is_zero(z)          == True
+        assert TupleMonoid.sum(vs)             == ('a', 'b', 'c')
+        assert TupleMonoid.sum_with_lift(vl)   == ('a', 'b', 'c')
 
     def test_map_monoid(self):
         v, l, vs, vl = {'a': 1}, ('a', 1), [{'a' : 1}, {'b' : 2}], [('a', 1), ('b', 2)]
         z = {}
-        assert MapMonoid.zero              == z
-        assert MapMonoid.plus(v, v)        == {'a': 1}
-        assert MapMonoid.lift(l)           == {'a': 1}
-        assert MapMonoid.is_zero(v)        == False
-        assert MapMonoid.is_zero(z)        == True
-        assert MapMonoid.sum(vs)           == {'a' : 1, 'b' : 2}
-        assert MapMonoid.sum_with_lift(vl) == {'a' : 1, 'b' : 2}
+
+        assert MapMonoid.zero                  == z
+        assert MapMonoid.plus(v, v)            == {'a': 1}
+        assert MapMonoid.lift(l)               == {'a': 1}
+        assert MapMonoid.is_zero(v)            == False
+        assert MapMonoid.is_zero(z)            == True
+        assert MapMonoid.sum(vs)               == {'a' : 1, 'b' : 2}
+        assert MapMonoid.sum_with_lift(vl)     == {'a' : 1, 'b' : 2}
 
     def test_mutable_map_monoid(self):
         v, l, vs, vl = {'a': 1}, ('a', 1), [{'a' : 1}, {'b' : 2}], [('a', 1), ('b', 2)]
         z = {}
+
         assert MutableMapMonoid.zero              == z
         assert MutableMapMonoid.plus(v, v)        == {'a': 1}
         assert MutableMapMonoid.lift(l)           == {'a': 1}
@@ -185,6 +201,7 @@ class MonoidsTest(unittest.TestCase):
     def test_iter_monoid(self):
         v, l, vs, vl = [1], 1, [[1], [2]], [1, 2]
         z = iter([])
+
         assert list(IterMonoid.zero)              == []
         assert list(IterMonoid.plus(v, v))        == [1, 1]
         assert list(IterMonoid.lift(l))           == [1]
@@ -200,6 +217,7 @@ class MonoidsTest(unittest.TestCase):
         vs = [lambda x: x + 2, lambda x: x + 4]
         vl = [2, 4]
         z  = FunctionMonoid.zero
+
         assert FunctionMonoid.zero(o)              == 1
         assert FunctionMonoid.plus(v, v)(o)        == 5
         assert FunctionMonoid.lift(l)(o)           == 2
@@ -209,10 +227,12 @@ class MonoidsTest(unittest.TestCase):
         assert FunctionMonoid.sum_with_lift(vl)(o) == 4
 
     def test_semigroup(self):
-        vs, vl = [2, 2], ['2', '2']
+        vs = [2, 2]
+        vl = ['2', '2']
+
         semigroup = SemiGroup(lift=int, plus=lambda x, y: x + y)
-        assert semigroup.sum(vs)           == 4
-        assert semigroup.sum_with_lift(vs) == 4
+        assert semigroup.sum(vs)               == 4
+        assert semigroup.sum_with_lift(vs)     == 4
 
     def test_multi_monoid(self):
         v  = (2, {2})
@@ -220,14 +240,15 @@ class MonoidsTest(unittest.TestCase):
         vs = [(1, {1}), (2, {2})]
         vl = [2, 3]
         z  = (0, set())
+
         monoid = MultiMonoid(IntMonoid, SetMonoid)
-        assert monoid.zero              == z
-        assert monoid.plus(v, v)        == (4, {2})
-        assert monoid.lift(l)           == (2, {2})
-        assert monoid.is_zero(v)        == False
-        assert monoid.is_zero(z)        == True
-        assert monoid.sum(vs)           == (3, {1, 2})
-        assert monoid.sum_with_lift(vl) == (5, {2, 3})
+        assert monoid.zero                     == z
+        assert monoid.plus(v, v)               == (4, {2})
+        assert monoid.lift(l)                  == (2, {2})
+        assert monoid.is_zero(v)               == False
+        assert monoid.is_zero(z)               == True
+        assert monoid.sum(vs)                  == (3, {1, 2})
+        assert monoid.sum_with_lift(vl)        == (5, {2, 3})
 
 #---------------------------------------------------------------------------#
 # main

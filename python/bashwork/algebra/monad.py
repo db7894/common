@@ -183,7 +183,7 @@ class Either(Monad):
 
         :returns: The Maybe monad version of this instance
         '''
-        return Nothing if is_error else Something(self.right)
+        return Nothing if self.is_error() else Something(self.right())
 
     def flat_map(self, func):
         ''' Given a function of the following signature,

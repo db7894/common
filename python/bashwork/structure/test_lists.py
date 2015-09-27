@@ -86,6 +86,19 @@ class ListsTest(unittest.TestCase):
         rs = find_from_list_end(xs, n=3)
         self.assertEqual(rs.value, 4)
 
+    def test_merge_sorted_lists(self):
+        xs = [1, 3, 5]
+        ys = [2, 4, 6]
+        expect = [1, 2, 3, 4, 5, 6]
+        actual = merge_sorted_lists(xs, ys)
+        self.assertEqual(expect, actual)
+
+    def test_merge_sorted_linked_lists(self):
+        xs = Node.create(1, 3, 5)
+        ys = Node.create(2, 4, 6)
+        expect = [1, 2, 3, 4, 5, 6]
+        actual = merge_sorted_linked_lists(xs, ys)
+        self.assertEqual(expect, actual.to_list())
 
 #---------------------------------------------------------------------------#
 # main
