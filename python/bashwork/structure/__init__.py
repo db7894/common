@@ -4,4 +4,5 @@
    - treaps
    - skip lists
    - fibonacci heaps
+   - CRDT
 '''

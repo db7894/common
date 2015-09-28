@@ -1,12 +1,123 @@
 from bashwork.algebra.monoid import StringMonoid
 
-class Monad(object):
+#------------------------------------------------------------
+# Functor
+#------------------------------------------------------------
+
+class Functor(object):
+
+    def map(self, func):
+        ''' Given a function of the following signature,
+        apply it to the functor and return its result::
+
+            map(fa: F[A], f: A => B): F[B]
+
+        :param func: The function to apply to the functor
+        :returns: The result of the function application
+        '''
+        raise NotImplementedError("map")
+
+    def __mul__(self, func): return self.map(func)
+
+class FunctorLaws(object):
+    ''' A collection of laws that can be used to test
+    if the supplied functor is indeed valid.
+    '''
+
+    @staticmethod
+    def validate_identity(functor):
+        '''
+        '''
+        value  = 2
+        method = lambda x: x
+        expect = functor.unit(value)
+        actual = expect.map(method)
+        assert (actual == expect), "functor fails identity"
+
+    @staticmethod
+    def validate(functor):
+        ''' Validate that the supplied functor obeys the
+        functor laws.
+
+        :param functor: The functor to validate
+        '''
+        laws = FunctorLaws
+        laws.validate_identity(functor)
+
+#------------------------------------------------------------
+# Applicative Functor
+#------------------------------------------------------------
+
+class Applicative(Functor):
+
+    def pure(self, value):
+        ''' Given a value, put that value in the
+        minimal context of the current applicative::
+
+            unit(b: B): A[B]
+
+        :param value: The value to wrap in a applicative
+        :returns: The minimal applicative context for this value
+        '''
+        raise NotImplementedError("pure")
+
+    def apply(self, func):
+        ''' Given a function of the following signature,
+        apply it to the applicative and return its result::
+
+            map(fa: F[A], f: => F[A => B]): F[B]
+
+        :param func: The function to apply to the applicative
+        :returns: The result of the function application
+        '''
+        raise NotImplementedError("apply")
+
+
+class ApplicativeLaws(object):
+    ''' A collection of laws that can be used to test
+    if the supplied applicative functor is indeed valid.
+    '''
+
+    @staticmethod
+    def validate_identity(applicative):
+        pass # pure id <*> v = v
+
+    @staticmethod
+    def validate_composition(applicative):
+        pass # pure (.) <*> u <*> v <*> w = u <*> (v <*> w)
+
+    @staticmethod
+    def validate_homomorphism(applicative):
+        pass # pure f <*> pure x = pure (f x)
+
+    @staticmethod
+    def validate_interchange(applicative):
+        pass # u <*> pure y = pure ($ y) <*> u
+
+    @staticmethod
+    def validate(applicative):
+        ''' Validate that the supplied applicative functor
+        obeys the applicative laws.
+
+        :param applicative: The applicative to validate
+        '''
+        laws = ApplicativeLaws
+        laws.validate_identity(applicative)
+        laws.validate_composition(applicative)
+        laws.validate_homomorphism(applicative)
+        laws.validate_interchange(applicative)
+
+#------------------------------------------------------------
+# Monad
+#------------------------------------------------------------
+
+class Monad(Applicative):
 
     def map(self, func):
         ''' Given a function of the following signature,
         apply it to the monad and return its result::
 
-            f(A) => B
+            map(fa: M[A], f: A => B): M[B]
 
         :param func: The function to apply to the monad
         :returns: The result of the function application
@@ -15,7 +126,9 @@ class Monad(object):
 
     def unit(self, value):
         ''' Given a value, put that value in the
-        minimal context of the current monad.
+        minimal context of the current monad::
+
+            unit(a: A): M[A]
 
         :param value: The value to wrap in a monad
         :returns: The minimal monad context for this value
@@ -26,7 +139,7 @@ class Monad(object):
         ''' Given a function of the following signature,
         apply it to the monad and return its result::
 
-            f(A) => Monad[B]
+            flat_map(ma: M[A], f: A => M[B]): M[B]
 
         :param func: The function to apply to the monad
         :returns: The result of the function application
@@ -34,6 +147,53 @@ class Monad(object):
         raise NotImplementedError("flat_map")
 
     def __rshift__(self, func): return self.flat_map(func)
+
+class MonadLaws(object):
+    ''' A collection of laws that can be used to test
+    if the supplied monad is indeed valid.
+    '''
+
+    @staticmethod
+    def validate_left_identity(monad):
+        '''
+        '''
+        value  = 2
+        method = lambda x: x * 2
+        actual = monad.unit(value) >> method
+        expect = method(value)
+        assert (actual == expect), "monad fails left identity"
+
+    @staticmethod
+    def validate_right_identity(monad):
+        '''
+        '''
+        value  = 2
+        expect = monad.unit(value) 
+        actual = expect >> monad.unit
+        assert (actual == expect), "monad fails right identity"
+
+    @staticmethod
+    def validate_associativity(monad):
+        '''
+        '''
+        value   = monad.unit(2)
+        method1 = lambda x: monad.unit(x * 2)
+        method2 = lambda x: monad.unit(x + 2)
+        expect  = value >> (lambda x: method1(x) >> method2)
+        actual  = value >> method1 >> method2
+        assert (actual == expect), "monad fails associativity"
+
+    @staticmethod
+    def validate(monad):
+        ''' Validate that the supplied monad obeys the monad
+        laws.
+
+        :param monad: The monad to validate
+        '''
+        laws = MonadLaws
+        laws.validate_left_identity(monad)
+        laws.validate_right_identity(monad)
+        laws.validate_associativity(monad)
 
 def liftM2(func, ma, mb):
     '''
@@ -148,6 +308,7 @@ class _Nothing(Maybe):
     __repr__ = __str__
 
 Nothing = _Nothing() # only need a single instance
+Option  = Maybe      # alias if someone likes this name better
 
 #------------------------------------------------------------
 # Either Monad

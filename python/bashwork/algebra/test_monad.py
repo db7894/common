@@ -12,6 +12,10 @@ class MonadsTest(unittest.TestCase):
 
     def test_maybe_interface(self):
         maybe = Maybe()
+        FunctorLaws.validate(Maybe)
+        ApplicativeLaws.validate(Maybe)
+        MonadLaws.validate(Maybe)
+
         self.assertEquals(Maybe.unit(1), Something(1))
         self.assertRaises(NotImplementedError, lambda: maybe.get())
         self.assertRaises(NotImplementedError, lambda: maybe.get_or_else(None))
@@ -39,6 +43,10 @@ class MonadsTest(unittest.TestCase):
 
     def test_either_interface(self):
         either = Either()
+        FunctorLaws.validate(Either)
+        ApplicativeLaws.validate(Either)
+        MonadLaws.validate(Either)
+
         self.assertEqual(Either.unit(2), Success(2))
         self.assertRaises(NotImplementedError, lambda: either.is_error())
         self.assertRaises(NotImplementedError, lambda: either.left())
