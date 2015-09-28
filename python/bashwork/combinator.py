@@ -30,18 +30,17 @@ def constant2(value):
 constant_true  = constant(True)
 constant_false = constant(False)
 
-def compose(f1, f2):
-    ''' A function that takes two functions
+def compose(*args):
+    ''' A function that takes N functions
     and composes them such that a new function of
     the following is created::
 
        x = f2 (f1 x) 
 
-    :param f1: The first function to compose
-    :param f2: The second function to compose
+    :param args: The functions to compose
     :returns: A function composed of the two functions
     '''
-    return lambda x: f2(f1(x))
+    return reduce(lambda t, n: lambda x: n(t(x)), args)
 
 def application(f):
     ''' A function that can be used to form composition
@@ -59,6 +58,31 @@ def application(f):
 #------------------------------------------------------------
 # SKI Aliases
 #------------------------------------------------------------
+
 I = identity
 K = constant
 S = application
+
+#------------------------------------------------------------
+# Currying
+#------------------------------------------------------------
+
+def curry(function, argc=None):
+    ''' Given a function of N-arity, convert it into a
+    collection of functions each with 1-arity.
+
+    :param function: The function to curry
+    :param argc: The argument count to curry
+    '''
+    if argc is None:
+        argc = function.func_code.co_argcount
+
+    def curry_wrapper(*args, **kwargs):
+        if len(args) + len(kwargs) == argc:
+            return function(*args, **kwargs)
+
+        def thunk(*args2, **kwargs2):
+            return function(*(args + args2), **dict(kwargs, **kwargs2))
+
+        return curry(thunk, argc - len(args) - len(kwargs))
+    return curry_wrapper

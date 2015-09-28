@@ -1,3 +1,4 @@
+from bashwork.combinator import identity, compose
 from bashwork.algebra.monoid import StringMonoid
 
 #------------------------------------------------------------
@@ -6,18 +7,18 @@ from bashwork.algebra.monoid import StringMonoid
 
 class Functor(object):
 
-    def map(self, func):
+    def map(self, function):
         ''' Given a function of the following signature,
         apply it to the functor and return its result::
 
             map(fa: F[A], f: A => B): F[B]
 
-        :param func: The function to apply to the functor
+        :param function: The function to apply to the functor
         :returns: The result of the function application
         '''
         raise NotImplementedError("map")
 
-    def __mul__(self, func): return self.map(func)
+    def __mul__(self, function): return self.map(function)
 
 class FunctorLaws(object):
     ''' A collection of laws that can be used to test
@@ -26,13 +27,29 @@ class FunctorLaws(object):
 
     @staticmethod
     def validate_identity(functor):
-        '''
+        ''' The functor must satisfy the following law::
+
+            fmap id fa == id
         '''
         value  = 2
-        method = lambda x: x
+        method = identity
         expect = functor.unit(value)
         actual = expect.map(method)
         assert (actual == expect), "functor fails identity"
+
+    @staticmethod
+    def validate_composition(functor):
+        ''' The functor must satisfy the following law::
+
+            fmap (f . g) = fmap f . fmap g.
+        '''
+        value   = functor.unit(2)
+        method1 = lambda x: x + 2
+        method2 = lambda x: x * 2
+        methodc = compose(method1, method2)
+        expect  = value * method1 * method2
+        actual  = value * methodc
+        assert (actual == expect), "functor fails composition"
 
     @staticmethod
     def validate(functor):
@@ -43,6 +60,7 @@ class FunctorLaws(object):
         '''
         laws = FunctorLaws
         laws.validate_identity(functor)
+        laws.validate_composition(functor)
 
 #------------------------------------------------------------
 # Applicative Functor
@@ -50,27 +68,18 @@ class FunctorLaws(object):
 
 class Applicative(Functor):
 
-    def pure(self, value):
-        ''' Given a value, put that value in the
-        minimal context of the current applicative::
-
-            unit(b: B): A[B]
-
-        :param value: The value to wrap in a applicative
-        :returns: The minimal applicative context for this value
-        '''
-        raise NotImplementedError("pure")
-
-    def apply(self, func):
+    def apply(self, function):
         ''' Given a function of the following signature,
         apply it to the applicative and return its result::
 
             map(fa: F[A], f: => F[A => B]): F[B]
 
-        :param func: The function to apply to the applicative
+        :param function: The function to apply to the applicative
         :returns: The result of the function application
         '''
         raise NotImplementedError("apply")
+
+    def __and__(self, function): return self.apply(function)
 
 
 class ApplicativeLaws(object):
@@ -80,19 +89,53 @@ class ApplicativeLaws(object):
 
     @staticmethod
     def validate_identity(applicative):
-        pass # pure id <*> v = v
+        ''' The applicative must satisfy the following law::
+
+            pure id <*> v == v
+        '''
+        value  = 2
+        method = applicative.unit(identity)
+        expect = applicative.unit(value)
+        actual = method & expect
+        assert (actual == expect), "applicative fails identity"
 
     @staticmethod
     def validate_composition(applicative):
-        pass # pure (.) <*> u <*> v <*> w = u <*> (v <*> w)
+        ''' The applicative must satisfy the following law::
+        
+            pure (.) <*> u <*> v <*> w = u <*> (v <*> w)
+        '''
+        value   = applicative.unit(2)
+        method1 = applicative.unit(lambda x: x + 1)
+        method2 = applicative.unit(lambda x: x * 2)
+        compose = applicative.unit(lambda x: lambda y: lambda z: x(y(z)))
+        expect  = (compose & method1 & method2) & value
+        actual  = method1 & (method2 & value)
+        assert (actual == expect), "applicative fails composition"
 
     @staticmethod
     def validate_homomorphism(applicative):
-        pass # pure f <*> pure x = pure (f x)
+        ''' The applicative must satisfy the following law::
+        
+            pure f <*> pure x = pure (f x)
+        '''
+        value  = 2
+        method = lambda x: x + 2
+        expect = applicative.unit(method(value))
+        actual = applicative.unit(method) & applicative.unit(value)
+        assert (actual == expect), "applicative fails homomorphism"
 
     @staticmethod
     def validate_interchange(applicative):
-        pass # u <*> pure y = pure ($ y) <*> u
+        ''' The applicative must satisfy the following law::
+        
+            u <*> pure y = pure ($ y) <*> u
+        '''
+        value  = 2
+        method = applicative.unit(lambda x: x + 2)
+        expect = method & applicative.unit(value)
+        actual = applicative.unit(lambda x: x(value)) & method
+        assert (actual == expect), "applicative fails interchanged"
 
     @staticmethod
     def validate(applicative):
@@ -113,18 +156,8 @@ class ApplicativeLaws(object):
 
 class Monad(Applicative):
 
-    def map(self, func):
-        ''' Given a function of the following signature,
-        apply it to the monad and return its result::
-
-            map(fa: M[A], f: A => B): M[B]
-
-        :param func: The function to apply to the monad
-        :returns: The result of the function application
-        '''
-        raise NotImplementedError("map")
-
-    def unit(self, value):
+    @classmethod
+    def unit(klass, value):
         ''' Given a value, put that value in the
         minimal context of the current monad::
 
@@ -195,11 +228,38 @@ class MonadLaws(object):
         laws.validate_right_identity(monad)
         laws.validate_associativity(monad)
 
+#------------------------------------------------------------
+# Free Methods
+#------------------------------------------------------------
+
 def liftM2(func, ma, mb):
     '''
     '''
     return ma.flat_map(
         lambda a: mb.map(lambda b: func(a, b)))
+
+
+def pure(klass, value):
+    ''' Given a typeclass, return the unit value or minimal
+    context for that type for the supplied value.
+
+    :param klass: The typeclass to wrap the value in
+    :param value: The value to put in the minimal context
+    :returns: The value in the minimal context
+    '''
+    return klass.unit(value)
+
+
+def point(klass, value):
+    ''' Given a typeclass, return the unit value or minimal
+    context for that type for the supplied value.
+
+    :param klass: The typeclass to wrap the value in
+    :param value: The value to put in the minimal context
+    :returns: The value in the minimal context
+    '''
+    return klass.unit(value)
+
 
 #------------------------------------------------------------
 # Option Monad
@@ -211,37 +271,18 @@ class Maybe(Monad):
     program.
     '''
 
-    def flat_map(self, func):
-        ''' Given a function of the following signature,
-        apply it to the Maybe and return its result::
+    def flat_map(self, function):
+        return Nothing if self.is_empty() else function(self.get())
 
-            f(A) => Option[B]
+    def apply(self, functor):
+        return Nothing if self.is_empty() else functor.map(self.get())
 
-        :param func: The function to apply to the Maybe
-        :returns: The result of the function application
-        '''
-        return Nothing if self.is_empty() else func(self.get())
+    def map(self, function):
+        return Nothing if self.is_empty() else Something(function(self.get()))
 
     @staticmethod
     def unit(value):
-        ''' Given a value, put that value in the
-        minimal context of the current Maybe.
-
-        :param value: The value to wrap in a Maybe
-        :returns: The minimal Maybe context for this value
-        '''
         return Something(value)
-
-    def map(self, func):
-        ''' Given a function of the following signature,
-        apply it to the Maybe and return its result::
-
-            f(A) => B
-
-        :param func: The function to apply to the Maybe
-        :returns: The result of the function application
-        '''
-        return Nothing if self.is_empty() else Something(func(self.get()))
 
     @staticmethod
     def something(value):
@@ -316,6 +357,15 @@ Option  = Maybe      # alias if someone likes this name better
 
 class Either(Monad):
 
+    def flat_map(self, function):
+        return self if self.is_error() else function(self.right())
+
+    def apply(self, functor):
+        return self if self.is_error() else functor.map(self.right())
+
+    def map(self, function):
+        return self if self.is_error() else Success(function(self.right()))
+
     def is_error(self):
         ''' If the underlying Either is an error this will
         return True, otherwise False.
@@ -346,37 +396,18 @@ class Either(Monad):
         '''
         return Nothing if self.is_error() else Something(self.right())
 
-    def flat_map(self, func):
-        ''' Given a function of the following signature,
-        apply it to the Either and return its result::
+    def get_or_else(self, default):
+        ''' Retrieve the underlying value if one exists,
+        otherwise return the default value.
 
-            f(A) => Either[A, B]
-
-        :param func: The function to apply to the Either
-        :returns: The result of the function application
+        :param default: The default value to return
+        :returns: The underlying value if it exists or the default otherwise
         '''
-        return self if self.is_error() else func(self.right())
+        return default if self.is_error() else self.right()
 
     @staticmethod
     def unit(value):
-        ''' Given a value, put that value in the
-        minimal context of the current Either.
-
-        :param value: The value to wrap in a Either
-        :returns: The minimal Either context for this value
-        '''
         return Success(value)
-
-    def map(self, func):
-        ''' Given a function of the following signature,
-        apply it to the Either and return its result::
-
-            f(A) => B
-
-        :param func: The function to apply to the Either
-        :returns: The result of the function application
-        '''
-        return self if self.is_error() else Success(func(self.right()))
 
     @staticmethod
     def success(value):
@@ -396,15 +427,6 @@ class Either(Monad):
         :returns: A new Either with a failed value
         '''
         return Failure(ex)
-
-    def get_or_else(self, default):
-        ''' Retrieve the underlying value if one exists,
-        otherwise return the default value.
-
-        :param default: The default value to return
-        :returns: The underlying value if it exists or the default otherwise
-        '''
-        return default if self.is_error() else self.right()
 
 class Success(Either):
     ''' An Either that contains an underlying value '''

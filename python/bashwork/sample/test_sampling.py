@@ -34,6 +34,15 @@ class SamplingTest(unittest.TestCase):
         self.assertEquals(8, largest_difference([4,5,6,1,4,7,9]))
         self.assertEquals(0, largest_difference([5,4,3,2,1]))
 
+    def test_get_largest_product(self):
+        xs = [4,6,3,8,-2]
+        rs = [6, 8, 4]
+        self.assertEquals(get_largest_product(xs, 3), rs)
+
+        xs = [4, 6, 3, -30, 25, 7, -12, 4, 8,-2]
+        rs = [-30, -12, 25]
+        self.assertEquals(get_largest_product(xs, 3), rs)
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#

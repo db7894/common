@@ -76,6 +76,11 @@ class MonadsTest(unittest.TestCase):
         self.assertEqual(monad.get_or_else(2), 2)
         self.assertEqual(monad.flat_map(lambda x: Success(x + 2)), Failure(value))
 
+    #def test_writer_interface(self):
+    #    FunctorLaws.validate(Writer)
+    #    ApplicativeLaws.validate(Writer)
+    #    MonadLaws.validate(Writer)
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#

@@ -107,3 +107,34 @@ def gap_sample(coll, prob):
             next(islice(coll, size, size), None) # skip N elements
             yield next(coll)
     except StopIteration: pass
+
+def get_largest_product(values, count):
+    ''' Given a collection of values, return the
+    N values that produce the largets product.
+
+    DP solution:
+
+        f(i, k) = max(A[i]*f(i+1, k-1), f(i+1, k))
+
+    :param values: The values to search
+    :param count: The number of values to return
+    :return: A list of the values with the largest product
+    '''
+    if len(values) < count:
+        raise Exception("Not enough values for supplied count")
+
+    def product(xs):
+        return reduce(lambda x, y: x * y, xs)
+
+    def recurse(xs, k):
+        if k == 1: return [xs[-1]]                # odd base case
+        if k <= 0: return []                      # even base case
+
+        xs_n, xs_p = xs[:2], xs[-2:]              # the negative and positive values
+        pr_n, pr_p = product(xs_n), product(xs_p) # the product of those values
+        ys_n, ys_p = xs[2:], xs[:-2]              # the remainding list to recurse on
+        pr, xs, ys = max((pr_n, xs_n, ys_n), (pr_p, xs_p, ys_p))
+
+        return xs + recurse(ys, k - 2)
+
+    return recurse(list(sorted(values)), count)
