@@ -56,8 +56,8 @@ class BinaryNode(object):
 
         :returns: True if balanced, False otherwise
         '''
-        left  = self.left.height()
-        right = self.right.height()
+        left  = self.left.height() if self.left else 0
+        right = self.right.height() if self.right else 0
         if abs(left - right) > 1: return False
         return ((self.left.is_balanced() if self.left else True)
             and (self.right.is_balanced() if self.right else True))
@@ -702,6 +702,7 @@ def serialize_tree(tree):
     '''
     return json.dumps(tree_to_array(tree))
 
+
 def serialize_tree_list(tree):
     ''' Given a tree, serialize it to a list
 
@@ -751,15 +752,29 @@ def invert_tree(tree):
         return roots
     return invert(tree, None, None)
 
-def max_subtree(node):
+def get_max_subtree(node):
     ''' Given a tree, return the maximum sub-tree
-    of the form (value, root).
+    of the form (value, root) where value is the sum of
+    all the sub-tree's nodes.
 
     :param node: The tree to find the maximum sub-tree of
     :returns: The result of (value, root) 
     '''
-    if node == None: return (-sys.maxint, None)
+    if node == None: return (0, None) # identity
     if node.left == None and node.right == None:
         return (node.value, node)
-    l, r = max_subtree(node.left), max_subtree(node.right)
-    return max(l, r, (l.value + r.value + node.value, node))
+    l, r = get_max_subtree(node.left), get_max_subtree(node.right)
+    return max(l, r, (l[0] + r[0] + node.value, node))
+
+def get_max_balanced_subtree(tree):
+    ''' Given a binary tree, return the maximum balanced
+    sub-tree that exists.
+
+    :param tree: The tree to search
+    :returns: (is_balanced, height)
+    '''
+    if tree == None: return (False, 0)
+
+    return max((tree.is_balanced(), tree.height()),
+        get_max_balanced_subtree(tree.left),
+        get_max_balanced_subtree(tree.right))

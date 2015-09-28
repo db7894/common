@@ -81,6 +81,11 @@ class MonadsTest(unittest.TestCase):
     #    ApplicativeLaws.validate(Writer)
     #    MonadLaws.validate(Writer)
 
+    def test_list_interface(self):
+        FunctorLaws.validate(List)
+        ApplicativeLaws.validate(List)
+        MonadLaws.validate(List)
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#

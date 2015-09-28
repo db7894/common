@@ -256,6 +256,17 @@ class BinaryTreeTest(unittest.TestCase):
         tree = array_to_tree([1, 2, 3, 4, 5, 6])
         self.assertTrue(simple_is_tree_balanced(tree))
 
+    def test_get_max_subtree(self):
+        tree = array_to_tree([1, 2, 3, 4, 5, 6])
+        self.assertEqual(get_max_subtree(tree), (21, tree))
+
+        tree = array_to_tree([-5, -4, -2, 1, 2, 3, 4, 5, 6])
+        self.assertEqual(get_max_subtree(tree), (21, tree))
+
+    def test_get_max_balanced_subtree(self):
+        tree = array_to_tree([1, 2, 3, 4, 5, 6])
+        self.assertEqual(get_max_balanced_subtree(tree), (True, 2))
+
 #------------------------------------------------------------
 # test runner
 #------------------------------------------------------------

@@ -1,3 +1,11 @@
+'''
+TODO
+
+- https://bitbucket.org/jason_delaat/pymonad/src/cbecd6796cd1488237d2a0f057cefd2a50df753a/pymonad/?at=master
+- reader, writer
+- state
+'''
+from operator import add 
 from bashwork.combinator import identity, compose
 from bashwork.algebra.monoid import StringMonoid
 
@@ -480,35 +488,70 @@ class Writer(Monad):
     __repr__ = __str__
 
     def flat_map(self, func):
-        ''' Given a function of the following signature,
-        apply it to the Writer and return its result::
-
-            f(A) => Writer[A, B]
-
-        :param func: The function to apply to the Maybe
-        :returns: The result of the function application
-        '''
         result = func(self.value)
         diary  = self.monoid.plus(self.diary, result.diary)
         return Writer(result.value, diary, self.monoid)
 
     @classmethod
     def unit(klass, value, monoid=StringMonoid):
-        ''' Given a value, put that value in the
-        minimal context of the current Writer.
-
-        :param value: The value to wrap in a Writer
-        :returns: The minimal Writer context for this value
-        '''
         return klass(value, monoid=monoid)
 
     def map(self, func):
-        ''' Given a function of the following signature,
-        apply it to the Writer and return its result::
-
-            f(A) => B
-
-        :param func: The function to apply to the Maybe
-        :returns: The result of the function application
-        '''
         return Writer(func(self.value), self.diary, self.monoid)
+
+#------------------------------------------------------------
+# List Monad
+#------------------------------------------------------------
+
+class List(Monad, list): # ordered to override list methods
+    ''' A List monad represents a computation that can have
+    many results.
+    '''
+
+    def get(self): return self
+
+    def flat_map(self, function):
+        return reduce(add, map(function, self))
+
+    @classmethod
+    def unit(klass, value):
+        return klass([value])
+
+    def apply(self, functor):
+        return reduce(add, [functor.map(x) for x in self])
+
+    def map(self, function):
+        return List([function(x) for x in self])
+
+#------------------------------------------------------------
+# State Monad
+#------------------------------------------------------------
+
+class State(Monad):
+    ''' A monad that represents some calculation with stateful
+    side effects.
+    '''
+
+    def __init__(self, value): self.value = value
+
+    def get_result(self, state):
+        return self.value(state)[0]
+
+    def get_state(self, state):
+        return self.value(state)[1]
+
+    def flat_map(self, function):
+        return reduce(add, map(function, self))
+
+    @classmethod
+    def unit(klass, value):
+        return klass(lambda state: (value, state))
+
+    def apply(self, functor):
+        return reduce(add, [functor.map(x) for x in self])
+
+    def map(self, function):
+        return State(lambda state: (function(self(state)[0]), state))
+
+    def __call__(self, state):
+        return self.value(state)
