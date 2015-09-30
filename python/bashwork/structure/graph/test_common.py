@@ -21,6 +21,17 @@ class GraphTest(unittest.TestCase):
         self.assertNotEqual(1, graph['weight'])
         self.assertEqual([], graph.get_nodes())
 
+    def test_graph_edges(self):
+        graph = Graph([1,2,3,4], name='graph', weight=1)
+        self.assertRaises(KeyError, lambda: graph.add_edge(5, 4))
+        self.assertRaises(KeyError, lambda: graph.add_edge(4, 5))
+
+        graph.add_node(4, name='node(4)')
+        self.assertEquals(graph.get_node(4), {'name' : 'node(4)'})
+
+        graph.add_edge(2, 4, name='edge(2-4)')
+        self.assertEquals(graph.get_edge(2, 4), {'name' : 'edge(2-4)'})
+
     def test_magic_methods(self):
         grapha = Graph([1,2,3,4], name='graph')
         grapha['type'] = 'weighted'

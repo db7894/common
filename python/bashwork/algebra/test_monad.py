@@ -4,6 +4,10 @@ from bashwork.algebra.monad import *
 
 class MonadsTest(unittest.TestCase):
 
+    def test_applicative_interface(self):
+        applicative = Applicative()
+        self.assertRaises(NotImplementedError, lambda: applicative.apply(None))
+
     def test_monad_interface(self):
         monad = Monad()
         self.assertRaises(NotImplementedError, lambda: monad.map(None))
@@ -81,10 +85,21 @@ class MonadsTest(unittest.TestCase):
     #    ApplicativeLaws.validate(Writer)
     #    MonadLaws.validate(Writer)
 
+    #def test_reader_interface(self):
+    #    FunctorLaws.validate(Reader)
+    #    ApplicativeLaws.validate(Reader)
+    #    MonadLaws.validate(Reader)
+
     def test_list_interface(self):
         FunctorLaws.validate(List)
         ApplicativeLaws.validate(List)
         MonadLaws.validate(List)
+
+    # this won't work unless we call `run` at the assert points
+    #def test_State_interface(self):
+    #    FunctorLaws.validate(State)
+    #    ApplicativeLaws.validate(State)
+    #    MonadLaws.validate(State)
 
 #---------------------------------------------------------------------------#
 # main

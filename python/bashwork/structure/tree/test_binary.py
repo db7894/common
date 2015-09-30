@@ -267,6 +267,13 @@ class BinaryTreeTest(unittest.TestCase):
         tree = array_to_tree([1, 2, 3, 4, 5, 6])
         self.assertEqual(get_max_balanced_subtree(tree), (True, 2))
 
+    def test_convert_tree_to_level_lists(self):
+        tree = array_to_tree([1, 2, 3, 4, 5, 6])
+        expect = [[3], [1, 5], [2, 4, 6]]
+        actual = convert_tree_to_level_lists(tree)
+        actual = [[x.value for x in l] for l in actual]
+        self.assertEqual(expect, actual)
+
 #------------------------------------------------------------
 # test runner
 #------------------------------------------------------------

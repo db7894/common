@@ -21,12 +21,12 @@ class BinaryNode(object):
 
     def __getitem__(self, k):    return self.attrs.get(k, None)
     def __setitem__(self, k, v): self.attrs[k] = v
-    def __eq__(self, other):     return other and (self.value == other.value)
-    def __ne__(self, other):     return other and (self.value != other.value)
-    def __lt__(self, other):     return other and (self.value  < other.value)
-    def __le__(self, other):     return other and (self.value <= other.value)
-    def __gt__(self, other):     return other and (self.value  > other.value)
-    def __ge__(self, other):     return other and (self.value >= other.value)
+    def __eq__(self, other):     return isinstance(other, BinaryNode) and (self.value == other.value)
+    def __ne__(self, other):     return not (self == other)
+    def __lt__(self, other):     return isinstance(other, BinaryNode) and (self.value  < other.value)
+    def __le__(self, other):     return isinstance(other, BinaryNode) and (self.value <= other.value)
+    def __gt__(self, other):     return isinstance(other, BinaryNode) and (self.value  > other.value)
+    def __ge__(self, other):     return isinstance(other, BinaryNode) and (self.value >= other.value)
     def __hash__(self):          return hash(self.value)
     def __repr__(self):          return str(self.value)
     def __str__(self):           return str(self.value)
@@ -703,6 +703,21 @@ def serialize_tree(tree):
     return json.dumps(tree_to_array(tree))
 
 
+def serialize_tree_sexp(tree):
+    ''' Given a tree, serialize it to a sexp expression
+
+    :param tree: The tree to serialize to a list
+    :returns: The serialzied tree expression
+    '''
+    def serialize(node):
+        if node == None: return '()'
+        child = " ({}, {})".format(
+            serialize(node.left), serialize(node.right))
+        if len(child) == 9: child = ''
+        return "({}{})".format(node.value, child)
+    return serialize(tree)
+
+
 def serialize_tree_list(tree):
     ''' Given a tree, serialize it to a list
 
@@ -778,3 +793,38 @@ def get_max_balanced_subtree(tree):
     return max((tree.is_balanced(), tree.height()),
         get_max_balanced_subtree(tree.left),
         get_max_balanced_subtree(tree.right))
+
+def convert_tree_to_level_lists(tree):
+    ''' Given a tree, covert it to a collection of lists
+    where each list represents a level of the tree.
+
+    :param tree: The tree to convert
+    :returns: A list of lists for each tree level
+    '''
+    lists = [[tree]]
+
+    for level in range(0, tree.height()):
+        current = []
+        for node in lists[level]:
+            if node.left:  current.append(node.left)
+            if node.right: current.append(node.right)
+        if current: lists.append(current)
+    return lists
+
+def get_next_tree_inorder_node(node):
+    def left_most_node(n):
+        while n.left != None:                     # until we hit a leaf
+            n = n.left                            # keep moving left down the tree
+        return n                                  # return the leaf node
+
+    def right_side_parent(n):
+        while n.parent != None:                   # until we have reached the parent
+            n, p = n.parent, n                    # keep walking up the tree
+            if n.left == p: break                 # check if parent is on the right
+        return n                                  # return the parent
+
+    if not node: return node                      # invalid node
+    if node.parent == None or node.right != None: # parent node
+        return left_most_node(node.right)         # or we have a right node
+    return right_side_parent(node.parent)         # otherwise get on the left side
+

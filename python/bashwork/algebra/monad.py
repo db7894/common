@@ -1,10 +1,3 @@
-'''
-TODO
-
-- https://bitbucket.org/jason_delaat/pymonad/src/cbecd6796cd1488237d2a0f057cefd2a50df753a/pymonad/?at=master
-- reader, writer
-- state
-'''
 from operator import add 
 from bashwork.combinator import identity, compose
 from bashwork.algebra.monoid import StringMonoid
@@ -26,7 +19,8 @@ class Functor(object):
         '''
         raise NotImplementedError("map")
 
-    def __mul__(self, function): return self.map(function)
+    def __mul__(self, function):  return self.map(function)
+    def __rmul__(self, function): return self.map(function)
 
 class FunctorLaws(object):
     ''' A collection of laws that can be used to test
@@ -500,6 +494,14 @@ class Writer(Monad):
         return Writer(func(self.value), self.diary, self.monoid)
 
 #------------------------------------------------------------
+# Reader Monad TODO
+#------------------------------------------------------------
+
+#------------------------------------------------------------
+# Continuation Monad TODO
+#------------------------------------------------------------
+
+#------------------------------------------------------------
 # List Monad
 #------------------------------------------------------------
 
@@ -532,26 +534,80 @@ class State(Monad):
     side effects.
     '''
 
-    def __init__(self, value): self.value = value
+    __slots__ = ['value']
+
+    def __init__(self, value):
+        ''' Initialize a new instance of the State monad::
+
+            value: S => (A, S)
+
+        :param value: The initial state function 
+        '''
+        self.value = value
 
     def get_result(self, state):
+        ''' Get the result of applying the supplied state
+
+        :param state: The current state to apply
+        :returns: The result of applying the state
+        '''
         return self.value(state)[0]
 
     def get_state(self, state):
+        ''' Get the new state after applying the supplied state
+
+        :param state: The current state to apply
+        :returns: The resulting state from applying this state
+        '''
         return self.value(state)[1]
 
+    def run(self, state):
+        ''' Get the side-effects of applying the supplied state.
+
+        :param state: The current state to apply
+        :returns: The resulting side-effects (result, state)
+        '''
+        return self.value(state)
+
     def flat_map(self, function):
-        return reduce(add, map(function, self))
+        def flat_map_state(state):
+            result, new_state = self.run(state)
+            return function(result).run(new_state)
+        return State(flat_map_state)
 
     @classmethod
     def unit(klass, value):
         return klass(lambda state: (value, state))
 
     def apply(self, functor):
-        return reduce(add, [functor.map(x) for x in self])
+        def apply_state(state):
+            function, _ = self.run(state)
+            result, _   = functor.map(state)
+            return (function(result), state)
+        return State(apply_state)
 
     def map(self, function):
-        return State(lambda state: (function(self(state)[0]), state))
+        def map_state(state):
+            result, new_state = self.run(state)
+            return (function(result), state)
+        return State(map_state)
 
-    def __call__(self, state):
-        return self.value(state)
+    def __call__(self, state): return self.run(state)
+
+class StateStack(object):
+    ''' An example of creating a stateful stack by using
+    the state monad. What follows is an example of its use:
+
+    >>> stack  = StateState
+    >>> monad  = stack.push(4) >> (lambda _: stack.pop()) >> (lambda _: stack.pop())
+    >>> result = monad([1,2,3])
+    >>> assert result == (1, [2, 3])
+    '''
+
+    @staticmethod
+    def push(x):
+        return State(lambda xs: ((), [x] + xs))
+
+    @staticmethod
+    def pop():
+        return State(lambda xs: (xs[0], xs[1:]))

@@ -45,7 +45,7 @@ class Graph(object):
         :param sink: The node to add an edge to
         '''
         if node not in self.nodes:
-            raise KeyError("source node %s does not exist" % source)
+            raise KeyError("source node %s does not exist" % node)
 
         if sink not in self.nodes:
             raise KeyError("sink node %s does not exist" % sink)
@@ -98,8 +98,8 @@ class Graph(object):
 
     def __key(self):             return tuple((k, tuple(v.keys())) for k,v in self.edges.items())
     def __len__(self):           return len(self.nodes)
-    def __eq__(self, other):     return other and (other.__key() == self.__key())
-    def __ne__(self, other):     return other and (other.__key() != self.__key())
+    def __eq__(self, other):     return (other != None) and (other.__key() == self.__key())
+    def __ne__(self, other):     return not (self == other)
     def __repr__(self):          return self.attrs.get('name', '')
     def __str__(self):           return self.attrs.get('name', '')
     def __hash__(self):          return hash(self.__key())
