@@ -225,3 +225,38 @@ def int_to_string(value):
         value /= 10
     if value < 0: string.insert(0, '-')
     return ''.join(string)
+
+def all_parenthesis_sets(size=3):
+    ''' Given a size, produce all the valid sets
+    of open and closed parenthesis.
+
+    :param size: The number of paren sets allowed
+    :returns: A set of all the valid sets
+    '''
+    if size == 0: return set([''])
+    sets = all_parenthesis_sets(size - 1)
+    news = [['(' + x + ')', '()' + x, x + '()'] for x in sets]
+    sets = set(entry for new in news for entry in new)
+    return sets
+
+#def all_parenthesis_sets_backtrack(size=3):
+#    ''' Given a size, produce all the valid sets
+#    of open and closed parenthesis. This version reduces
+#    the amount of storage needed by backtracking and
+#    yielding using the same list (strings are immutable).
+#
+#    :param size: The number of paren sets allowed
+#    :returns: A set of all the valid sets
+#    '''
+#    def recurse(os, cs, string, index):
+#        if os == 0 and cs == 0:
+#            yield string
+#        else:
+#            if os > 0:
+#                string[index] = '('
+#                yield from recurse(os - 1, cs, string, index + 1)
+#            if cs > os:
+#                string[index] = ')'
+#                yield from recurse(os, cs - 1, string, index + 1)
+#
+#    recurse(size, size, [''] * size * 2, 0)

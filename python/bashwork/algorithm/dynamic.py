@@ -93,15 +93,15 @@ def scrambled_dictionary_II(scramble, words):
         sort = ''.join(sorted(w))
         yield words[sort].pop(0)
 
-words = [line.strip() for line in open('/usr/share/dict/words', 'r')]
-#words = ['act', 'cat', 'tac']
-scram = [''.join(random.sample(w, len(w))) for w in words]
-dicts = defaultdict(list)
-for word in words:
-    sword = ''.join(sorted(word))
-    dicts[sword].append(word)
-    dicts[sword].sort()
-print list(scrambled_dictionary_II(scram, dicts))
+#words = [line.strip() for line in open('/usr/share/dict/words', 'r')]
+##words = ['act', 'cat', 'tac']
+#scram = [''.join(random.sample(w, len(w))) for w in words]
+#dicts = defaultdict(list)
+#for word in words:
+#    sword = ''.join(sorted(word))
+#    dicts[sword].append(word)
+#    dicts[sword].sort()
+#print list(scrambled_dictionary_II(scram, dicts))
 
 def stock_market(prices):
     ''' Given a line of ticker prices, if you could go back
@@ -128,6 +128,43 @@ def stock_market(prices):
     return max_return
 
 
+def longest_human_tower(people):
+    ''' Given a collection of people, return the
+    largest tower that can be made such that each
+    person in order has a greater height and weight
+    than the previous person.
+
+    >>> people = [(60, 100) (70, 150) (56, 90) (75, 190) (60, 95) (68,110), (75, 80)]
+    >>> tower  = longest_human_tower(people)
+    [(56, 90), (60, 95), (60,100), (68, 110), (70,150), (75,190)]
+
+    :param people: [(weight, height)]
+    :returns: The largest tower that can be made
+    '''
+    def is_before(p1, p2):                      # although we sort by height then weight
+        return p1[0] > p2[0] and p1[1] > p2[1]  # here _both_ must be bigger to be after
+
+    def get_longest(index):
+        skips = index
+        tower = [people[index]]
+
+        for i in range(index, len(people)):
+            if is_before(tower[-1], people[i]):
+                tower.append(people[i])
+            elif skips == index: skips = i
+        return (skips, tower)
+
+    people = sorted(people)                         # sort by height, then weight
+    curr_longest, curr_skip = [], 0                 # initialize our results
+
+    while curr_skip < len(people):                  # using the next skip point
+        new_skip, new_long = get_longest(curr_skip) # get the longest starting there
+        possible = [(len(curr_long), curr_long), (len(new_long), new_long)]
+        curr_long = max(possible)[1]                # get the new longest tower
+        if new_skip == curr_skip: break             # if we are the same skip point, we have the best
+        curr_skip = new_skip                        # otherwise, try again from this skip point
+    return longest
+
 if __name__ == "__main__":
     import doctest
-    #doctest.testmod()
+    doctest.testmod()

@@ -72,6 +72,38 @@ class MatrixTest(unittest.TestCase):
         actual = rotate_matrix_ninety_degress(matrix)
         self.assertEqual(actual, expect)
 
+    def test_find_value_in_sorted_matrix(self):
+        matrix = [
+            [0,  1,  2, 10],
+            [3,  4,  7, 11],
+            [5,  6,  8, 12],
+            [9, 13, 15, 20]]
+
+        expect = (2, 2)
+        actual = find_value_in_sorted_matrix(matrix, 8)
+        self.assertEqual(actual, expect)
+
+    def test_find_largest_submatrix_sum(self):
+        matrix = [
+            [3, 9, 5, 1],
+            [4, 0, 6, 2],
+            [5, 1, 7, 3],
+            [6, 2, 8, 4]]
+
+        expect = (66, (0, 0), (3, 3))
+        actual = find_largest_submatrix_sum(matrix)
+        self.assertEqual(actual, expect)
+
+        matrix = [
+            [3,   9,   5, 1],
+            [4, -50,   6, 2],
+            [5,   1, -70, 3],
+            [6,   2,   8, 4]]
+
+        expect = (20, (3, 0), (3, 3))
+        actual = find_largest_submatrix_sum(matrix)
+        self.assertEqual(actual, expect)
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#

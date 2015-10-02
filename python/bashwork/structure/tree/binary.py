@@ -502,8 +502,8 @@ def are_trees_equal_recur(treea, treeb):
     if not treea and not treeb: return True
     if not treea  or not treeb: return False
     if treea != treeb: return False
-    return (are_trees_equal_recur(treea.left,  treeb.left) and
-            are_trees_equal_recur(treea.right, treeb.right))
+    return (are_trees_equal_recur(treea.left,  treeb.left)
+       and  are_trees_equal_recur(treea.right, treeb.right))
 
 def are_trees_equal_iter(treea, treeb):
     ''' Determine if two trees are equal (imperative solution).
@@ -594,6 +594,29 @@ def find_common_ancestor(tree, nodea, nodeb):
         if a != b: break # first difference in the path
         else: match = a  # current path match
     return match
+
+def find_common_ancestor2(root, nodea, nodeb):
+    ''' Given a tree root and two nodes, find the common
+    ancestor of the two nodes.
+
+    :param root: The tree root to search for a path
+    :param nodea: The first node to find a path to
+    :param nodeb: The second node to find a path to
+    :returns: The common node or None if none exist
+    '''
+    def parent_of(node, child):
+        if node == None: return False
+        if node == child: return True
+        return (parent_of(node.left, child)
+             or parent_of(node.right, child))
+
+    a, b = nodea, nodeb
+    is_parent = lambda r: parent_of(r, a) and parent_of(r, b)
+    descend = lambda r: find_common_ancestor2(r, a, b)
+
+    if is_parent(root.right):  return descend(root.right)
+    elif is_parent(root.left): return descend(root.left)
+    return root
 
 def find_node_distance(tree, nodea, nodeb):
     ''' Given a tree and two nodes in the tree, find
@@ -812,6 +835,12 @@ def convert_tree_to_level_lists(tree):
     return lists
 
 def get_next_tree_inorder_node(node):
+    ''' Given a tree node with parent links, find
+    the next node in order after this node.
+
+    :param node: The node to get the next node for
+    :returns: The next node in order.
+    '''
     def left_most_node(n):
         while n.left != None:                     # until we hit a leaf
             n = n.left                            # keep moving left down the tree
@@ -827,4 +856,32 @@ def get_next_tree_inorder_node(node):
     if node.parent == None or node.right != None: # parent node
         return left_most_node(node.right)         # or we have a right node
     return right_side_parent(node.parent)         # otherwise get on the left side
+
+def find_tree_path_sums(root, value):
+    ''' Given a tree root node, attempt to find
+    some path in the tree (not neccessarily at the root)
+    that sums to the supplied value.
+
+    :param root: The root of the tree to search
+    :param value: The value to find a matching sum of
+    :returns: A generator around the solutions
+    '''
+    def get_sum_path(path):
+        total = sum(n.value for n in path)        # sum the current path
+        if total == value: return path            # if it is equal, we found a path
+        for idx, node in enumerate(path):         # otherwise sum backwards
+            total -= node.value                   # by removing each head element
+            if total == value:                    # if it is equal
+                return path[idx:]                 # then we have a sub path
+        return None                               # otherwise there is no matching path
+
+    queue = [[root]]
+    while queue:
+        path = queue.pop()
+        result = get_sum_path(path)
+        if result != None: yield result
+
+        node = path[-1]
+        if node.left:  queue.insert(0, path + [node.left])
+        if node.right: queue.insert(0, path + [node.right])
 

@@ -274,6 +274,13 @@ class BinaryTreeTest(unittest.TestCase):
         actual = [[x.value for x in l] for l in actual]
         self.assertEqual(expect, actual)
 
+    def test_find_tree_path_sum(self):
+        tree = array_to_tree([-5, -4, -2, 1, 2, 3, 4, 5, 6])
+        paths = list(find_tree_path_sums(tree, 10))
+        self.assertEqual(paths, [])
+
+        paths = [[n.value for n in p] for p in find_tree_path_sums(tree, 9)]
+        self.assertEqual(paths, [[2, 4, 3], [2, 4, 5]])
 #------------------------------------------------------------
 # test runner
 #------------------------------------------------------------

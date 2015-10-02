@@ -62,6 +62,11 @@ class StringsTest(unittest.TestCase):
     def test_int_to_string(self):
         self.assertEqual('12345', int_to_string(12345))
 
+    def test_all_parentesis_sets(self):
+        actual = all_parenthesis_sets(3)
+        expect = {'((()))', '(()())', '(())()', '()(())', '()()()'}
+        self.assertEqual(actual, expect)
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#

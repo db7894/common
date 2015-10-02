@@ -81,9 +81,49 @@ def bit_count_table(v):
         t[i] = (i & 1) + t[i / 2]
     return t[v]
 
+def swap_even_and_odd_bits(value):
+    ''' Given a value, swap the even and odd bits
+    in that value.
+
+    >>> value = swap_even_and_odd_bits(0x01020304)
+    >>> hex(value)
+    '0x2010308'
+    
+    :param value: The value to swap the bits of
+    :returns: The value with swapped bits.
+    '''
+    return (((value & 0xAAAAAAAA) >> 1)
+          | ((value & 0x55555555) << 1))
+
+def find_missing_integer(array):
+    ''' Given a collection of integers, attempt to find
+    the missing integer if one is only allowed to look at
+    a single bit each time they look at a single integer.
+
+    >>> array = range(101)
+    >>> _ = array.pop(50)
+    >>> find_missing_integer(array)
+    50
+
+    :param array: The array of integers to examine
+    :returns: The missing integer
+    '''
+    def recurse(coll, bit):
+        if not coll: return 0 # no more values
+
+        mask, es, os = 0x1 << bit, [], [] # mask, evens, odds
+
+        for bits in coll:                              # for the current collection
+            (os if (mask & bits) else es).append(bits) # if the low bit is set, add to odds
+
+        coll, step = (es, 0) if len(os) >= len(es) else (os, 1)
+        return (recurse(coll, bit + 1) << 1) | step    # choose the smaller collection and next bit
+    return recurse(array, 0)                           # start with bit 0 and the whole collection
+
 #------------------------------------------------------------
 # common bit operations
 #------------------------------------------------------------
+
 class Bit(object):
 
     @staticmethod

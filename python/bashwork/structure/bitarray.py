@@ -94,6 +94,7 @@ class BitArray(object):
     #------------------------------------------------------------
     # internal helpers
     #------------------------------------------------------------
+
     def __word_index(self, bit):
         if bit < 0:
             raise IndexError("bit position < 0: %d" % bit)
@@ -123,6 +124,7 @@ class BitArray(object):
     #------------------------------------------------------------
     # information methods
     #------------------------------------------------------------
+
     @property
     def first_set_bit(self):
         ''' Return the index of the next set bit.
@@ -210,6 +212,7 @@ class BitArray(object):
     #------------------------------------------------------------
     # set methods
     #------------------------------------------------------------
+
     def set(self, pos):
         ''' Set the value at the specified bit
         position to 1.
@@ -242,6 +245,7 @@ class BitArray(object):
     #------------------------------------------------------------
     # clear methods
     #------------------------------------------------------------
+
     def clear(self, pos):
         ''' Set the value at the specified bit
         position to 0.
@@ -273,6 +277,7 @@ class BitArray(object):
     #------------------------------------------------------------
     # flip methods
     #------------------------------------------------------------
+
     def flip(self, pos):
         ''' Flip the value at the specified bit
         position.
@@ -357,6 +362,7 @@ class BitArray(object):
     #------------------------------------------------------------
     # format methods
     #------------------------------------------------------------
+
     def to_byte_string(self):
         ''' Return the bit array represented as a hex string
 
@@ -404,6 +410,7 @@ class BitArray(object):
     #------------------------------------------------------------
     # magic methods
     #------------------------------------------------------------
+
     def __iter__(self):           return self.iter_by_bit()
     def __reversed__(self):       return reversed(self.to_bit_list())
     def __contains__(self, byte): return byte in self.array

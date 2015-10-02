@@ -75,7 +75,7 @@ def curry(function, argc=None):
     :param argc: The argument count to curry
     '''
     if argc is None:
-        argc = function.func_code.co_argcount
+        argc = function.__code__.co_argcount
 
     def curry_wrapper(*args, **kwargs):
         if len(args) + len(kwargs) == argc:
