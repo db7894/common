@@ -3,9 +3,6 @@ from collections import defaultdict
 def subsets(xs):
     ''' Generate all the subsets of the supplied set.
 
-    >>> subsets([1, 2, 3])
-    [set([]), set([1]), set([2]), set([1, 2]), set([3]), set([1, 3]), set([2, 3]), set([1, 2, 3])]
-
     :param xs: The collection to get the subsets of
     :returns: The collection of subsets.
     '''
@@ -18,9 +15,6 @@ def subsets(xs):
 
 def subsets_recursive(coll):
     ''' Generate all the subsets of the supplied set.
-
-    >>> subsets_recursive([1, 2, 3])
-    [set([]), set([3]), set([2]), set([2, 3]), set([1]), set([1, 3]), set([1, 2]), set([1, 2, 3])]
 
     :param coll: The collection to get the subsets of
     :returns: The collection of subsets.
@@ -36,9 +30,8 @@ def subsets_recursive(coll):
 def permutations(xs):
     ''' Generate all the permutations of the supplied set.
 
-    >>> word = "abc"
-    >>> permutations(word)
-    ['cba', 'bca', 'bac', 'cab', 'acb', 'abc']
+    :param xs: The collection to get permutations of
+    :returns: All permutations of xs
     '''
     perms = [xs.__class__()]
     for x in xs:
@@ -51,9 +44,8 @@ def permutations_recursive(xs):
     ''' Generate all the permutations of the supplied set
     using recursion.
 
-    >>> word = "abc"
-    >>> list(permutations_recursive(word))
-    ['abc', 'bac', 'bca', 'acb', 'cab', 'cba']
+    :param xs: The collection to get permutations of
+    :returns: All permutations of xs
     '''
     if len(xs) > 1:
         for perm in permutations_recursive(xs[1:]):
@@ -80,6 +72,38 @@ def team_matching(players):
     return (xs, xc), (ys, yc)
 
 
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+def subset_sum_zeromod(array):
+    ''' Given an array, return a collection
+    of subsets of that array that satisfy:
+    `sum(xs) % len(array) == 0` We solve this using
+    the pigeonhole principal::
+
+        prefix_sum[j] = \sum{i=0}{j} array[i] % n
+        case {
+          all_unique(prefix_sum) -> 0 is in prefix_sum
+          not_unique(prefix_sum) -> match the repeats
+        }
+
+    :param array: The array to find solutions in
+    :returns: A collection of solutions
+    '''
+    def result_set(end, start=0):
+        ''' given a range, extract those values from the
+        initial array
+        '''
+        return [array[i] for i in range(start, end)]
+
+    N = len(array)
+    prefix_mods = reduce(lambda sets, num: sets + [(sets[-1] + num) % N], array, [0])
+    prefix_mods = prefix_mods[1:] # drop initial 0
+    prefix_sums = [None] * N
+    subset_sums = []
+
+    for index, value in enumerate(prefix_mods):
+        if value == 0:
+            subset_sums.append(result_set(index + 1))
+        elif prefix_sums[value]:
+            subset = prefix_sums[value] + 1
+            subset_sums.append(result_set(index + 1, subset))
+        prefix_sums[value] = index
+    return subset_sums

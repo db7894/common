@@ -83,6 +83,10 @@ class MatrixTest(unittest.TestCase):
         actual = find_value_in_sorted_matrix(matrix, 8)
         self.assertEqual(actual, expect)
 
+        expect = None
+        actual = find_value_in_sorted_matrix(matrix, 25)
+        self.assertEqual(actual, expect)
+
     def test_find_largest_submatrix_sum(self):
         matrix = [
             [3, 9, 5, 1],

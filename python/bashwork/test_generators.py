@@ -16,6 +16,16 @@ class GeneratorTest(unittest.TestCase):
         actual = list(stream)
         self.assertEqual(actual, expect)
 
+    def test_gen_logger(self):
+        class Logger(object):
+            def __init__(self): self.expect = []
+            def debug(self, x): self.expect.append(x)
+
+        logger = Logger()
+        stream = gen_tap_logger(xrange(10), logger)
+        actual = list(stream)
+        self.assertEqual(actual, logger.expect)
+
     def test_gen_with_history(self):
         stream = gen_with_history(iter(range(10)), 10)
         actual = list(reversed(list(stream)))

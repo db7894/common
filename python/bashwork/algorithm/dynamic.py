@@ -134,7 +134,7 @@ def longest_human_tower(people):
     person in order has a greater height and weight
     than the previous person.
 
-    >>> people = [(60, 100) (70, 150) (56, 90) (75, 190) (60, 95) (68,110), (75, 80)]
+    >>> people = [(60, 100), (70, 150), (56, 90), (75, 190), (60, 95), (68,110), (75, 80)]
     >>> tower  = longest_human_tower(people)
     [(56, 90), (60, 95), (60,100), (68, 110), (70,150), (75,190)]
 
@@ -155,7 +155,7 @@ def longest_human_tower(people):
         return (skips, tower)
 
     people = sorted(people)                         # sort by height, then weight
-    curr_longest, curr_skip = [], 0                 # initialize our results
+    curr_long, curr_skip = [], 0                    # initialize our results
 
     while curr_skip < len(people):                  # using the next skip point
         new_skip, new_long = get_longest(curr_skip) # get the longest starting there
@@ -163,8 +163,27 @@ def longest_human_tower(people):
         curr_long = max(possible)[1]                # get the new longest tower
         if new_skip == curr_skip: break             # if we are the same skip point, we have the best
         curr_skip = new_skip                        # otherwise, try again from this skip point
-    return longest
+    return curr_long
 
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+def longest_increasing_subsequence(array):
+    ''' Given an array, return the length and
+    starting index of the longest increasing subsequence.
+
+    >>> array = [1,2,3,4,2,5,7,6,8,9,10,11,12]
+    >>> longest_increasing_subsequence(array)
+    (11, 12)
+
+    :param array: The array to search in
+    :returns: The (length, starting_index) of the longest sequence
+    '''
+    max_sub = (-sys.maxint, 0)         # the current best solution
+    counts  = [1] * len(array)         # longest counts at index i
+    paths   = [None] * len(array)      # can search back from best path
+
+    for i in range(1, len(array)):     # staring at index i
+        for j in range(i - 1, -1, -1): # and going back to 0
+            if array[j] < array[i] and counts[j] >= counts[i]:
+                counts[i] = counts[j] + 1      # update best counts
+                paths[i]  = j                  # update best previous
+        max_sub = max(max_sub, (counts[i], i)) # update the best solution
+    return max_sub

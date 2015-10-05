@@ -66,7 +66,7 @@ def take_n_of_sequence(sequence, n=10):
     '''
     return [v for _, v in islice(sequence, 0, n)]
 
-def print_n_of_sequence(sequence, n=10):
+def print_n_of_sequence(sequence, n=10): # pragma: no cover
     ''' Given a sequence, print the first N values of
     said sequence.
 
@@ -76,6 +76,3 @@ def print_n_of_sequence(sequence, n=10):
     generator = sequence_generator(sequence)
     for num, elem in islice(generator, 0, n):
         print "%2d: %d" % (num, elem)
-
-if __name__ == "__main__":
-    print_n_of_sequence(fibonacci_sequence)

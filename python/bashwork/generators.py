@@ -68,7 +68,7 @@ def gen_tap(stream, method):
         method(entry)
         yield entry
 
-def gen_tap_printer(stream):
+def gen_tap_printer(stream): # pragma: no cover
     ''' Given a generator, place a printing
     tap in between it and the next stage.
 
@@ -752,7 +752,7 @@ class ThreadConsumer(Thread):
 # example usage
 #------------------------------------------------------------
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     #columns = ['address', 'request', 'response', 'size']
     #formats = [str, str, int, int]
     #lines   = gen_file_stream('stream.log')

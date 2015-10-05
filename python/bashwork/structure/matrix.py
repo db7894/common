@@ -1,6 +1,6 @@
 import sys
 
-def print_matrix(matrix):
+def print_matrix(matrix): # pragma: no cover
     ''' A helper method to print out a formatted
     matrix to the screen.
 

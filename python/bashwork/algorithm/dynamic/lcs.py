@@ -6,6 +6,7 @@ from common import Graph
 #------------------------------------------------------------
 # longest common subsequence
 #------------------------------------------------------------
+
 def longest_common_subsequence(this, that):
     index = {}
     n, m = len(this), len(that)
@@ -36,6 +37,7 @@ def dp_lcs_test():
 #------------------------------------------------------------
 # longest increasing subsequence
 #------------------------------------------------------------
+
 def longest_increasing_subsequence_lcs(coll):
     this, that = coll, sorted(coll)
     return longest_common_subsequence(this, that)
