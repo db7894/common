@@ -22,13 +22,13 @@ SOLUTION = set(range(SIZE))
 
 def get_next_moves(solution):
     ''' Given a current solution, retrieve the next
-    possible moves for the board.
+    possible moves for the board. This checks if the
+    positions have the same +/- slope.
 
     :returns: A list of the next possible moves
     '''
     def is_diagonal(row, ncol, nrow):
-        return (solution[row] + row == ncol + nrow
-            or  solution[row] - row == ncol - nrow)
+        return abs(solution[row] - ncol) == abs(row - nrow)
 
     def is_safe_move(nrow, ncol):
         return all(not is_diagonal(r, ncol, nrow) for r in range(nrow))
@@ -71,7 +71,7 @@ def print_solution(solution):
     :param solution: The solution to print
     '''
     size = len(solution)
-    char = lambda r, c: 'Q' if solution[r] == c else '.'
+    char = lambda r, c: ' Q ' if solution[r] == c else ' . '
     rows = [''.join(char(r, c) for c in range(size)) for r in range(size)]
     print '\n'.join(rows) + '\n'
 

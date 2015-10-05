@@ -11,12 +11,8 @@ class Vector(object):
         :param values: The values to convert to a linked list
         :returns: The head of the new list
         '''
-        vals = iter(values)
         head = klass()
-        node = head
-
-        for val in vals:
-            node = node.append(val)
+        head.append_all(values)
         return head
 
     def __init__(self, size=8):
@@ -37,7 +33,7 @@ class Vector(object):
         ''' Clears the entire vector of all values
         '''
         self.data = [None] * size
-        self.tail = size
+        self.tail = 0
         self.size = size
 
     def find(self, value):
@@ -182,14 +178,94 @@ class Vector(object):
         '''
         return iter(self.data[:self.tail])
 
-    def __repr__(self):          return str(self.data)
-    def __str__(self):           return str(self.data)
+    def __repr__(self):          return str(self.data[:self.tail])
+    def __str__(self):           return str(self.data[:self.tail])
     def __len__(self):           return self.tail
     def __add__(self, v):        return self.append(value)
-    def __eq__(self, that):      return (that != None) and (self.data == that.data)
+    def __eq__(self, that):      return (that != None) and (self.data[:self.tail] == that.data[:self.tail])
     def __nonzero__(self):       return bool(self.tail)
     def __getitem__(self, i):    return self.get(i)
     def __setitem__(self, i, v): return self.set(v, i)
     def __delitem__(self, i):    return self.remove(i)
     def __contains__(self, v):   return self.contains(v)
-    #def __reversed__(self):      return reversed(iter(self))
+
+
+def partition_around_median(vector, index):
+    ''' Given a vector, partition it around the supplied index
+    such that [ x < m, x == m, x > m ]. This should use no extra
+    space aside from the original vector.
+
+    :param vector: The vector to partition
+    :param index: The value in the vector to partition
+    :returns: The partitioned vector
+    '''
+    pivot = vector[index]                                   # the pivot value
+    ps, pe, pl = 0, 0, len(vector) - 1                      # [smaller][equal][unclassified][larger]
+
+    while pe <= pl:                                         # vector[pe] is next unclassified
+        if vector[pe] < pivot:                              # if next is smaller
+            vector[ps], vector[pe] = vector[pe], vector[ps] # move it to smaller space
+            ps, pe = ps + 1, pe + 1                         # increment smaller space and get next
+        elif vector[pe] == pivot:                           # if next is equal
+            pe += 1                                         # leave it in the equal space
+        elif vector[pe] > pivot:                            # else it is larger
+            vector[pl], vector[pe] = vector[pe], vector[pl] # move it to the larger space
+            pl -= 1                                         # reduce larger space
+    return vector
+
+class UninitializedVector(object):
+    ''' The general idea is to create a very large
+    vector that is uninitialized (i.e. may have random
+    values in its entries). The following scheme will
+    mostly verify that we can lazily validate that the
+    written read values have been written to.
+
+    In a pure c implementation with random values at construction,
+    there is still the chance that `0 <= p[i] < t and s[p[i]] == i`,
+    albeit a small one.
+    '''
+
+    def __init__(self, size=64):
+        ''' Initialize a new instance of the UninitializedVector.
+
+        :param size: The size of the vector
+        '''
+        self.vector    = [0] * size
+        self.indexes   = [0] * size
+        self.pointers  = [0] * size
+        self.index     = 0
+
+    def is_valid(self, index):
+        ''' Check if the supplied index is valid.
+
+        :param index: The index of the vector to validate
+        :returns: True if valid, False otherwise
+        '''
+        return (self.pointers[index] >= 0
+            and self.pointers[index] < self.index
+            and self.indexes[self.pointers[index]] == index)
+
+    def read(self, index):
+        ''' Read the current value out of the vector at the
+        supplied index.
+
+        :param index: The index to read the value from
+        :returns: (is_initialized, value)
+        '''
+        if self.is_valid(index):
+            return (True, self.vector[index])
+        return (False, None)
+
+    def write(self, index, value):
+        ''' Write the supplied value to the given index
+        and validate that the entry has been written to.
+
+        :param index: The index to write to
+        :param value: The value to write to the index
+        '''
+        if not self.is_valid(index):
+            self.indexes[self.index] = index
+            self.pointer[index] = self.index
+            self.index += 1
+        self.vector[index] = value
+

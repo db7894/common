@@ -50,6 +50,12 @@ class CombinatorTest(unittest.TestCase):
         self.assertEqual(S2(self.f1)(self.f3)(self.value), S(self.f1)(self.f3)(self.value))
         self.assertEqual(K2(self.value)(self.ignore), K(self.value)(self.ignore))
 
+    def test_recursion_combinator(self):
+        length_of_list = recursion(
+            lambda length:
+                lambda xs: 0 if not xs else length(xs[1:]) + 1)
+        self.assertEqual(length_of_list([1,2,3,4]), 4)
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#

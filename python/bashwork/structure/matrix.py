@@ -1,14 +1,22 @@
 import sys
 
-def __print_matrix(matrix):
+def print_matrix(matrix):
     ''' A helper method to print out a formatted
     matrix to the screen.
 
     :param matrix: The matrix to print to the screen
     '''
+    nump = max(max(row) for row in matrix)
+    numn = min(min(row) for row in matrix)
+    size  = max(len(str(nump)), len(str(numn)))
+    form  = '{:%d}' % size
+    string = []
+
     for row in matrix:
-        print(row)
-    print('')
+        entry = ' '.join(form.format(v) for v in row)
+        string.append('[' + entry + ']')
+        
+    print('\n'.join(string))
 
 
 def zero_fill_matching_entries(matrix):

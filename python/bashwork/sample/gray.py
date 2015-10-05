@@ -32,3 +32,11 @@ def generate_size_subsets(items, size):
     return generate_cond_subsets(items,
         lambda s: len(s) == size)
 
+def next_gray_code(value):
+    ''' Given a value, return the next gray code
+    for that value.
+
+    :param value: The value to manipulate
+    :returns: The next gray code for that value
+    '''
+    return value ^ (value >> 1)

@@ -3,6 +3,7 @@ import math
 #------------------------------------------------------------
 # helper methods
 #------------------------------------------------------------
+
 def generate_bit_count_table(size):
     ''' Generates a table such that each index is the count
     of bits for that the given offset.
@@ -10,10 +11,10 @@ def generate_bit_count_table(size):
     :param size: The number of bits to create the table for
     :returns: The initialized bit count table
     '''
-    t = [0x00 for _ in xrange(size)]
+    table = [0x00 for _ in xrange(size)]
     for i in xrange(size):
-        t[i] = (i & 1) + t[i / 2]
-    return t
+        table[i] = (i & 1) + table[i / 2]
+    return table
 
 
 def generate_bit_index_table(size):
@@ -35,10 +36,11 @@ def generate_lower_bit_mask_table(size):
     :param size: The number of bits to create masks for
     :returns: The initialized bit mask table
     '''
-    t = [0x01 for _ in xrange(size)]
+    table = [0x01 for _ in xrange(size)]
     for i in xrange(1, size):
-        t[i] = (1 << i) | t[i - 1]
-    return t
+        table[i] = (1 << i) | table[i - 1]
+    return table
+
 
 def generate_higher_bit_mask_table(size):
     ''' Generates a bit mask table that can be used
@@ -48,11 +50,10 @@ def generate_higher_bit_mask_table(size):
     :param size: The number of bits to create masks for
     :returns: The initialized bit mask table
     '''
-
-    t = [~0x00 for _ in xrange(size)]
+    table = [~0x00 for _ in xrange(size)]
     for i in xrange(1, size):
-        t[i] = t[i - 1] << 1
-    return t
+        table[i] = table[i - 1] << 1
+    return table
 
 
 #------------------------------------------------------------
@@ -66,10 +67,10 @@ class BitArray(object):
     implemented in terms of the bit operations.
     '''
 
-    __msk_to_cnt = generate_bit_count_table(256)
-    __off_to_bit = generate_bit_index_table(64)
-    __off_to_msk = generate_lower_bit_mask_table(64)
-    __on_to_msk  = generate_higher_bit_mask_table(64)
+    __msk_to_cnt  = generate_bit_count_table(256)
+    __off_to_bit  = generate_bit_index_table(64)
+    __off_to_mask = generate_lower_bit_mask_table(64)
+    __on_to_mask  = generate_higher_bit_mask_table(64)
 
     def __init__(self, size=64, block=64, array=None):
         ''' Initialize a new instance of the bit array
@@ -114,7 +115,7 @@ class BitArray(object):
         ''' Compact the underlying array removing the tail
         end cleared bits.
         '''
-        idx = len(self.array)
+        idx = len(self.array)             # max index of the vector
         if self.array[idx - 1]: return    # cannot be compacted
         for word in reversed(self.array): # we expand to the right
             if word: break; idx -= 1      # until we find a non 0x00
@@ -300,9 +301,9 @@ class BitArray(object):
         eidx, eoff = self.__word_index(end)
         self.__expand_array(eidx)
 
-        smask = self.__off_to_msk[soff]            # mask for the first word
+        smask = self.__off_to_mask[soff]            # mask for the first word
         smask = ~smask & self.__set                # mask for the first word
-        emask = self.__off_to_msk[eoff]            # mask for the final word
+        emask = self.__off_to_mask[eoff]            # mask for the final word
         #print hex(smask), hex(emask)
         if sidx != eidx:                           # multiply multiple words
             self.array[sidx] ^= smask              # modify first word
@@ -331,7 +332,7 @@ class BitArray(object):
         :returns: True if the value is set, false otherwise
         '''
         idx, off = self.__word_index(pos)
-        val = self.array[idx] & self.__off_to_msk[off]
+        val = self.array[idx] & self.__off_to_mask[off]
         return (val != self.__cls)
 
     def get_range(self, start, end):
@@ -346,7 +347,7 @@ class BitArray(object):
         sidx, soff = self.__word_index(start)
         eidx, eoff = self.__word_index(end)
 
-        bits = self.array[sidx] & self.__on_to_msk[soff]
+        bits = self.array[sidx] & self.__on_to_mask[soff]
         bits = bits >> soff
         eidx = min(len(self.array), eidx)
         coff = self.__blk - soff
@@ -355,7 +356,7 @@ class BitArray(object):
             bits |= (self.array[idx] << coff)
             coff += self.__blk
 
-        bite  = self.array[eidx] & self.__off_to_msk[eoff]
+        bite  = self.array[eidx] & self.__off_to_mask[eoff]
         bits |= bite >> (eoff)
         return bits
 

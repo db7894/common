@@ -29,6 +29,7 @@ class StringsTest(unittest.TestCase):
         self.assertTrue(are_strings_anagrams("march", "charm"))
         self.assertFalse(are_strings_anagrams("waffle", "laffaw"))
         self.assertTrue(are_strings_anagrams_array("march", "charm"))
+        self.assertFalse(are_strings_anagrams_array("march", "char"))
         self.assertFalse(are_strings_anagrams_array("waffle", "laffaw"))
 
     def test_get_all_anagrams(self):
@@ -55,6 +56,14 @@ class StringsTest(unittest.TestCase):
         magazines = "comping a theater ticket wearing a very nice puntour"
         actual = ransom_note(note, magazines)
         self.assertTrue(actual)
+
+        note = "we have your computer"
+        magazines = "not enough"
+        actual = ransom_note(note, magazines)
+        self.assertFalse(actual)
+
+    def test_front_zero_pad(self):
+        self.assertEqual('00123', front_zero_pad('123', 5))
 
     def test_string_to_int(self):
         self.assertEqual(12345, string_to_int('12345'))

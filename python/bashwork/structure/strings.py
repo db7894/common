@@ -138,24 +138,25 @@ def string_set_cover(letters, string):
     :param string: The string to cover with the letter set
     :returns: The smallest range of (index, length)
     '''
-    letters  = set(letters)         # set to cover
-    counter  = Counter(string[0])   # letter counter state
-    answer   = (float('inf'), None) # current best answer
-    l, r     = (0, 0)               # left, right pointers
-    violated = set(letters)         # current violations
+    letters  = set(letters)                      # set to cover
+    counter  = Counter(string[0])                # current letter counter state
+    answer   = (float('inf'), None)              # current best answer
+    l, r     = (0, 0)                            # left, right pointers
+    violated = set(letters)                      # current uncovered letters
 
-    while r < len(string):
-        if not violated:
-            answer = min(answer, (r - l + 1, l))
-            counter.subtract(string[l])
-            if string[l] in letters and counter[string[l]] == 0:
-                violated.add(string[l])
-            l += 1
-        else:
-            r += 1
-            if r < len(string):
-                counter.update(string[r])
-                if string[r] in violated: violated.remove(string[r])
+    while r < len(string):                       # while our range is less than the word
+        if not violated:                         # if we are corrently covered
+            answer = min(answer, (r - l + 1, l)) # see if we are the smallest cover range
+            counter.subtract(string[l])          # remove this character from our counter
+            if string[l] in letters and counter[string[l]] == 0: # if our range no longer covers the set
+                violated.add(string[l])          # add this char to the set of uncovered
+            l += 1                               # increaes the left hand range
+        else:                                    # otherwise we have to cover the set
+            r += 1                               # keep moving right until
+            if r < len(string):                  # we are longer than the string
+                counter.update(string[r])        # keep a count of how many of char has been seen
+                if string[r] in violated:        # if this char is currently not covered
+                    violated.remove(string[r])   # remove it as it now is
     return answer
 
 
@@ -170,6 +171,7 @@ def ransom_note(note, magazines):
     '''
     counts  = {chr(a):0 for a in range(256)}
     letters = iter(magazines)
+
     for entry in note:
         if counts.get(entry) > 0:
             counts[entry] -= 1
@@ -198,33 +200,40 @@ def front_zero_pad(string, length):
     return "0" * (length - len(string)) + string
 
 
-def string_to_int(string):
+def string_to_int(string, radix=10):
     ''' Given a string, convert that into a number.
 
+    :param radix: The radix of the number
     :param string: The string to convert to a number.
     :returns: The string as an integer
     '''
     curr, sign = 0, -1 if string[0] == '-' else 1
-    if string[0] == '-': string.pop(0)
+    if string[0] == '-': string = string[1:]
 
     for c in string:
-        curr = (curr * 10) + (ord(c) - 48)
+        #curr = (curr * radix) + (ord(c) - 48)
+        curr = (curr * radix) + int(c, radix)
     return sign * curr
 
 
-def int_to_string(value):
+def int_to_string(value, radix=10):
     ''' Given an integer value, convert that number
     to a string.
 
+    :param radix: The current base of the integer
     :param value: The value to convert to a string
     :returns: The value as a string
     '''
-    string = []
+    string, negative = [], (value < 0)
+    value = abs(value)
+
     while value:
-        string.insert(0, chr(48 + value % 10))
-        value /= 10
-    if value < 0: string.insert(0, '-')
+        string.insert(0, chr(48 + value % radix))
+        value /= radix
+
+    if negative: string.insert(0, '-')
     return ''.join(string)
+
 
 def all_parenthesis_sets(size=3):
     ''' Given a size, produce all the valid sets

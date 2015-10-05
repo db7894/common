@@ -4,6 +4,7 @@ from common import Queue
 #--------------------------------------------------------------------------------#
 # make change
 #--------------------------------------------------------------------------------#
+
 def make_change_bfs(value, coins):
     ''' Given a collection of coins, return the smallest change
     needed to make the requested value.
@@ -72,6 +73,24 @@ def general_solution(value):
     while value >= 50:
         value, count = value - 50, count + 2
     return count + table[value]
+
+
+def get_possible_plays(score, points=[3, 7]):
+    ''' Given a final score and a number of ways to add points
+    in the game (say touch down or field goal), find the number
+    of ways to reach the given score.
+
+    :param score: The total score to reach
+    :param points: The ways to score points
+    :returns: The number of ways to reach the final score
+    '''
+    possible    = [0] * (score + 1)   # default is 0 ways to make that score
+    possible[0] = 1                   # there is 1 way to make the score 0
+    for total in range(2, score + 1): # until we reach the total score
+        for point in points:          # for each way to score
+            if total - point >= 0:    # if this was a valid score value
+                possible[total] += possible[total - point]
+    return possible[score]            # return the original question
 
 
 #------------------------------------------------------------

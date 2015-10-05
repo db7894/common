@@ -55,13 +55,23 @@ def application(f):
         return lambda x: f(x)(g(x))
     return wrapper
 
+def recursion(method):
+    ''' Given an anonymous function, implement recursion
+    without that function using a global name.
+
+    :param method: The function to allow recursion with
+    :returns: That function with recursion enabled
+    '''
+    return (lambda f: f(f))(lambda f: lambda x: method(f(f))(x))
+
 #------------------------------------------------------------
-# SKI Aliases
+# Combinator Aliases
 #------------------------------------------------------------
 
 I = identity
 K = constant
 S = application
+Y = recursion
 
 #------------------------------------------------------------
 # Currying
