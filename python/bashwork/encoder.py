@@ -60,3 +60,31 @@ class EllisGammaEncoder(Encoder):
             values.append(int(d, 2))
             idx += len(d) * 2 - 1
         return values
+
+class RunLengthEncoder(Encoder):
+    ''' An encoder that will attempt to shorten a given
+    string by putting a numeric prefix in front of repeated
+    letters.
+    '''
+
+    def encode(self, string):
+        count, encoded = 1, []
+        for i in range(1, len(string)):
+            if string[i] != string[i - 1]:
+                if count != 1:
+                    encoded.append(str(count))
+                    count = 1
+                encoded.append(string[i - 1])
+            else: count += 1
+        encoded.append(string[-1])    
+        return ''.join(encoded)
+
+    def decode(self, string):
+        count, decoded = 0, []
+        for char in string:
+            if '0' <= char <= '9':
+                count = (count * 10) + (ord(char) - ord('0'))
+            else:
+                decoded.extend([char] * (count if count > 0 else 1))
+                count = 0
+        return ''.join(decoded)

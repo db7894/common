@@ -39,6 +39,14 @@ class EncodingTest(unittest.TestCase):
         expect = [123, 456, 789]
         self.assertEqual(actual, expect)
 
+    def test_run_length_encoder(self):
+        encoder = RunLengthEncoder()
+        string  = "hhhellowworld"
+        encoded = encoder.encode(string)
+        self.assertEqual(encoded, '3he2lo2world')
+        actual = encoder.decode(encoded)
+        self.assertEqual(actual, string)
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#

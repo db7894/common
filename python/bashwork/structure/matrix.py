@@ -106,6 +106,34 @@ def rotate_matrix_ninety_degress(matrix):
     return matrix
 
 
+def get_spiral_matrix(matrix):
+    ''' Given a matrix, reduce it to a 1-d array
+    such that the array follows the outer clockwise
+    spiral of the matrix.
+
+    :param matrix: The matrix to flatten
+    :returns: The spiral of the matrix
+    '''
+    values = []
+    top_row, top_col = 0, 0
+    bot_row, bot_col = len(matrix) - 1, len(matrix[0]) - 1
+
+    while top_col < bot_col:
+        for col in range(top_col, bot_col + 1): 
+            values.append(matrix[top_row][col])
+        for row in range(top_row + 1, bot_row + 1):
+            values.append(matrix[row][bot_col])
+        for col in range(bot_col - 1, top_col - 1, - 1):
+            values.append(matrix[bot_row][col])
+        for row in range(bot_row - 1, top_row + 1 - 1, -1):
+            values.append(matrix[row][top_col])
+
+        top_row, top_col = top_row + 1, top_col + 1
+        bot_row, bot_col = bot_row - 1, bot_col - 1
+
+    return values
+
+
 def find_value_in_sorted_matrix(matrix, value):
     ''' Given a matrix that is sorted left to right
     (cols) and top to bottom (rows), find the given

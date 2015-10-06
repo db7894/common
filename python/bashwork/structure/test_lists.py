@@ -9,7 +9,9 @@ class ListsTest(unittest.TestCase):
 
     def test_linked_list(self):
         xs = Node.create([1, 2, 3, 4, 5])
+        self.assertEqual(len(xs), 5)
         xs.append(6)
+        self.assertEqual(len(xs), 6)
         xs.link.link.insert(0)
         self.assertEqual(xs.to_list(), [1, 2, 3, 0, 4, 5, 6])
         self.assertEqual(xs.find(6).value, 6)
@@ -99,6 +101,15 @@ class ListsTest(unittest.TestCase):
         expect = [1, 2, 3, 4, 5, 6]
         actual = merge_sorted_linked_lists(xs, ys)
         self.assertEqual(expect, actual.to_list())
+
+    def test_merge_sorted_linked_lists(self):
+        ys = Node.create(2, 4, 6, 7, 8, 9)
+        xs = Node.create(1, 3, 5)
+        xs.link.link.link = ys.link.link.link.link
+
+        expect = 8
+        actual = find_node_lists_merge_at(ys, xs)
+        self.assertEqual(expect, actual.value)
 
 #---------------------------------------------------------------------------#
 # main

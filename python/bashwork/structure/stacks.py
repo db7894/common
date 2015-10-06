@@ -152,3 +152,19 @@ def stack_sort(stack):
             stack.append(sort.pop())
         sort.append(temp)
     return sort
+
+def towers_of_hanoi(size=5): # pragma: no cover
+    ''' Play towers of hanoi for the given size of
+    rings.
+
+    :param size: The size of the rings to play with
+    '''
+    def transfer(n, src, dst, tmp):
+        if n <= 0: return
+        transfer(n - 1, src, tmp, dst)
+        dst.append(src.pop())
+        print("moved {} from {} to {} by {}".format(dst[-1], src, dst, tmp))
+        transfer(n - 1, tmp, dst, src)
+
+    s1, s2, s3 = range(1, size + 1), [], []
+    transfer(size, s1, s2, s3)

@@ -42,6 +42,12 @@ class SetsTest(unittest.TestCase):
         actual = subset_sum_zeromod(array)
         self.assertEqual(actual, expect)
 
+    def test_all_phone_combinations(self):
+        number = '32'
+        expect = ['fc', 'fb', 'fa', 'ec', 'eb', 'ea', 'dc', 'db', 'da']
+        actual = all_phone_combinations(number)
+        self.assertEqual(actual, expect)
+
 #---------------------------------------------------------------------------#
 # main
 #---------------------------------------------------------------------------#

@@ -107,3 +107,17 @@ def subset_sum_zeromod(array):
             subset_sums.append(result_set(index + 1, subset))
         prefix_sums[value] = index
     return subset_sums
+
+def all_phone_combinations(number, mapping=None):
+    default = ['0', '1', 'abc', 'def', 'ghi', 'jkl', 'mno', 'pqrs', 'tuv', 'wxyz']
+    mapping = mapping if mapping else default
+    strings = []
+    queue   = [('', 0)]
+
+    while queue:
+        string, index = queue.pop()
+        if index != len(number):
+            for char in mapping[ord(number[index]) - ord('0')]:
+                queue.append((string + char, index + 1))
+        else: strings.append(string)
+    return strings

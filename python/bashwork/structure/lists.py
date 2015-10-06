@@ -24,6 +24,27 @@ class Node(object):
             node = node.append(val)
         return head
 
+    def skip_n(self, n):
+        ''' Skip N nodes and return the resulting
+        node.
+
+        :param n: The number of nodes to skip
+        :returns: The node after n skips.
+        '''
+        for _ in range(n):
+            if self: self = self.link
+        return self
+
+    def length(self):
+        ''' Return the length of the current list
+
+        :returns: The length of the list
+        '''
+        size = 0
+        while self != None:
+            size, self = size + 1, self.link
+        return size
+
     def __init__(self, value, link=None):
         ''' Create a new instance of a linked list node
 
@@ -109,6 +130,7 @@ class Node(object):
     def __hash__(self):     return hash(self.value)
     def __str__(self):      return str(self.value)
     def __repr__(self):     return str(self.value)
+    def __len__(self):      return self.length()
 
 
 def merge_sorted_lists(xs, ys):
@@ -133,6 +155,7 @@ def merge_sorted_linked_lists(xs, ys):
     '''
     head = xs if xs.value < ys.value else ys
     curr = head
+
     while xs and ys:
         if xs.value < ys.value:
             xs, curr.link = xs.link, xs
@@ -285,6 +308,25 @@ def find_merge_point_pointers(xs, ys):
         ms = ms.link
         xs = xs.link
     return ms
+
+
+def find_node_lists_merge_at(xs, ys):
+    ''' Given two lists that share a path,
+    find the point at which they intersect.
+
+    :param xs: The first list
+    :param ys: The second list
+    :returns: The point where they intersect
+    '''
+    xs_len, ys_len = len(xs), len(ys)
+    if xs_len > ys_len:
+        xs = xs.skip_n(abs(xs_len - ys_len))
+    else: ys = ys.skip_n(abs(xs_len - ys_len))
+
+    while xs and ys and xs != ys:
+        xs, ys = xs.link, ys.link
+    return xs
+
 
 def make_unique_list(head):
     ''' Given a linked list, return the list
