@@ -21,15 +21,22 @@ class HashingTest(unittest.TestCase):
             self.assertTrue(callable(function))
             self.assertIsInstance(function(), HashFunction)
 
+    def test_python_simple_generic_hash(self):
+        hashed = Hashing.crc32().hash('hello world')
+        self.assertEqual(hashed.digits, 222957957)
+
     def test_python_hash_loop(self):
         ''' test that the python hashing loop works correctly '''
         method  = Hashing.md5()
         hasher  = method.create()
         hasher2 = hasher.update("something")
+        hasher3 = hasher.copy()
         hashed  = hasher.get_hash()
+        hashed2 = hasher3.get_hash()
         quick   = method.hash("something")
 
         self.assertEquals(hasher, hasher2)
+        self.assertEquals(hashed.digest, hashed2.digest)
         self.assertEquals(hashed.digest, 'C{\x93\r\xb8K\x80y\xc2\xdd\x80Jq\x93k_')
         self.assertEquals(hashed.digest, quick.digest)
 

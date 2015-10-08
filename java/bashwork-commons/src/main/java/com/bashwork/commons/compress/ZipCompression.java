@@ -30,10 +30,7 @@ public class ZipCompression implements Compression {
         }
         
         closeQuietly(baos);
-        byte[] compressed = baos.toByteArray();
-        
-        return compressed;
-        
+        return baos.toByteArray();
     }
     
     @Override
@@ -54,14 +51,10 @@ public class ZipCompression implements Compression {
             }
             
             closeQuietly(baos);
-            byte[] decompressed = baos.toByteArray();
-            
-            return decompressed;
-            
+            return baos.toByteArray();
+
         } catch (DataFormatException ex) {
             throw new CompressionException(ex);
         }
-        
     }
-    
 }

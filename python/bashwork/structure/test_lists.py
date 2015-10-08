@@ -78,6 +78,12 @@ class ListsTest(unittest.TestCase):
         rs = reverse_list_recursive(xs)
         self.assertEqual(rs.to_list(), [5, 4, 3, 2, 1])
 
+    def test_order_edge_nodes(self):
+        nodes  = [(1,3), (4,5), (5,1), (3,8)]
+        actual = order_edge_nodes(nodes)
+        expect = [(4, 5), (5, 1), (1, 3), (3, 8)]
+        self.assertEqual(actual, expect)
+
     def test_find_list_middle(self):
         xs = Node(1, Node(2, Node(3, Node(4, Node(5)))))
         rs = find_list_middle(xs)

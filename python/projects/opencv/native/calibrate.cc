@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     }
 
     cv::Size grid_size(4, 11);
-    //cv::Size size(8, 9);
+    cv::Size size(8, 9);
     cv::vector<cv::Point2f> points;
 
     unsigned int flags = cv::CALIB_CB_ASYMMETRIC_GRID

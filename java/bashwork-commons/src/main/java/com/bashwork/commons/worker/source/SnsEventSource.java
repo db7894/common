@@ -3,9 +3,6 @@ package com.bashwork.commons.worker.source;
 import static org.apache.commons.lang3.Validate.notBlank;
 import static org.apache.commons.lang3.Validate.notNull;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.bashwork.commons.worker.model.AmazonSnsDTO;
 import com.bashwork.commons.serialize.JsonStringSerializer;
 import com.bashwork.commons.serialize.StringSerializer;
@@ -17,6 +14,8 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.google.common.base.Optional;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A supplier that backs up to SNS messages published to SQS.
@@ -25,7 +24,7 @@ import com.google.common.base.Optional;
  */
 public class SnsEventSource<TEvent> implements EventSource<TaggedType<TEvent>> {
     
-    static final Logger logger = LoggerFactory.getLogger(SnsEventSource.class);    
+    static final Logger logger = LogManager.getLogger(SnsEventSource.class);
     private final Class<TEvent> eventClass; 
     private final AmazonSQS client;
     private final String queueUrl;
@@ -113,7 +112,7 @@ public class SnsEventSource<TEvent> implements EventSource<TaggedType<TEvent>> {
      * Given a wrapped SNS message, decode it to the underlying
      * event message.
      * 
-     * @param message The SNS message that might exist
+     * @param handle The SNS message that might exist
      * @return The decoded message if available.
      */
     protected Optional<TaggedType<TEvent>> decode(Optional<Message> handle) {

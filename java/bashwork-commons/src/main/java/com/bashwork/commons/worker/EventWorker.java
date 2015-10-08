@@ -2,11 +2,10 @@ package com.bashwork.commons.worker;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * A simple wrapper around polling an event supplier
@@ -15,7 +14,7 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  */
 public class EventWorker<TEvent> extends AbstractExecutionThreadService {
     
-    static final Logger logger = LoggerFactory.getLogger(EventWorker.class);
+    static final Logger logger = LogManager.getLogger(EventWorker.class);
 
     private final EventSource<TaggedType<TEvent>> supplier;
     private final EventHandler<TEvent> handler;

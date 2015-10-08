@@ -5,12 +5,11 @@ import static org.apache.commons.lang3.Validate.notNull;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.bashwork.commons.worker.EventSource;
 import com.bashwork.commons.worker.TaggedType;
 import com.google.common.base.Optional;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A supplier that backs up to an in memory queue like ConcurrentQueue. This can
@@ -20,7 +19,7 @@ import com.google.common.base.Optional;
  */
 public class InMemoryEventSource<TEvent> implements EventSource<TaggedType<TEvent>> {
 
-    static final Logger logger = LoggerFactory.getLogger(InMemoryEventSource.class);
+    static final Logger logger = LogManager.getLogger(InMemoryEventSource.class);
     private final AtomicLong counter = new AtomicLong();
     private final Queue<TEvent> queue;
 

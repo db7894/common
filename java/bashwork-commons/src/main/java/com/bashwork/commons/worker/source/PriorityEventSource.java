@@ -2,15 +2,13 @@ package com.bashwork.commons.worker.source;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
 
 import com.bashwork.commons.worker.EventSource;
 import com.bashwork.commons.worker.TaggedType;
 import com.google.common.base.Optional;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A supplier that uses N other EventSource as a form of priority queue.
@@ -24,9 +22,9 @@ import com.google.common.base.Optional;
  */
 public class PriorityEventSource<TEvent> implements EventSource<TaggedType<TEvent>> {
 
-    static final Logger logger = LoggerFactory.getLogger(PriorityEventSource.class);
+    static final Logger logger = LogManager.getLogger(PriorityEventSource.class);
     private static final String DELIMITER = ":";
-    private static final Optional<TaggedType<TEvent>> EMPTY = Optional.<TaggedType<TEvent>> absent();
+    private final Optional<TaggedType<TEvent>> EMPTY = Optional.<TaggedType<TEvent>> absent();
     private final List<EventSource<TaggedType<TEvent>>> sources;
 
     /**

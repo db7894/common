@@ -3,11 +3,10 @@ package com.bashwork.commons.worker.handler;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-
 import com.bashwork.commons.worker.EventHandler;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A collection of simple event handlers that can be used for

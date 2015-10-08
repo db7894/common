@@ -56,10 +56,10 @@ class BinaryNode(object):
 
         :returns: True if balanced, False otherwise
         '''
-        left  = self.left.height() if self.left else 0
+        left  = self.left.height()  if self.left  else 0
         right = self.right.height() if self.right else 0
         if abs(left - right) > 1: return False
-        return ((self.left.is_balanced() if self.left else True)
+        return ((self.left.is_balanced()  if self.left  else True)
             and (self.right.is_balanced() if self.right else True))
 
     def min(self):
@@ -256,7 +256,8 @@ def dfs_postorder_iter(tree):
         prev = curr
 
 def bfs_ltor_iter(tree):
-    '''
+    ''' Iterate over the tree in level order from left
+    to right (also level order).
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree
@@ -270,7 +271,8 @@ def bfs_ltor_iter(tree):
         if current.right: queue.insert(0, current.right)
 
 def bfs_rtol_iter(tree):
-    '''
+    ''' Iterate over the tree in level order from right
+    to left (also level order).
 
     :param tree: The root tree node to traverse from
     :returns: An iterator around that tree

@@ -378,9 +378,6 @@ def order_edge_nodes(nodes):
     the edges in a graph, order them into a their
     linear linked order.
 
-    >>> order_edge_nodes([(1,3), (4,5), (5,1), (3,8)])
-    [(4, 5), (5, 1), (1, 3), (3, 8)]
-
     :param nodes: The nodes to order correctly
     :returns: The linear linked order of the nodes
     '''

@@ -12,9 +12,10 @@ import hashlib
 import zlib
 import base64
 import struct
+
 try:
     import pyhash
-except ImportError: pass
+except ImportError: pass # pragma: no cover
 
 #------------------------------------------------------------
 # Hash Utility Classes
