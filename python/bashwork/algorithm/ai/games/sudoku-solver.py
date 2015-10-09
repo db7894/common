@@ -8,7 +8,7 @@ as a value map. This is mostly the article by Norvig:
 import random
 
 # ------------------------------------------------------------
-# constants
+# common utilities
 # ------------------------------------------------------------
 
 def cross(xs, ys):
@@ -16,6 +16,41 @@ def cross(xs, ys):
     of those two.
     '''
     return [x + y for x in xs for y in ys]
+
+def some(iterable):
+    ''' Given a collection of values, if there is a 
+    value in the collection that is not False, return it.
+
+    :param iterable: The iterable to process
+    :returns: The first not False value in the collection
+    '''
+    for entry in iterable:
+        if entry: return entry
+    return False
+
+def from_file(path, seperator='\n'):
+    ''' Read a model from the supplied path.
+
+    :param path: The path to the file to read
+    :param seperator: The line seperator
+    :returns: The contents of the file
+    '''
+    return file(path).read().strip().split(seperator)
+
+def shuffled(iterable):
+    ''' Given an iterable sequence, return a randomly shuffled
+    copy of that sequence
+
+    :param iterable: The sequence to shuffle
+    :returns: The randomly shuffled input sequence
+    '''
+    coll = list(iterable)
+    random.shuffle(coll)
+    return coll
+
+# ------------------------------------------------------------
+# constants
+# ------------------------------------------------------------
 
 DIGITS   = '123456789'
 ROWS     = 'ABCDEFGHI'
@@ -116,17 +151,6 @@ def eliminate(values, square, digit):
                 return False                           # fail if this produces an invalid result
     return values                                      # otherwise return the results
 
-def some(iterable):
-    ''' Given a collection of values, if there is a 
-    value in the collection that is not False, return it.
-
-    :param iterable: The iterable to process
-    :returns: The first not False value in the collection
-    '''
-    for entry in iterable:
-        if entry: return entry
-    return False
-
 def search(values):
     ''' A simple DFS solver that chooses the next path
     with the least choices.
@@ -177,17 +201,6 @@ def random_puzzle(N=17):
         if len(digits) >= N and len(set(digits)) >= 8:
             return ''.join(values[s] if len(values[s])==1 else '.' for s in SQUARES)
     return random_puzzle(N) # give up and make a new puzzle
-
-def shuffled(iterable):
-    ''' Given an iterable sequence, return a randomly shuffled
-    copy of that sequence
-
-    :param iterable: The sequence to shuffle
-    :returns: The randomly shuffled input sequence
-    '''
-    coll = list(iterable)
-    random.shuffle(coll)
-    return coll
 
 # ------------------------------------------------------------
 # tests

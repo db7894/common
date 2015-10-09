@@ -1,7 +1,7 @@
 import sys
 from heapq import merge
 
-def my_merge(left, right):
+def internal_merge(left, right):
     ''' A helper method to merge two sorted lists
 
     :param left: The left sorted list to merge
@@ -30,22 +30,20 @@ def sort(coll):
 
     :param coll: The collection to sort
     :returns: The sorted collection
-
-    >>> coll = [1, 4, 7, 2, 5, 3, 6, 9, 8]
-    >>> sort(coll)
-    [1, 2, 3, 4, 5, 6, 7, 8, 9]
     '''
     if len(coll) <= 1:
         return coll
     m = len(coll) / 2
     l = sort(coll[:m])
     r = sort(coll[m:])
-    return list(my_merge(l, r))
+    return list(internal_merge(l, r))
 
-#------------------------------------------------------------
-# test runner
-#------------------------------------------------------------
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
 
+def sort_clone(coll):
+    ''' Given a collection, sort it using the bubble
+    sort method (sorted by copy).
+
+    :param coll: The collection to sort
+    :returns: The sorted collection
+    '''
+    return sort(list(coll))

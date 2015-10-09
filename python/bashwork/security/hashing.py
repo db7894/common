@@ -7,6 +7,7 @@ the system. As of now, the following are implemented:
 * python hashlib
 * pyhash methods
 * zlib hash methos
+* todo http://burtleburtle.net/bob/hash/doobs.html
 '''
 import hashlib
 import zlib

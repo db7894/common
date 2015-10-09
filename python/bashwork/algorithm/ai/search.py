@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
+'''
+SearchProblem
+- SearchMethod
+  - SearchHeuristic
+- SearchState
+'''
 from collections import defaultdict
 
 # ------------------------------------------------------------------ #
@@ -18,14 +24,14 @@ class SearchProblem(object):
         '''
         raise NotImplementedError("get_start_state")
 
-    def get_next_moves(self, state):
+    def get_next_states(self, state):
         ''' Given the current state, attemp to generate
-        the next possible moves
+        the next possible states
 
         :param state: The current state to expand
-        :returns: An iterable of the next possible moves
+        :returns: An iterable of the next possible states
         '''
-        raise NotImplementedError("get_next_moves")
+        raise NotImplementedError("get_next_states")
 
     def is_solution(self, state):
         ''' Checks if the supplied state is a solution
@@ -140,7 +146,9 @@ class SearchMethod(object):
                 return state.get_path()
 
             visited[state.position] += 1
-            if visited[state.position] > 1: continue
+            if visited[state.position] > 1:
+                continue
+
             for action in problem.get_next_moves(state.position):
                 child = state.append(action)
                 if child.position not in visited:

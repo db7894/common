@@ -1,7 +1,3 @@
-'''
-implement hashes
-http://burtleburtle.net/bob/hash/doobs.html
-'''
 class AbstractBloomFilter(object):
     '''
     Best choice of hash count is 4 for small differences
@@ -11,27 +7,37 @@ class AbstractBloomFilter(object):
     gets updated on the fly as bucket counts are updated
     during unraveling.
     '''
+
     def __init__(self, **kwargs):
-        self.hashers = []
+        ''' Initialize the bloom filter instance.
+
+        :param hashers: The collection of hashers to hash with
+        '''
+        self.hashers = kwargs.get('hashers', [])
+        self.keys    = []
 
     def get_hash_keys(self, value):
-        '''
+        ''' Given a new value, return the resulting hash
+        codes for that value.
+
+        :param value: The value to get hash keys for
+        :returns: The N hash keys for that value
         '''
         for hasher in self.hashers:
-            yield hasher
+            yield hasher.hash(value)
 
 class BloomFilter(AbstractBloomFilter):
 
     def insert(self, value):
         '''
         '''
-        for bit in self.get_hash_keys(value):
-            self.bits[bit] = 0x1
+        for key in self.get_hash_keys(value):
+            self.keys[key] = 0x1
 
     def contains(self, value):
         '''
         '''
-        return all(self.bits[bit] for bit in self.get_hash_keys(value))
+        return all(self.keys[key] for key in self.get_hash_keys(value))
 
 
     def remove(self, value):
@@ -42,16 +48,16 @@ class BloomFilter(AbstractBloomFilter):
 
         :param value: The value to remove from the table
         '''
-        for bit in self.get_hashes(value):
-            self.bits[bit] &= bit
+        for key in self.get_hashes(value):
+            self.keys[key] &= key
 
 class CountingBloomFilter(AbstractBloomFilter):
 
     def insert(self, value):
         '''
         '''
-        for bit in self.get_hash_keys(value):
-            self.bits[bit] += 1
+        for key in self.get_hash_keys(value):
+            self.keys[key] += 1
 
     def remove(self, value):
         ''' Removes the bits specified by the
@@ -61,8 +67,8 @@ class CountingBloomFilter(AbstractBloomFilter):
 
         :param value: The value to remove from the table
         '''
-        for bit in self.get_hashes(value):
-            self.bits[bit] -= 1
+        for key in self.get_hash_keys(value):
+            self.keys[key] -= 1
 
 class InvertibleBloomFilter(AbstractBloomFilter):
 
@@ -77,8 +83,8 @@ class InvertibleBloomFilter(AbstractBloomFilter):
     def insert(self, value):
         '''
         '''
-        for bit in self.get_hash_keys(value):
-            self.bits[bit] += 1
+        for key in self.get_hash_keys(value):
+            self.keys[key] += 1
 
     def remove(self, value):
         ''' Removes the bits specified by the
@@ -88,8 +94,8 @@ class InvertibleBloomFilter(AbstractBloomFilter):
 
         :param value: The value to remove from the table
         '''
-        for bit in self.get_hashes(value):
-            self.bits[bit] -= 1
+        for key in self.get_hashes(value):
+            self.keys[key] -= 1
 
 # cardinality estimation based on 0s like bitcoin
 # send bloom and cardinality
