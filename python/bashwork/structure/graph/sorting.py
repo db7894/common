@@ -43,7 +43,7 @@ def graph_toposort_recur(graph):
             if colors[edge] == Color.White:
                 topological_search(edge)
             elif colors[edge] == Color.Gray:
-                raise GraphCycleException()
+                raise GraphCycleException("{} to {}".format(node, edge))
             else: pass # visited already
 
         colors[node] = Color.Black

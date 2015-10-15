@@ -1,18 +1,28 @@
 import doctest
+from itertools import izip
 from random import randint, seed
 from bashwork.utility.lookup import Words
 from bashwork.structure.graph import Graph
 from bashwork.structure.graph.sorting import graph_toposort_recur
 
-def get_clean_word_list(letters):
+def get_clean_word_list():
     ''' Retrieve a clean word list that only has words matching
     the supplied letter set.
 
-    :params letters: The letter set to filter by
     :returns: The cleaned word list
     '''
     return [word.lower()
-        for word in Words.get_word_list('/usr/share/dict/words')]
+        for word in Words.get_word_list('/usr/share/dict/words')
+        if '-' not in word]
+
+def get_alphabet_from_words(words):
+    ''' Given a collection of words, generate the underlying
+    alphabet.
+
+    :param words: The words to get the alphabet from
+    :returns: The underlying alphabet
+    '''
+    return sorted(set(''.join(word.lower().strip() for word in words)))
 
 def generate_caeser_cypher(letters):
     ''' Randomly generate a substitution cypher of the supplied
@@ -58,11 +68,10 @@ def build_letter_ordering_graph(letters, words):
     :param words: The words to build a dependency graph of
     :returns: A dependency graph of the letter edges
     '''
-    prev, graph = words[0], Graph(letters)
-    for curr in words[1:]:
+    graph = Graph(letters)
+    for prev, curr in izip(words, words[1:]):
         for p, c in [(p,c) for p,c in zip(prev, curr) if p != c][:1]:
             graph.add_edge(p, c)
-        prev = curr
     return graph
 
 def order_graph_to_cypher(letters, graph):
@@ -115,11 +124,22 @@ def print_encryption_chain(encrypt, decrypt):
     for src, dst in encrypt.items():
         print "{} -> {} -> {}".format(src, dst, decrypt[dst])
 
+def test_alphabet_graph(graph):
+    ''' Given an alphabet graph, assert that the dependencies
+    are correct.
+    
+    :param graph: The graph to validate
+    '''
+    for node in sorted(graph.get_nodes()):
+        for edge in graph.get_edges(node):
+            assert node < edge, "{} not less than {}".format(node, edge)
+        #print "{} -> {}".format(node, graph.edges[node].keys())
+
 if __name__ == "__main__":
     doctest.testmod() # run unit tests first
 
-    letters   = 'abcdefghijklmnopqrstuvwxyz'
-    decrypted = get_clean_word_list(letters)
+    decrypted = get_clean_word_list()
+    letters   = get_alphabet_from_words(decrypted)
     encrypt   = generate_caeser_cypher(letters)
     encrypted = encrypt_word_list(decrypted, encrypt)
     graph     = build_letter_ordering_graph(letters, encrypted)
