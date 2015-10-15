@@ -61,8 +61,8 @@ class Trie(object):
         ''' Remove any empty nodes in the trie.
         '''
         def recurse(root):
-            if not root: return False            # if the node doesn't exist, exit
-            for key in root:                     # for every key in the ndoe
+            if not root: return True             # if the node doesn't exist, exit
+            for key in root.keys():              # for every key in the ndoe
                 if key == Trie.VALUE: continue   # don't consider leaf values
                 if recurse(root.get(key, None)): # check if we can clean that node
                     del root[key]                # remove empty keys

@@ -1,4 +1,5 @@
 import sys
+from bashwork.algorithm.ai.game import Agent
 
 class MinimaxAgent(Agent):
 

@@ -1,0 +1,16 @@
+* general game framework
+
+  - game state is light and easy to manipulate
+  - game has game rules
+  - game rules has repeated game rules (next player)
+  - agent has implemented players (generic ab, minimax, random)
+
+* implement a few games with it
+
+  - checkers
+  - connect4
+  - cribbage
+
+* finish AI implementations
+
+  - learn game strategy

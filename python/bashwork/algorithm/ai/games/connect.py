@@ -260,7 +260,7 @@ class Board(object):
         return False
  
     def is_dial_winner(self):
-        ''' Check if the game has a left diaganol winner
+        ''' Check if the game has a left diagonal winner
  
         :returns: The winner or False otherwise
         '''
@@ -275,7 +275,7 @@ class Board(object):
         return False
 
     def is_diar_winner(self):
-        ''' Check if the game has a right diaganol winner
+        ''' Check if the game has a right diagonal winner
  
         :returns: The winner or False otherwise
         '''
@@ -293,7 +293,7 @@ class Board(object):
     # magic
     # --------------------------------------------------
     def __str__(self):
-        rows = (''.join(r) for r in reversed(self.grid))
+        rows = (' '.join(r) for r in reversed(self.grid))
         return '\n'.join(rows)
 
     __repr__ = __str__
@@ -366,8 +366,8 @@ def get_valid_boards(board, piece):
         nboard.add_piece(piece, choice)
         yield choice, nboard
 
-def get_diaganol_points(board, piece):
-    ''' Given a piece, compute all their diaganol point
+def get_diagonal_points(board, piece):
+    ''' Given a piece, compute all their diagonal point
     moves.
 
     :param board: The board to evaluate
@@ -377,10 +377,10 @@ def get_diaganol_points(board, piece):
     points = 0
     values = {
         Piece.computer: 1 if piece == Piece.computer else -4,
-        Piece.player:   1 if piece == Piece.player else -4,
+        Piece.player:   1 if piece == Piece.player   else -4,
         Piece.empty: 0,
     }
-    # diaganol left points
+    # diagonal left points
     for x in range(board.size - 3):
         for y in range(3, board.size):
             if board.grid[x][y] != piece:
@@ -391,7 +391,7 @@ def get_diaganol_points(board, piece):
             total += values[board.grid[x+3][y-3]]
             if total > 0: points += total * 2
 
-    # diaganol right points
+    # diagonal right points
     for x in range(board.size - 3):
         for y in range(board.size - 3):
             if board.grid[x][y] != piece:
@@ -445,7 +445,7 @@ def get_offense_value(board, piece):
         if '.ccc.'  in value: points += 64
         if 'c.cc.c' in value: points += 64
 
-    points += get_diaganol_points(board, piece)
+    points += get_diagonal_points(board, piece)
     return points
 
 def get_defense_value(board, piece):
@@ -484,7 +484,7 @@ def get_defense_value(board, piece):
         if '.ppp.'  in value: points -= 64
         if 'p.pp.p' in value: points -= 64
 
-    points -= get_diaganol_points(board, piece)
+    points -= get_diagonal_points(board, piece)
     return points
 
 def get_state_features(board, piece):
@@ -521,7 +521,6 @@ def get_state_value(board, piece, memo={}):
     memo[board] = total
     return total
 
-
 def random_computer(state):
     ''' A computer that simply produces a random move
 
@@ -540,10 +539,10 @@ def minimax_computer(state):
         if depth == 0 or board.is_game_won():
             return (get_state_value(board, piece), -1)
 
-        value  = (-sys.maxint, -1)
-        npiece = Piece.switch(piece)
-        for choice, nboard in get_valid_boards(board, piece):
-            value = max(value, (-minimax(nboard, npiece, depth - 1)[0], choice))
+        value = (-sys.maxint, -1)
+        for choice, new_board in get_valid_boards(board, piece):
+            check = minimax(new_board, Piece.switch(piece), depth - 1)[0]
+            value = max(value, (-check, choice))
         return value
     return minimax(state.board, Piece.computer, state.difficulty)[1]
 
@@ -554,29 +553,24 @@ def alphabeta_computer(state):
     :param state: The current state of the game
     '''
     def alphabeta(board, piece, depth, alpha, beta):
+
         if depth == 0 or board.is_game_won():
             return (get_state_value(board, piece), -1)
 
-        npiece = Piece.switch(piece)
-        if piece == Piece.computer:
-            test = (-sys.maxint, -1)
-            for choice, nboard in get_valid_boards(board, piece):
-                value = alphabeta(nboard, npiece, depth - 1, alpha, beta)
-                test  = max(test, (value[0], choice))
-                if test >= beta: return test
-                alpha = max(alpha, test)
-            return test
-        else:
-            test = (sys.maxint, -1)
-            for choice, nboard in get_valid_boards(board, piece):
-                value = alphabeta(nboard, npiece, depth - 1, alpha, beta)
-                test  = min(test, (value[0], choice))
-                if test <= alpha: return test
-                beta  = min(beta, test)
-            return test
+        value = (-sys.maxint, -1) if piece == Piece.computer else (sys.maxint, -1)
+        for choice, new_board in get_valid_boards(board, piece):
+            check = alphabeta(new_board, Piece.switch(piece), depth - 1, alpha, beta)
+            check = (check[0], choice)
 
-    return alphabeta(state.board, Piece.computer, state.difficulty,
-            (-sys.maxint, -1), (sys.maxint, -1))[1]
+            if piece == Piece.computer:
+                value, alpha = max(value, check), max(alpha, value, check)
+            else:
+                value, beta  = min(value, check), min(beta,  value, check)
+            if beta <= alpha: break
+        return value
+
+    alpha, beta = (-sys.maxint, -1), (sys.maxint, -1)
+    return alphabeta(state.board, Piece.computer, state.difficulty, alpha, beta)[1]
 
 # ------------------------------------------------------------
 # game gui
@@ -588,7 +582,7 @@ class text_game_mode(object):
 
     def draw_game_board(self, state):
         print state.board
-        print ''.join(chr(48 + i) for i in range(state.size))
+        print ' '.join(chr(48 + i) for i in range(state.size))
         print '\n'
 
     def draw_game_over(self, state):
