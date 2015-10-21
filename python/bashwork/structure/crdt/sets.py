@@ -71,7 +71,7 @@ class GSet(CRDT):
     def __add__(self, value): self.add(value); return self
     def __contains__(self, value): return (value in self.value())
 
-class USet(CRDT):
+class USet(GSet):
     ''' A set that allows additions and removals under the assumption
     that values are unique. In this case, a removed value can never
     be added again so tracking the remove set is redundant. It is up
