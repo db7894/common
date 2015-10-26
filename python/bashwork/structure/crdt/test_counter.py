@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import copy
+from bashwork.structure.crdt import CRDTLaws
 from bashwork.structure.crdt.counter import *
 
 #---------------------------------------------------------------------------#
@@ -24,6 +25,7 @@ class CounterTest(unittest.TestCase):
         self.assertEqual(15, counter3.value())
         self.assertTrue(counter1.compare(counter3))
         self.assertEqual(counter3.value(), counter4.value())
+        CRDTLaws.test(counter1, counter2, counter3)
 
     def test_gcounter_serialization(self):
         counter1 = GCounter(name="counter1")
@@ -54,6 +56,7 @@ class CounterTest(unittest.TestCase):
         self.assertEqual(3, counter3.value())
         self.assertTrue(counter1.compare(counter3))
         self.assertEqual(counter3.value(), counter4.value())
+        CRDTLaws.test(counter1, counter2, counter3)
 
     def test_pncounter_serialization(self):
         counter1  = PNCounter(name="counter1")

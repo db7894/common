@@ -118,18 +118,18 @@ class TwoPhaseGraph(CRDT):
         return iter(self.nodes.value())
 
     def __add__(self, value):
-        data = self.edges if isinstance(tuple, value) else self.nodes
-        data.add(value)
+        store = self.edges if isinstance(tuple, value) else self.nodes
+        store.add(value)
         return self
 
     def __sub__(self, value):
-        data = self.edges if isinstance(tuple, value) else self.nodes
-        data.remove(value)
+        store = self.edges if isinstance(tuple, value) else self.nodes
+        store.remove(value)
         return self
 
     def __contains__(self, value):
-        data = self.edges if isinstance(tuple, value) else self.nodes
-        return value in data.value()
+        store = self.edges if isinstance(tuple, value) else self.nodes
+        return value in store.value()
 
 class AddOnlyMonotonicDag(CRDT):
     pass # TODO

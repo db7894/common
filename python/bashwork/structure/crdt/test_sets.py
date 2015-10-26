@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import copy
+from bashwork.structure.crdt import CRDTLaws
 from bashwork.structure.crdt.sets import *
 
 #---------------------------------------------------------------------------#
@@ -25,6 +26,7 @@ class SetsTest(unittest.TestCase):
         self.assertEqual({'a', 'b'}, set3.value())
         self.assertTrue(set1.compare(set3))
         self.assertEqual(set3.value(), set4.value())
+        CRDTLaws.test(set1, set2, set3)
 
     def test_gset_serialization(self):
         set1 = GSet()
@@ -70,6 +72,7 @@ class SetsTest(unittest.TestCase):
         self.assertFalse(set1.compare(set2))
         self.assertEqual({'c'}, set3.value())
         self.assertEqual(set3.value(), set4.value())
+        CRDTLaws.test(set1, set2, set3)
 
     def assert_set_serialization(self, klass):
         set1  = klass()

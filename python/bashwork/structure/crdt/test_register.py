@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import copy
+from bashwork.structure.crdt import CRDTLaws
 from bashwork.structure.crdt.register import *
 
 #---------------------------------------------------------------------------#
@@ -25,6 +26,7 @@ class RegisterTest(unittest.TestCase):
         self.assertEqual(15, register3.value())
         self.assertTrue(register1.compare(register3))
         self.assertEqual(register4.value(), register4.value())
+        CRDTLaws.test(register1, register2, register3)
 
     def test_lwwregister_serialization(self):
         register1 = LWWRegister()
