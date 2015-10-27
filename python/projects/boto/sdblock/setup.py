@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-setup(name  = 'dynamolock',
+setup(name  = 'sdblock',
     version = '1.0.0',
-    description = 'A distributed lock system build on top of DynamoDB',
-    long_description='A distributed lock system build on top of DynamoDB',
+    description = 'A distributed lock system build on top of SimpleDB',
+    long_description='A distributed lock system build on top of SimpleDB',
     classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
