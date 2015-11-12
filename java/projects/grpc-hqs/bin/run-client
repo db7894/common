@@ -1,0 +1,5 @@
+#!/bin/bash
+#mvn clean
+cd ..
+mvn compile
+mvn exec:java -Dexec.mainClass="org.bashwork.hqs.ClientMain"

@@ -11,6 +11,8 @@ from collections import namedtuple
 # ------------------------------------------------------------
 try:
     import curses
+    curses.initscr()
+    curses.curs_set(0) # hide the cursor
 except ImportError:
     class curses(object):
         ''' This is simply a fake wrapper around curses
@@ -118,10 +120,14 @@ def compile_rules(path):
         line  = line.split(Command.Comment)[0]
         parts = line.split()
         prev, wall, _, move, curr = parts[:5] 
-        # TODO check if matching rule exists
+        # TODO check if a matching rule exists
         rule = compile_rule(wall, move, curr)
         rules.setdefault(prev, []).append(rule)
         logger.debug("added rule %s %s -> %s %s", prev, rule.rule.pattern, move, curr) 
+
+    if not rules:
+        raise Exception("There are no rules supplied for this run")
+
     return rules
 
 def compile_maze(path):
@@ -134,6 +140,9 @@ def compile_maze(path):
     maze = []
     for line in file_iterator(path):
         maze.append(list(line))
+
+    if not maze:
+        raise Exception("The supplied maze is empty")
 
     Y, X = len(maze) - 1 , len(maze[0]) - 1
     for y in range(0, Y + 1):
@@ -222,6 +231,8 @@ def update_state(rule, maze, point):
     elif rule.move == Move.East:  x += 1
     elif rule.move == Move.West:  x -= 1
     elif rule.move == Move.South: y += 1
+
+    assert (maze[y][x] != Marker.Wall), "move {} at {} is illegal".format(rule, point)
 
     point = (y, x)
     maze[y][x] = Marker.Visited

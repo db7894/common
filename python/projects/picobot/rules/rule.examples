@@ -1,0 +1,35 @@
+# find bottom left corner
+0 **x* -> W 0
+0 **Wx -> S 0
+0 xxWS -> X 4
+
+# find bottom right corner
+1 *x** -> E 1
+1 *E*x -> S 1
+1 xExS -> X 5
+
+# find top left corner
+2 **x* -> W 2
+2 **Wx -> N 2
+2 NxWx -> X 6
+
+# find top right corner
+3 *x** -> E 3
+3 *E*x -> N 3
+3 NExx -> X 7
+
+# paint right and up
+4 *x** -> E 4
+4 xEx* -> N 5
+
+# paint left and up
+5 x*xx -> W 5
+5 xxWx -> N 4
+
+# paint right and down
+6 *x** -> E 6
+6 xEx* -> S 7
+
+# paint left and down
+7 x*xx -> W 7
+7 xxWx -> S 6

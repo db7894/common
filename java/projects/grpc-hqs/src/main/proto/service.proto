@@ -1,0 +1,151 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "org.bashwork.hqs";
+option java_outer_classname = "HqsProto";
+
+// --------------------------------------------------------
+// Service Object
+// --------------------------------------------------------
+
+service Hqs {
+
+    rpc CreateQueue (CreateQueueRequest) returns (CreateQueueResponse) {}
+    rpc DeleteQueue (DeleteQueueRequest) returns (DeleteQueueResponse) {}
+    rpc ListQueues (ListQueuesRequest) returns (ListQueuesResponse) {}
+    rpc PurgeQueue (PurgeQueueRequest) returns (PurgeQueueResponse) {}
+    rpc GetQueueUrl (GetQueueUrlRequest) returns (GetQueueUrlResponse) {}
+    rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
+    rpc SendMessageBatch (SendMessageBatchRequest) returns (SendMessageBatchResponse) {}
+    rpc ReceiveMessage (ReceiveMessageRequest) returns (ReceiveMessageResponse) {}
+    rpc DeleteMessage (DeleteMessageRequest) returns (DeleteMessageResponse) {}
+    rpc DeleteMessageBatch (DeleteMessageBatchRequest) returns (DeleteMessageBatchResponse) {}
+}
+
+// --------------------------------------------------------
+// Request / Response Objects
+// --------------------------------------------------------
+
+message CreateQueueRequest {
+    string queueName = 1;
+}
+
+message CreateQueueResponse {
+    string requestId = 1;
+    string queueUrl = 2;
+}
+
+
+message DeleteQueueRequest {
+    string queueUrl = 1;
+}
+
+message DeleteQueueResponse {
+    string requestId = 1;
+}
+
+
+message GetQueueUrlRequest {
+    string queueName = 1;
+}
+
+message GetQueueUrlResponse {
+    string requestId = 1;
+    string queueUrl = 2;
+}
+
+
+message ListQueuesRequest {
+    string queueNamePrefix = 1;
+}
+
+message ListQueuesResponse {
+    string requestId = 1;
+    repeated Queue queues = 2;
+}
+
+
+message PurgeQueueRequest {
+    string queueUrl = 1;
+}
+
+message PurgeQueueResponse {
+    string requestId = 1;
+}
+
+
+message SendMessageRequest {
+    string queueUrl = 1;
+    string messageBody = 2;
+}
+
+message SendMessageResponse {
+    string requestId = 1;
+    MessageMetadata metadata = 2;
+}
+
+
+message SendMessageBatchRequest {
+    string queueUrl = 1;
+    repeated string messageBodies = 2;
+}
+
+message SendMessageBatchResponse {
+    string requestId = 1;
+    repeated MessageMetadata successful = 2;
+    repeated MessageMetadata failed = 3;
+}
+
+
+message ReceiveMessageRequest {
+    string queueUrl = 1;
+    int32 maxNumberOfMessages = 2;
+}
+
+message ReceiveMessageResponse {
+    string requestId = 1;
+    repeated Message message = 2;
+}
+
+
+message DeleteMessageRequest {
+    string queueUrl = 1;
+    string receiptHandle = 2;
+}
+
+message DeleteMessageResponse {
+    string requestId = 1;
+}
+
+
+message DeleteMessageBatchRequest {
+    string queueUrl = 1;
+    repeated string receiptHandles = 2;
+}
+
+message DeleteMessageBatchResponse {
+    string requestId = 1;
+    repeated string successful = 2;
+    repeated string failed = 3;
+}
+
+// --------------------------------------------------------
+// Common Objects
+// --------------------------------------------------------
+
+message Queue {
+    string queueName = 1;
+    string queueUrl = 2;
+}
+
+message MessageMetadata {
+    string id = 1;
+    string md5OfMessageBody = 2;
+}
+
+message Message {
+    string id = 1;
+    string receiptHandle = 2;
+    string body = 3;
+    string md5OfMessageBody = 4;
+}

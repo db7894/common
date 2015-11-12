@@ -11,6 +11,9 @@ Game
 '''
 import uuid
 import random
+import itertools
+import tempfile
+import json
 
 # ------------------------------------------------------------------ #
 # Game Constants
@@ -28,6 +31,10 @@ class Moves(object):
 # ------------------------------------------------------------------ #
 
 class GameState(object):
+    ''' Base class that represents the state of the
+    game being played. All the state of the game as
+    well as the rules should be implemented here.
+    '''
 
     def get_legal_moves(self, agent):
         ''' Retrieve the next legal moves for the supplied agent.
@@ -46,6 +53,14 @@ class GameState(object):
         :returns: The next game state after this move
         '''
         raise NotImplementedError("get_next_state")
+
+    def is_finished(self):
+        ''' Check if the game has been finished given
+        the current state of the game.
+
+        :returns: True if the game is finished, False otherwise
+        '''
+        raise NotImplementedError("is_finished")
 
 # ------------------------------------------------------------------ #
 # Game Logic
@@ -92,17 +107,37 @@ class GameRules(object):
     '''
 
     def __init__(self, **kwargs):
-        pass
+        '''
+        '''
+        self.agent_start = kwargs.get('agent_start', AgentStart.random)
+        self.agent_order = kwargs.get('agent_order', AgentOrder.ordered)
 
-    class AgentNext(object):
+    class AgentOrder(object):
+        ''' A collection of common rules for choosing which
+        agent goes next in the game.
+        '''
 
         @staticmethod
-        def random():
-            return lambda agent, agents: random.choice(agents)
+        def random(agents):
+            ''' Allows the next player to be totally random
+            such that the same player may very well go every
+            single time.
+
+            :param agents: The agents to build the order with
+            :returns: An iterable of the next player to move
+            '''
+            while agents:
+                yield random.choice(agents)
 
         @staticmethod 
         def ordered(agents):
-            return lambda agent, agents: agent
+            ''' Allows the next player to be chosen in the
+            supplied order in the same loop.
+
+            :param agents: The agents to build the order with
+            :returns: An iterable of the next player to move
+            '''
+            return itertools.cycle(agents)
 
     class AgentStart(object):
 
@@ -123,29 +158,83 @@ class Game(object):
     def __init__(self, **kwargs):
         '''
         '''
-        # TODO allow game replay and saving
         self.move_history = kwargs.get('move_history', [])
         self.agents = kwargs.get('agents')
-        self.rules = kwargs.get('rules', GameRules.Random)
+        self.rules = kwargs.get('rules', GameRules.Default)
+        self.agent_order = self.rules.agent_order(self.agents)
+
+    @classmethod
+    def load_game(klass, path, **kwargs):
+        ''' Given the path of a serialized game and the parameters
+        for the game, reload the game.
+
+        :param path: The path to the game state to reload
+        :returns: An initialized instance of the game
+        '''
+        with open(path) as handle:
+            kwargs['move_history'] = json.load(handle)
+            return klass(**kwargs)
+
+    def save_game(self):
+        ''' Save the current game to a random file name that can
+        be reloaded later and replayed.
+
+        :returns: The file the game was stored to
+        '''
+        with tempfile.NamedTemporaryFile(delete=False) as handle:
+            json.dump(self.move_history, handle)
+            return handle.name
 
     def play(self):
+        ''' Play the game with the current supplied parameters.
+
+        :returns: The final state of the completed game
         '''
-        '''
-        # TODO add gui callbacks
-        state = self.get_start_state()
-        while not self.is_finished(state):
+        state = self.get_start_state(agents)
+        self.start_callback(state)
+
+        while not state.is_finished():
             agent = self.get_next_agent(state)
             move  = agent.get_next_move(state)
             state = state.get_next_state(agent, move)
+            self.move_callback(state, agent, move)
             self.move_history.append((agent.name, move))
+
+        self.finish_callback(state)
         return state
 
-    def is_finished(self, state):
-        '''
-        '''
-        raise NotImplementedError("is_finished")
+    def get_next_agent(state):
+        return self.agent_order.next()
 
-    def get_start_state(self):
-        '''
+    def get_start_state(self, agents):
+        ''' Generate the starting board position for
+        the current game.
+
+        :param agents: The current agents playing the game
+        :returns: The game state to start with
         '''
         raise NotImplementedError("get_start_state")
+
+    def start_callback(self, state):
+        ''' Callback for when the game has been started.
+
+        :param state: The starting state of the game
+        '''
+        pass
+
+    def move_callback(self, state, agent, move):
+        ''' Callback for when a new move has been made
+        in the game.
+
+        :param state: The next state of the game
+        :param agent: The agent that made the move
+        :param move: The move made by the supplied agent
+        '''
+        pass
+
+    def finish_callback(self, state):
+        ''' Callback for when the game has been finished.
+
+        :param state: The finished state of the game
+        '''
+        pass

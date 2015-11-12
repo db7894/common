@@ -1,0 +1,29 @@
+package org.bashwork.hqs.configuration;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.name.Names;
+import org.bashwork.hqs.HqsGrpc;
+import org.bashwork.hqs.HqsService;
+import org.bashwork.hqs.ServerMain;
+import org.bashwork.hqs.database.HqsDatabase;
+import org.bashwork.hqs.database.HqsDatabaseImpl;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+/**
+ * The configuration for the Hqs Server
+ */
+public class HqsServerModule extends AbstractModule {
+    private static final int cores = Runtime.getRuntime().availableProcessors();
+
+    @Override
+    protected void configure() {
+        bind(Integer.class).annotatedWith(Names.named("ServerPort")).toInstance(8081);
+        bind(String.class).annotatedWith(Names.named("ServerHost")).toInstance("localhost");
+        bind(HqsDatabase.class).to(HqsDatabaseImpl.class);
+        bind(HqsGrpc.Hqs.class).to(HqsService.class);
+        bind(ScheduledExecutorService.class).toInstance(Executors.newScheduledThreadPool(cores));
+        bind(ServerMain.class).asEagerSingleton();
+    }
+}
