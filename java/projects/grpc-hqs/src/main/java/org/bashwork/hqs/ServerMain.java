@@ -23,24 +23,45 @@ public class ServerMain {
     private final Integer port;
     private Server server;
 
+    /**
+     * Initialize a new instance of the ServerMain class.
+     *
+     * @param service The service instance to host.
+     * @param port The port to host the service on.
+     */
     @Inject
     public ServerMain(HqsService service, @Named("ServerPort") Integer port) {
         this.service = service;
         this.port = port;
     }
 
+    /**
+     * The main runner point for the server main. This simply starts
+     * an instance that is created by Guice.
+     *
+     * @param args Any command line arguments to the program.
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         Guice.createInjector(new HqsServerModule())
             .getInstance(ServerMain.class)
             .start();
     }
 
+    /**
+     * Starts the server and attaches any callback methods.
+     *
+     * @throws Exception
+     */
     public void start() throws Exception {
         startServer();
         logger.info("Listening on " + port);
         startShutdownHook();
     }
 
+    /**
+     * Stops the underlying GRPC server.
+     */
     public void stop() {
         if (server != null) {
             logger.info("Shutting down " + port);
@@ -48,13 +69,25 @@ public class ServerMain {
         }
     }
 
+    /**
+     * Creates and starts the underlying GRPC server.
+     *
+     * @throws IOException
+     */
     private void startServer() throws IOException {
-        server = NettyServerBuilder.forPort(port)
+        server = NettyServerBuilder
+            .forPort(port)
             .addService(HqsGrpc.bindService(service))
             .build()
             .start();
     }
 
+    /**
+     * Attaches a shutdown runtime hook to stop the server
+     * cleanly on JVM exit.
+     *
+     * @throws Exception
+     */
     private void startShutdownHook() throws Exception {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
