@@ -1,6 +1,7 @@
 package org.bashwork.hqs.database;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -19,7 +20,7 @@ public interface HqsDatabase {
 
     List<HqsQueue> listQueues();
 
-    Optional<HqsMessage> sendMessage(String queueUrl, String payload);
+    Optional<HqsMessage> sendMessage(String queueUrl, String payload, Map<String, String> attributes);
 
     List<HqsMessage> sendMessageBatch(String queueUrl, List<String> payload);
 

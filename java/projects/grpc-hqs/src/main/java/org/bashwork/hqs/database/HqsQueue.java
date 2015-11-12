@@ -1,6 +1,6 @@
 package org.bashwork.hqs.database;
 
-import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -10,11 +10,18 @@ public class HqsQueue {
 
     private final String name;
     private final String url;
-    // created time
+    private final Instant createdTime;
+    // TODO visibility timeout
+    // TODO message retention policy
+    // TODO max message size
+    // TODO default delay
+    // TODO redrive policy
+    // TODO dead letter queue
 
     private HqsQueue(Builder builder) {
         this.name = builder.name;
         this.url = builder.url;
+        this.createdTime = builder.createdTime;
     }
 
     public String getName() {
@@ -23,6 +30,10 @@ public class HqsQueue {
 
     public String getUrl() {
         return url;
+    }
+
+    public Instant getCreatedTime() {
+        return createdTime;
     }
 
     @Override
@@ -35,17 +46,24 @@ public class HqsQueue {
         }
         final HqsQueue that = (HqsQueue) other;
         return Objects.equals(this.name, that.name)
-            && Objects.equals(this.url, that.url);
+            && Objects.equals(this.url, that.url)
+            && Objects.equals(this.createdTime, that.createdTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url, name);
+        return Objects.hash(url, name, createdTime);
     }
 
     @Override
     public String toString() {
-        return MessageFormat.format("{0} -> {1}", name, url);
+        return new StringBuilder()
+            .append("HqsQueue{ ")
+            .append("url=").append(url)
+            .append(", name=").append(name)
+            .append(", createdTime=").append(createdTime)
+            .append(" }")
+            .toString();
     }
 
     public static Builder newBuilder() {
@@ -57,6 +75,7 @@ public class HqsQueue {
 
         private String name;
         private String url;
+        private Instant createdTime;
 
         public Builder setName(String name) {
             this.name = name;
@@ -68,9 +87,15 @@ public class HqsQueue {
             return this;
         }
 
+        public Builder setCreatedTime(Instant createdTime) {
+            this.createdTime = createdTime;
+            return this;
+        }
+
         public HqsQueue build() {
             Objects.requireNonNull(name, "Queue name is required");
             Objects.requireNonNull(url, "Queue url is required");
+            Objects.requireNonNull(createdTime, "Queue created time is required");
             return new HqsQueue(this);
         }
     }

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -67,21 +68,27 @@ public class ClientMain {
     public void start() throws Exception {
         logger.info("starting client workflow");
 
-        final String messageBody = "example message";
-        final String queueName = "example-queue-name";
-        final String queueUrl  = createQueue(queueName);
-        final String receiptHandle = sendMessage(queueUrl, messageBody);
-        final Message message = receiveMessage(queueUrl).get(0);
+        try {
+            final String messageBody = "example message";
+            final String queueName = "example-queue-name";
+            final String queueUrl = createQueue(queueName);
+            final String receiptHandle = sendMessage(queueUrl, messageBody);
+            final Message message = receiveMessage(queueUrl).get(0);
 
-        //stressTest(queueUrl);
+            //stressTest(queueUrl);
 
-        logger.info("get_queue_test: {}", getQueueUrl(queueName).equals(queueUrl));
-        logger.info("list_queues_test: {}", listQueues().contains(queueUrl));
-        logger.info("delete_queue_test: {}", deleteQueue(queueUrl));
-        logger.info("send_message_test: {}", receiptHandle.equals(message.getReceiptHandle()));
-        logger.info("receive_message_test: {}", messageBody.equals(message.getBody()));
-        logger.info("delete_message_test: {}", deleteMessage(queueUrl, message.getReceiptHandle()));
-        logger.info("finished client workflow");
+            logger.info("get_queue_test: {}", getQueueUrl(queueName).equals(queueUrl));
+            logger.info("list_queues_test: {}", listQueues().contains(queueUrl));
+            logger.info("send_message_test: {}", receiptHandle.equals(message.getReceiptHandle()));
+            logger.info("receive_message_test: {}", messageBody.equals(message.getBody()));
+            logger.info("delete_message_test: {}", deleteMessage(queueUrl, message.getReceiptHandle()));
+            logger.info("delete_queue_test: {}", deleteQueue(queueUrl));
+            //error logger.info("delete_queue_test: {}", deleteQueue(queueUrl));
+            logger.info("finished client workflow");
+
+        } catch (Exception ex) {
+            logger.error("an error occurred during the test", ex);
+        }
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     }
 
@@ -162,6 +169,7 @@ public class ClientMain {
             .newBuilder()
             .setMessageBody(message)
             .setQueueUrl(queueUrl)
+            .putAllAttributes(Collections.singletonMap("example-key", "example-value"))
             .build())
             .getMetadata().getId();
     }

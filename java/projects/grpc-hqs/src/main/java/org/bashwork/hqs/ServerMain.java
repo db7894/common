@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.google.inject.Guice;
 import io.grpc.netty.NettyServerBuilder;
 import org.bashwork.hqs.configuration.HqsServerModule;
+import org.bashwork.hqs.service.HqsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,7 @@ public class ServerMain {
      */
     public void start() throws Exception {
         startServer();
-        logger.info("Listening on " + port);
+        logger.info("server listening on " + port);
         startShutdownHook();
     }
 
@@ -64,7 +65,7 @@ public class ServerMain {
      */
     public void stop() {
         if (server != null) {
-            logger.info("Shutting down " + port);
+            logger.info("server shutting down " + port);
             server.shutdown();
         }
     }
@@ -92,7 +93,7 @@ public class ServerMain {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                System.err.println("*** stopping the running server***");
+                System.err.println("*** force stopping the running serve r***");
                 ServerMain.this.stop();
             }
         });

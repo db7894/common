@@ -4,15 +4,18 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * A collection of common factory methods for generating
  * data for the internal HqsStore.
  */
-public final class HqsFactory {
-    private HqsFactory() { }
+public final class HqsDatabaseAdapter {
+    private HqsDatabaseAdapter() { }
 
     /**
      * Generates a new unique identifier for the given queue name.
@@ -39,13 +42,46 @@ public final class HqsFactory {
      * @param messageBody The message body to generate a HqsMessage for.
      * @return The resulting generated message.
      */
-    public static HqsMessage generateMessage(String messageBody) {
+    public static HqsMessage adaptMessage(final String messageBody) {
+        return adaptMessage(messageBody, Collections.emptyMap());
+
+    }
+
+    /**
+     * Given a message body, generate a new HqsMessage instance.
+     *
+     * @param messageBody The message body to generate a HqsMessage for.
+     * @param attributes The attributes to generate a HqsMessage for.
+     * @return The resulting generated message.
+     */
+    public static HqsMessage adaptMessage(final String messageBody,
+        final Map<String, String> attributes) {
+
         return HqsMessage.newBuilder()
             .setIdentifier(generateMessageId())
             .setReceiveCount(0)
             .setMd5HashOfBody(md5Hash(messageBody))
+            .setMd5HashOfAttributes(md5Hash(attributes))
+            .setAttributes(attributes)
             .setBody(messageBody)
+            .setSentTime(Instant.now())
             .build();
+    }
+
+    /**
+     * Given a collection of attributes, generate the MD5 hash of them.
+     *
+     * @param attributes The attributes to generate a hash of.
+     * @return The base64 MD5 hash of the attributes.
+     */
+    public static String md5Hash(Map<String, String> attributes) {
+        final StringBuilder builder = new StringBuilder();
+
+        for (String key : attributes.keySet()) {
+            builder.append(key).append(":").append(attributes.get(key));
+        }
+
+        return md5Hash(builder.toString());
     }
 
     /**

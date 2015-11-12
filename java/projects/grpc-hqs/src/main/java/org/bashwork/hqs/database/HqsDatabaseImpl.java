@@ -1,11 +1,15 @@
 package org.bashwork.hqs.database;
 
+import static java.util.Objects.requireNonNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +19,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- *
+ * Implementation of the HqsDatabase that backs up to an
+ * in memory collection of structures.
  */
 public final class HqsDatabaseImpl implements HqsDatabase {
 
@@ -28,8 +33,9 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     private final ScheduledExecutorService executor;
 
     /**
+     * Initializes a new instance of the HqsDatabaseImpl class.
      *
-     * @param executor
+     * @param executor The executor to run asynchronous operations on.
      */
     @Inject
     public HqsDatabaseImpl(ScheduledExecutorService executor) {
@@ -37,7 +43,7 @@ public final class HqsDatabaseImpl implements HqsDatabase {
         this.queueUrlToName = new ConcurrentHashMap<>();
         this.messagesInTransit = new ConcurrentHashMap<>();
         this.queueMessages = new ConcurrentHashMap<>();
-        this.executor = Objects.requireNonNull(executor, "Store executor is required");
+        this.executor = requireNonNull(executor, "HqsDatabase requires an Executor");
     }
 
     /**
@@ -56,14 +62,15 @@ public final class HqsDatabaseImpl implements HqsDatabase {
 
         final HqsQueue queue = queues.computeIfAbsent(queueName, name -> HqsQueue.newBuilder()
             .setName(name)
-            .setUrl(HqsFactory.generateQueueUrl(name))
+            .setUrl(HqsDatabaseAdapter.generateQueueUrl(name))
+            .setCreatedTime(Instant.now())
             .build());
 
         logger.debug("created queue {} -> {}", queue.getName(), queue.getUrl());
         queueUrlToName.putIfAbsent(queue.getUrl(), queue.getName());
         queueMessages.putIfAbsent(queue.getUrl(), new ConcurrentLinkedDeque<>());
 
-        return Optional.ofNullable(queue);
+        return Optional.of(queue);
     }
 
     /**
@@ -79,8 +86,8 @@ public final class HqsDatabaseImpl implements HqsDatabase {
 
     /**
      *
-     * @param queueUrl
-     * @return
+     * @param queueUrl The name of the queue to delete.
+     * @return true if the queue was deleted, false otherwise.
      */
     @Override
     public boolean deleteQueue(String queueUrl) {
@@ -98,13 +105,13 @@ public final class HqsDatabaseImpl implements HqsDatabase {
             queueMessages.remove(queueUrl);
         }
 
-        return true;
+        return (queueName != null);
     }
 
     /**
      *
      * @param queueUrl The queue to purge all the messages from.
-     * @return
+     * @return true if the queue was purged, false otherwise.
      */
     @Override
     public boolean purgeQueue(String queueUrl) {
@@ -123,7 +130,7 @@ public final class HqsDatabaseImpl implements HqsDatabase {
             logger.debug("purged {} messages from {}", messages.size(), queueUrl);
         }
 
-        return true;
+        return (messages != null);
     }
 
     /**
@@ -139,18 +146,20 @@ public final class HqsDatabaseImpl implements HqsDatabase {
      *
      * @param queueUrl The queue to send the message to.
      * @param messageBody The message to send to the queue.
+     * @param attributes The attributes to send to the queue.
      * @return The optional message that was sent to the queue.
      */
     @Override
-    public Optional<HqsMessage> sendMessage(String queueUrl, String messageBody) {
+    public Optional<HqsMessage> sendMessage(String queueUrl,
+        String messageBody, Map<String, String> attributes) {
 
         final ConcurrentLinkedDeque<HqsMessage> queue = queueMessages.get(queueUrl);
         if (queue == null) {
             return Optional.empty();
         }
 
-        final HqsMessage message = HqsFactory.generateMessage(messageBody);
-        queue.offer(message);
+        final HqsMessage message = HqsDatabaseAdapter.adaptMessage(messageBody, attributes);
+        queue.offer(message); // TODO offer with delay
 
         return Optional.ofNullable(message);
     }
@@ -170,10 +179,10 @@ public final class HqsDatabaseImpl implements HqsDatabase {
         }
 
         final List<HqsMessage> messages = messageBodies.stream()
-            .map(HqsFactory::generateMessage)
+            .map(HqsDatabaseAdapter::adaptMessage) // TODO offer with delay
             .collect(Collectors.toList());
 
-        queue.addAll(messages); // TODO check order
+        queue.addAll(messages);
 
         return messages;
     }
@@ -190,18 +199,24 @@ public final class HqsDatabaseImpl implements HqsDatabase {
         final ConcurrentLinkedDeque<HqsMessage> queue = queueMessages.get(queueUrl);
 
         if (queue != null) {
-            for (int i = Math.max(1, count); i > 0; --i) {
+            for (int index = count; index > 0; --index) {
+
+                // make a best effort to get as many messages as possible
                 final HqsMessage message = queue.poll();
-                // TODO add wait timeout here
                 if (message == null) {
-                    break;
+                    break;                // TODO add wait timeout here
                 }
 
-                messagesInTransit.put(message.getIdentifier(), message);
+                // update all the relevant fields for the touched message
+                final HqsMessage updated = HqsMessage.buildFrom(message)
+                    .setReceiveCount(message.getReceiveCount() + 1)
+                    .build();
+
+                messagesInTransit.put(message.getIdentifier(), updated);
                 // TODO configure this visibility here
-                // TODO add message handle here
-                executor.schedule(() -> addBackToQueue(queueUrl, message), 5, TimeUnit.MINUTES);
-                messages.add(message);
+                // TODO add message receiptHandle here
+                executor.schedule(() -> addBackToQueue(queueUrl, updated), 5, TimeUnit.MINUTES);
+                messages.add(updated);
             }
         }
 

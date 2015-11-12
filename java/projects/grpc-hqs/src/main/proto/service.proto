@@ -77,6 +77,7 @@ message PurgeQueueResponse {
 message SendMessageRequest {
     string queueUrl = 1;
     string messageBody = 2;
+    map<string, string> attributes = 3;
 }
 
 message SendMessageResponse {
@@ -136,11 +137,13 @@ message DeleteMessageBatchResponse {
 message Queue {
     string queueName = 1;
     string queueUrl = 2;
+    string createdTime = 3;
 }
 
 message MessageMetadata {
     string id = 1;
     string md5OfMessageBody = 2;
+    string md5OfMessageAttributes = 3;
 }
 
 message Message {
@@ -148,4 +151,6 @@ message Message {
     string receiptHandle = 2;
     string body = 3;
     string md5OfMessageBody = 4;
+    map<string, string> attributes = 5;
+    string md5OfMessageAttributes = 6;
 }
