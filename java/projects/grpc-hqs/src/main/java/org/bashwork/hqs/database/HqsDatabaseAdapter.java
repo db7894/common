@@ -1,12 +1,13 @@
 package org.bashwork.hqs.database;
 
+import org.bashwork.hqs.SendMessageEntry;
+
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,11 +40,11 @@ public final class HqsDatabaseAdapter {
     /**
      * Given a message body, generate a new HqsMessage instance.
      *
-     * @param messageBody The message body to generate a HqsMessage for.
+     * @param entry The message to generate a HqsMessage for.
      * @return The resulting generated message.
      */
-    public static HqsMessage adaptMessage(final String messageBody) {
-        return adaptMessage(messageBody, Collections.emptyMap());
+    public static HqsMessage adaptMessage(final SendMessageEntry entry) {
+        return adaptMessage(entry.getMessageBody(), entry.getAttributes());
 
     }
 

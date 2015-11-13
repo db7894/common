@@ -12,12 +12,13 @@ public class HqsMessage {
     private final String md5HashOfBody;
     private final String md5HashOfAttributes;
     private final String identifier;
+    private final String receiptHandle;
     private final Map<String, String> attributes;
     private final int receiveCount;
     private final Instant sentTime;
-    // sender of message
-    // date first touched
-    // message id and receipt handle
+
+    // TODO sender of message
+    // TODO date first touched
 
     private HqsMessage(Builder builder) {
         this.body = builder.body;
@@ -25,6 +26,7 @@ public class HqsMessage {
         this.md5HashOfAttributes = builder.md5HashOfAttributes;
         this.attributes = builder.attributes;
         this.identifier = builder.identifier;
+        this.receiptHandle = builder.receiptHandle;
         this.receiveCount = builder.receiveCount;
         this.sentTime = builder.sentTime;
     }
@@ -47,6 +49,10 @@ public class HqsMessage {
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    public String getReceiptHandle() {
+        return receiptHandle;
     }
 
     public int getReceiveCount() {
@@ -72,13 +78,14 @@ public class HqsMessage {
             && Objects.equals(this.md5HashOfBody, that.md5HashOfBody)
             && Objects.equals(this.md5HashOfAttributes, that.md5HashOfAttributes)
             && Objects.equals(this.identifier, that.identifier)
+            && Objects.equals(this.receiptHandle, that.receiptHandle)
             && Objects.equals(this.sentTime, that.sentTime);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(body, md5HashOfBody, md5HashOfAttributes,
-            attributes, identifier, receiveCount, sentTime);
+            attributes, identifier, receiveCount, sentTime, receiptHandle);
     }
 
 
@@ -90,6 +97,7 @@ public class HqsMessage {
             .append(", md5HashOfBody=").append(md5HashOfBody)
             .append(", md5HashOfAttributes=").append(md5HashOfAttributes)
             .append(", identifier=").append(identifier)
+            .append(", receiptHandle=").append(receiptHandle)
             .append(", receiveCount=").append(receiveCount)
             .append(", attributes=").append(attributes)
             .append(", sentTime=").append(sentTime)
@@ -126,6 +134,7 @@ public class HqsMessage {
         private String md5HashOfBody;
         private String md5HashOfAttributes;
         private String identifier;
+        private String receiptHandle;
         private int receiveCount;
         private Map<String, String> attributes;
         private Instant sentTime;
@@ -152,6 +161,11 @@ public class HqsMessage {
 
         public Builder setIdentifier(String identifier) {
             this.identifier = identifier;
+            return this;
+        }
+
+        public Builder setRecieptHandle(String receiptHandle) {
+            this.receiptHandle = receiptHandle;
             return this;
         }
 

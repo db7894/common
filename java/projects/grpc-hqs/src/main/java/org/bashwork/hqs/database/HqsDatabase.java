@@ -1,7 +1,8 @@
 package org.bashwork.hqs.database;
 
+import org.bashwork.hqs.*;
+
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -10,23 +11,83 @@ import java.util.Optional;
  */
 public interface HqsDatabase {
 
-    Optional<HqsQueue> createQueue(String queueName);
+    /**
+     * Create a new queue with the supplied parameters.
+     *
+     * @param request The request to handle.
+     * @return The optional created queue if it was able to be created.
+     */
+    Optional<HqsQueue> createQueue(CreateQueueRequest request);
 
-    Optional<HqsQueue> getQueue(String queueName);
+    /**
+     * Get the queue specified by the given queue name.
+     *
+     * @param request The request to handle.
+     * @return The optional queue that is mapped to the supplied name.
+     */
+    Optional<HqsQueue> getQueue(GetQueueUrlRequest request);
 
-    boolean deleteQueue(String queueUrl);
+    /**
+     * Delete the supplied queue and all its messages.
+     *
+     * @param request The request to handle.
+     * @return true if the queue was deleted, false otherwise.
+     */
+    boolean deleteQueue(DeleteQueueRequest request);
 
-    boolean purgeQueue(String queueUrl);
+    /**
+     * Remove all the current messages from the supplied queue.
+     *
+     * @param request The request to handle.
+     * @return true if the queue was purged, false otherwise.
+     */
+    boolean purgeQueue(PurgeQueueRequest request);
 
-    List<HqsQueue> listQueues();
+    /**
+     * List all the queueMetadata matching the request.
+     *
+     * @param request The request to handle.
+     * @return The collection of existing queueMetadata.
+     */
+    List<HqsQueue> listQueues(ListQueuesRequest request);
 
-    Optional<HqsMessage> sendMessage(String queueUrl, String payload, Map<String, String> attributes);
+    /**
+     * Send the supplied message to the queue.
+     *
+     * @param request The request to fulfill.
+     * @return The optional message that was sent to the queue.
+     */
+    Optional<HqsMessage> sendMessage(SendMessageRequest request);
 
-    List<HqsMessage> sendMessageBatch(String queueUrl, List<String> payload);
+    /**
+     * Send the batch of supplied messages to the queue.
+     *
+     * @param request The request to fulfill.
+     * @return The collection of messages that were sent to the queue.
+     */
+    List<HqsMessage> sendMessageBatch(SendMessageBatchRequest request);
 
-    List<HqsMessage> receiveMessages(String queueUrl, int count);
+    /**
+     * Receive the requested number of available messages.
+     *
+     * @param request The request to fulfill.
+     * @return The collection of received messages.
+     */
+    List<HqsMessage> receiveMessages(ReceiveMessageRequest request);
 
-    Optional<HqsMessage> deleteMessage(String identifier);
+    /**
+     * Delete a single message that has been handled.
+     *
+     * @param request The request to fulfill.
+     * @return The optional deleted message if it was successful.
+     */
+    Optional<HqsMessage> deleteMessage(DeleteMessageRequest request);
 
-    List<HqsMessage> deleteMessageBatch(List<String> identifiers);
+    /**
+     * Delete a batch of supplied messages that have been handled.
+     *
+     * @param request The request to fulfill.
+     * @return The number of messages that were deleted.
+     */
+    List<HqsMessage> deleteMessageBatch(DeleteMessageBatchRequest request);
 }

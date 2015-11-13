@@ -2,10 +2,12 @@ package org.bashwork.hqs.database;
 
 import static java.util.Objects.requireNonNull;
 
+import org.bashwork.hqs.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,7 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     private static final Logger logger = LoggerFactory.getLogger(HqsDatabaseImpl.class);
 
     private final ConcurrentHashMap<String, String> queueUrlToName;
-    private final ConcurrentHashMap<String, HqsQueue> queues;
+    private final ConcurrentHashMap<String, HqsQueue> queueMetadata;
     private final ConcurrentHashMap<String, HqsMessage> messagesInTransit;
     private final ConcurrentHashMap<String, ConcurrentLinkedDeque<HqsMessage>> queueMessages;
     private final ScheduledExecutorService executor;
@@ -39,7 +41,7 @@ public final class HqsDatabaseImpl implements HqsDatabase {
      */
     @Inject
     public HqsDatabaseImpl(ScheduledExecutorService executor) {
-        this.queues = new ConcurrentHashMap<>();
+        this.queueMetadata = new ConcurrentHashMap<>();
         this.queueUrlToName = new ConcurrentHashMap<>();
         this.messagesInTransit = new ConcurrentHashMap<>();
         this.queueMessages = new ConcurrentHashMap<>();
@@ -47,12 +49,10 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     }
 
     /**
-     *
-     * @param queueName The name of the queue to create.
-     * @return The optional created queue if it was able to be created.
+     * @see HqsDatabase#createQueue(CreateQueueRequest)
      */
     @Override
-    public Optional<HqsQueue> createQueue(final String queueName) {
+    public Optional<HqsQueue> createQueue(final CreateQueueRequest request) {
 
         /**
          * If the queue name has already been created, then we will simply use
@@ -60,10 +60,15 @@ public final class HqsDatabaseImpl implements HqsDatabase {
          * first created queue will always continue to exist.
          */
 
-        final HqsQueue queue = queues.computeIfAbsent(queueName, name -> HqsQueue.newBuilder()
+        final int messageDelay = request.getDelayInSeconds();
+        final int visibilityTimeout = request.getVisibilityTimeoutInSeconds();
+        final String queueName = request.getQueueName();
+        final HqsQueue queue = queueMetadata.computeIfAbsent(queueName, name -> HqsQueue.newBuilder()
             .setName(name)
             .setUrl(HqsDatabaseAdapter.generateQueueUrl(name))
             .setCreatedTime(Instant.now())
+            .setMessageDelay(Duration.ofSeconds(messageDelay))
+            .setVisibilityTimeout(Duration.ofSeconds(visibilityTimeout))
             .build());
 
         logger.debug("created queue {} -> {}", queue.getName(), queue.getUrl());
@@ -74,23 +79,20 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     }
 
     /**
-     *
-     * @param queueName The name of the queue to retrieve.
-     * @return The optional queue that is mapped to the supplied name.
+     * @see HqsDatabase#getQueue(GetQueueUrlRequest)
      */
     @Override
-    public Optional<HqsQueue> getQueue(String queueName) {
-        final HqsQueue queue = queues.get(queueName);
+    public Optional<HqsQueue> getQueue(final GetQueueUrlRequest request) {
+        final String queueName = request.getQueueName();
+        final HqsQueue queue = queueMetadata.get(queueName);
         return Optional.ofNullable(queue);
     }
 
     /**
-     *
-     * @param queueUrl The name of the queue to delete.
-     * @return true if the queue was deleted, false otherwise.
+     * @see HqsDatabase#deleteQueue(DeleteQueueRequest)
      */
     @Override
-    public boolean deleteQueue(String queueUrl) {
+    public boolean deleteQueue(final DeleteQueueRequest request) {
 
         /**
          * If another user has beaten us to deleting the url to name
@@ -98,23 +100,23 @@ public final class HqsDatabaseImpl implements HqsDatabase {
          * will be safe from mutation.
          */
 
+        final String queueUrl = request.getQueueUrl();
         final String queueName = queueUrlToName.remove(queueUrl);
+        final boolean isQueueAvailable = (queueName != null);
 
-        if (queueName != null) {
-            queues.remove(queueName);
+        if (isQueueAvailable) {
+            queueMetadata.remove(queueName);
             queueMessages.remove(queueUrl);
         }
 
-        return (queueName != null);
+        return isQueueAvailable;
     }
 
     /**
-     *
-     * @param queueUrl The queue to purge all the messages from.
-     * @return true if the queue was purged, false otherwise.
+     * @see HqsDatabase#purgeQueue(PurgeQueueRequest)
      */
     @Override
-    public boolean purgeQueue(String queueUrl) {
+    public boolean purgeQueue(final PurgeQueueRequest request) {
 
         /**
          * We simple replace the existing deque with a new one which is atomic
@@ -123,124 +125,147 @@ public final class HqsDatabaseImpl implements HqsDatabase {
          * is purged as well.
          */
 
-        final ConcurrentLinkedDeque<HqsMessage> messages = queueMessages
-            .replace(queueUrl, new ConcurrentLinkedDeque<>());
+        final String queueUrl = request.getQueueUrl();
+        final ConcurrentLinkedDeque<HqsMessage> newQueue = new ConcurrentLinkedDeque<>();
+        final ConcurrentLinkedDeque<HqsMessage> queue = queueMessages.replace(queueUrl, newQueue);
+        final boolean isQueueAvailable = (queue != null);
 
-        if (messages != null) {
-            logger.debug("purged {} messages from {}", messages.size(), queueUrl);
+        if (isQueueAvailable) {
+            logger.debug("purged {} messages from {}", queue.size(), queueUrl);
         }
 
-        return (messages != null);
+        return isQueueAvailable;
     }
 
     /**
-     *
-     * @return The collection of existing queues.
+     * @see HqsDatabase#listQueues(ListQueuesRequest)
      */
     @Override
-    public List<HqsQueue> listQueues() {
-        return new ArrayList<>(queues.values());
+    public List<HqsQueue> listQueues(final ListQueuesRequest request) {
+        final String namePrefix = request.getQueueNamePrefix();
+
+        if (!namePrefix.isEmpty()) {
+            return queueMetadata.values().stream()
+                .filter(queue -> queue.getName().startsWith(namePrefix))
+                .collect(Collectors.toList());
+        }
+        return new ArrayList<>(queueMetadata.values());
     }
 
     /**
-     *
-     * @param queueUrl The queue to send the message to.
-     * @param messageBody The message to send to the queue.
-     * @param attributes The attributes to send to the queue.
-     * @return The optional message that was sent to the queue.
+     * @see HqsDatabase#sendMessage(SendMessageRequest)
      */
     @Override
-    public Optional<HqsMessage> sendMessage(String queueUrl,
-        String messageBody, Map<String, String> attributes) {
+    public Optional<HqsMessage> sendMessage(final SendMessageRequest request) {
 
-        final ConcurrentLinkedDeque<HqsMessage> queue = queueMessages.get(queueUrl);
-        if (queue == null) {
+        final String queueUrl = request.getQueueUrl();
+        final String messageBody = request.getMessageBody();
+        final Map<String, String> attributes = request.getAttributes();
+        final HqsQueue metadata = queueMetadata.get(queueUrl);
+        final ConcurrentLinkedDeque<HqsMessage> messages = queueMessages.get(queueUrl);
+        final boolean isQueueNotAvailable = (messages == null) || (metadata == null);
+
+        if (isQueueNotAvailable) {
             return Optional.empty();
         }
 
         final HqsMessage message = HqsDatabaseAdapter.adaptMessage(messageBody, attributes);
-        queue.offer(message); // TODO offer with delay
+        final long delayInSeconds = (request.getDelayInSeconds() <= 0)
+            ? metadata.getMessageDelay()
+            : request.getDelayInSeconds();
+
+        offerWithDelay(message, delayInSeconds, messages);
 
         return Optional.ofNullable(message);
     }
 
     /**
-     *
-     * @param queueUrl The queue to send messages to.
-     * @param messageBodies The messages to send to the queue.
-     * @return The collection of messages that were sent to the queue.
+     * @see HqsDatabase#sendMessageBatch(SendMessageBatchRequest)
      */
     @Override
-    public List<HqsMessage> sendMessageBatch(String queueUrl, List<String> messageBodies) {
+    public List<HqsMessage> sendMessageBatch(final SendMessageBatchRequest request) {
 
-        final ConcurrentLinkedDeque<HqsMessage> queue = queueMessages.get(queueUrl);
-        if (queue == null) {
+        final String queueUrl = request.getQueueUrl();
+        final List<HqsMessage> sentMessages = new ArrayList<>();
+        final HqsQueue metadata = queueMetadata.get(queueUrl);
+        final ConcurrentLinkedDeque<HqsMessage> messages = queueMessages.get(queueUrl);
+        final boolean isQueueNotAvailable = (metadata == null) || (messages == null);
+
+        if (isQueueNotAvailable) {
             return new ArrayList<>();
         }
 
-        final List<HqsMessage> messages = messageBodies.stream()
-            .map(HqsDatabaseAdapter::adaptMessage) // TODO offer with delay
-            .collect(Collectors.toList());
+        for (SendMessageEntry entry : request.getEntriesList()) {
+            final HqsMessage message = HqsDatabaseAdapter.adaptMessage(entry);
+            final long delayInSeconds = (entry.getDelayInSeconds() <= 0)
+                ? metadata.getMessageDelay()
+                : entry.getDelayInSeconds();
 
-        queue.addAll(messages);
+            offerWithDelay(message, delayInSeconds, messages);
+            sentMessages.add(message);
+        }
 
-        return messages;
+        return sentMessages;
     }
 
     /**
-     *
-     * @param queueUrl The queue to receive messages from.
-     * @param count The number of message to receive.
-     * @return The collection of received messages.
+     * @see HqsDatabase#receiveMessages(ReceiveMessageRequest)
      */
     @Override
-    public List<HqsMessage> receiveMessages(final String queueUrl, int count) {
-        final List<HqsMessage> messages = new ArrayList<>();
-        final ConcurrentLinkedDeque<HqsMessage> queue = queueMessages.get(queueUrl);
+    public List<HqsMessage> receiveMessages(final ReceiveMessageRequest request) {
+        final String queueUrl = request.getQueueUrl();
+        final int maxNumberOfMessages = Math.max(1, request.getMaxNumberOfMessages());
+        final List<HqsMessage> receivedMessages = new ArrayList<>();
+        final HqsQueue metadata = queueMetadata.get(queueUrl);
+        final ConcurrentLinkedDeque<HqsMessage> messages = queueMessages.get(queueUrl);
+        final boolean isQueueAvailable = (metadata != null) && (messages != null);
 
-        if (queue != null) {
-            for (int index = count; index > 0; --index) {
+        if (isQueueAvailable) {
+            final long visibilityTimeout = (request.getVisibilityTimeoutInSeconds() == 0)
+                ? metadata.getVisibilityTimeout()
+                : request.getVisibilityTimeoutInSeconds();
+
+            for (int index = maxNumberOfMessages; index > 0; --index) {
 
                 // make a best effort to get as many messages as possible
-                final HqsMessage message = queue.poll();
+                final HqsMessage message = messages.poll();
                 if (message == null) {
                     break;                // TODO add wait timeout here
                 }
 
                 // update all the relevant fields for the touched message
-                final HqsMessage updated = HqsMessage.buildFrom(message)
+                final HqsMessage messageInTransit = HqsMessage.buildFrom(message)
                     .setReceiveCount(message.getReceiveCount() + 1)
+                    .setRecieptHandle(HqsDatabaseAdapter.generateMessageId())
                     .build();
 
-                messagesInTransit.put(message.getIdentifier(), updated);
-                // TODO configure this visibility here
-                // TODO add message receiptHandle here
-                executor.schedule(() -> addBackToQueue(queueUrl, updated), 5, TimeUnit.MINUTES);
-                messages.add(updated);
+                messagesInTransit.put(messageInTransit.getReceiptHandle(), messageInTransit);
+                executor.schedule(() -> addBackToQueue(queueUrl, messageInTransit), visibilityTimeout, TimeUnit.SECONDS);
+                receivedMessages.add(messageInTransit); // TODO add the future so we can change visibility an stop
             }
         }
 
-        return messages;
+        return receivedMessages;
     }
 
     /**
-     *
-     * @param receiptHandle The identifier to remove the message for.
-     * @return The optional deleted message if it was successful.
+     * @see HqsDatabase#deleteMessage(DeleteMessageRequest)
      */
     @Override
-    public Optional<HqsMessage> deleteMessage(String receiptHandle) {
-        final HqsMessage message = messagesInTransit.remove(receiptHandle);
-        return Optional.ofNullable(message);
+    public Optional<HqsMessage> deleteMessage(final DeleteMessageRequest request) {
+        final String receiptHandle = request.getReceiptHandle();
+        final HqsMessage messageInTransit = messagesInTransit.remove(receiptHandle);
+        // TODO cancel future
+        return Optional.ofNullable(messageInTransit);
     }
 
     /**
-     *
-     * @param receiptHandles The identifiers to remove messages for.
-     * @return The number of messages that were deleted.
+     * @see HqsDatabase#deleteMessageBatch(DeleteMessageBatchRequest)
      */
     @Override
-    public List<HqsMessage> deleteMessageBatch(List<String> receiptHandles) {
+    public List<HqsMessage> deleteMessageBatch(final DeleteMessageBatchRequest request) {
+        final List<String> receiptHandles = request.getReceiptHandlesList();
+        // TODO cancel futures
         return receiptHandles.stream()
             .map(messagesInTransit::remove)
             .filter(Objects::nonNull)
@@ -255,8 +280,9 @@ public final class HqsDatabaseImpl implements HqsDatabase {
      * @param message The message to add back to the queue.
      */
     private void addBackToQueue(final String queueUrl, final HqsMessage message) {
-        final HqsMessage messageInProgress = messagesInTransit.remove(message.getIdentifier());
-        final ConcurrentLinkedDeque<HqsMessage> queue = queueMessages.get(queueUrl);
+        final HqsMessage messageInProgress = messagesInTransit.remove(message.getReceiptHandle());
+        final ConcurrentLinkedDeque<HqsMessage> messages = queueMessages.get(queueUrl);
+        final boolean isQueueAvailable = (messageInProgress != null) && (messages != null);
 
         /**
          * If the message still exists in the transit map and the queue still exists,
@@ -270,8 +296,24 @@ public final class HqsDatabaseImpl implements HqsDatabase {
          * the message anyways.
          */
 
-        if ((messageInProgress != null) && (queue != null)) {
-            queue.addFirst(message);
+        if (isQueueAvailable) {
+            messages.addFirst(message);
+        }
+    }
+
+    /**
+     * Helper method to offer with delay for a given queue message.
+     *
+     * @param message The message to offer to the queue.
+     * @param delayInSeconds The amount of time to delay before sending.
+     * @param messages The queue to offer the message on.
+     */
+    private void offerWithDelay(final HqsMessage message, final long delayInSeconds,
+        final ConcurrentLinkedDeque<HqsMessage> messages) {
+        if (delayInSeconds > 0) {
+            executor.schedule(() -> messages.offer(message), delayInSeconds, TimeUnit.SECONDS);
+        } else {
+            messages.offer(message);
         }
     }
 }

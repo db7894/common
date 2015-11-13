@@ -26,8 +26,11 @@ service Hqs {
 // Request / Response Objects
 // --------------------------------------------------------
 
+// Create Queue Operation
 message CreateQueueRequest {
     string queueName = 1;
+    int32 delayInSeconds = 2;
+    int32 visibilityTimeoutInSeconds = 3;
 }
 
 message CreateQueueResponse {
@@ -35,7 +38,7 @@ message CreateQueueResponse {
     string queueUrl = 2;
 }
 
-
+// Delete Queue Operation
 message DeleteQueueRequest {
     string queueUrl = 1;
 }
@@ -44,7 +47,7 @@ message DeleteQueueResponse {
     string requestId = 1;
 }
 
-
+// Get Queue Url Operation
 message GetQueueUrlRequest {
     string queueName = 1;
 }
@@ -54,7 +57,7 @@ message GetQueueUrlResponse {
     string queueUrl = 2;
 }
 
-
+// List Queue Operation
 message ListQueuesRequest {
     string queueNamePrefix = 1;
 }
@@ -64,7 +67,7 @@ message ListQueuesResponse {
     repeated Queue queues = 2;
 }
 
-
+// Purge Queue Operation
 message PurgeQueueRequest {
     string queueUrl = 1;
 }
@@ -73,11 +76,12 @@ message PurgeQueueResponse {
     string requestId = 1;
 }
 
-
+// Send Message Operation
 message SendMessageRequest {
     string queueUrl = 1;
     string messageBody = 2;
     map<string, string> attributes = 3;
+    int32 delayInSeconds = 4;
 }
 
 message SendMessageResponse {
@@ -85,22 +89,23 @@ message SendMessageResponse {
     MessageMetadata metadata = 2;
 }
 
-
+// Send Message Batch Operation
 message SendMessageBatchRequest {
     string queueUrl = 1;
-    repeated string messageBodies = 2;
+    repeated SendMessageEntry entries = 2;
 }
 
 message SendMessageBatchResponse {
     string requestId = 1;
     repeated MessageMetadata successful = 2;
-    repeated MessageMetadata failed = 3;
+    repeated string failed = 3;
 }
 
-
+// Recieve Message Operation
 message ReceiveMessageRequest {
     string queueUrl = 1;
     int32 maxNumberOfMessages = 2;
+    int32 visibilityTimeoutInSeconds = 3;
 }
 
 message ReceiveMessageResponse {
@@ -108,7 +113,7 @@ message ReceiveMessageResponse {
     repeated Message message = 2;
 }
 
-
+// Delete Message Operation
 message DeleteMessageRequest {
     string queueUrl = 1;
     string receiptHandle = 2;
@@ -118,7 +123,7 @@ message DeleteMessageResponse {
     string requestId = 1;
 }
 
-
+// Delete Message Batch Operation
 message DeleteMessageBatchRequest {
     string queueUrl = 1;
     repeated string receiptHandles = 2;
@@ -146,11 +151,18 @@ message MessageMetadata {
     string md5OfMessageAttributes = 3;
 }
 
+message SendMessageEntry {
+    string id = 1;
+    string messageBody = 2;
+    map<string, string> attributes = 3;
+    int32 delayInSeconds = 4;
+}
+
 message Message {
     string id = 1;
     string receiptHandle = 2;
     string body = 3;
-    string md5OfMessageBody = 4;
-    map<string, string> attributes = 5;
+    map<string, string> attributes = 4;
+    string md5OfMessageBody = 5;
     string md5OfMessageAttributes = 6;
 }

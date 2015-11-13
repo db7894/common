@@ -38,7 +38,7 @@ public final class HqsServiceAdapter {
             .setId(message.getIdentifier())
             .setMd5OfMessageBody(message.getMd5HashOfBody())
             .setMd5OfMessageAttributes(message.getMd5HashOfAttributes())
-            .setReceiptHandle(message.getIdentifier())
+            .setReceiptHandle(message.getReceiptHandle())
             .putAllAttributes(message.getAttributes())
             .build();
     }

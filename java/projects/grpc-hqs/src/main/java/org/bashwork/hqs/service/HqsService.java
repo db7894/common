@@ -1,8 +1,8 @@
 package org.bashwork.hqs.service;
 
 import static java.util.Objects.requireNonNull;
+import static org.bashwork.hqs.service.HqsServiceValidator.validate;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.List;
 import java.util.Set;
@@ -55,24 +55,22 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void createQueue(final CreateQueueRequest request,
         final StreamObserver<CreateQueueResponse> observer) {
 
-        final String queueName = request.getQueueName();
-        final Optional<HqsQueue> queue = database.createQueue(queueName);
+        validate(request);
+        final Optional<HqsQueue> queue = database.createQueue(request);
 
-        if (queue.isPresent()) {
-            final CreateQueueResponse response = CreateQueueResponse.newBuilder()
-                .setQueueUrl(queue.get()
-                    .getUrl())
-                .setRequestId(HqsServiceAdapter.generateRequestId())
-                .build();
-
-            logger.debug("created queue {}: {}", queueName, queue);
-            observer.onNext(response);
-            observer.onCompleted();
-
-        } else {
-            logger.debug("failed to create queue {}", queueName);
-            observer.onError(new QueueDoesNotExistError(queueName));
+        if (!queue.isPresent()) {
+            logger.debug("failed to create queue {}", request.getQueueName());
+            throw new QueueDoesNotExistError(request.getQueueName());
         }
+
+        final CreateQueueResponse response = CreateQueueResponse.newBuilder()
+            .setQueueUrl(queue.get().getUrl())
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .build();
+
+        logger.debug("created queue {}: {}", request.getQueueName(), queue);
+        observer.onNext(response);
+        observer.onCompleted();
     }
 
     /**
@@ -84,22 +82,21 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void deleteQueue(final DeleteQueueRequest request,
         final StreamObserver<DeleteQueueResponse> observer) {
 
-        final String queueUrl = request.getQueueUrl();
-        final boolean isDeleted = database.deleteQueue(queueUrl);
+        validate(request);
+        final boolean isDeleted = database.deleteQueue(request);
 
-        if (isDeleted) {
-            final DeleteQueueResponse response = DeleteQueueResponse.newBuilder()
-                .setRequestId(HqsServiceAdapter.generateRequestId())
-                .build();
-
-            logger.debug("deleted queue {}: {}", queueUrl, isDeleted);
-            observer.onNext(response);
-            observer.onCompleted();
-
-        } else {
-            logger.debug("failed to delete queue {}", queueUrl);
-            observer.onError(new QueueDoesNotExistError(queueUrl));
+        if (!isDeleted) {
+            logger.error("failed to delete queue {}", request.getQueueUrl());
+            throw new QueueDoesNotExistError(request.getQueueUrl());
         }
+
+        final DeleteQueueResponse response = DeleteQueueResponse.newBuilder()
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .build();
+
+        logger.debug("deleted queue {}", request.getQueueUrl());
+        observer.onNext(response);
+        observer.onCompleted();
     }
 
     /**
@@ -111,7 +108,8 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void listQueues(final ListQueuesRequest request,
         final StreamObserver<ListQueuesResponse> observer) {
 
-        final List<HqsQueue> queues = database.listQueues();
+        validate(request);
+        final List<HqsQueue> queues = database.listQueues(request);
         final ListQueuesResponse response = ListQueuesResponse.newBuilder()
             .addAllQueues(HqsServiceAdapter.adaptQueues(queues))
             .setRequestId(HqsServiceAdapter.generateRequestId())
@@ -132,22 +130,21 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void purgeQueue(final PurgeQueueRequest request,
         final StreamObserver<PurgeQueueResponse> observer) {
 
-        final String queueUrl = request.getQueueUrl();
-        final boolean isPurged = database.purgeQueue(queueUrl);
+        validate(request);
+        final boolean isPurged = database.purgeQueue(request);
 
-        if (isPurged) {
-            final PurgeQueueResponse response = PurgeQueueResponse.newBuilder()
-                .setRequestId(HqsServiceAdapter.generateRequestId())
-                .build();
-
-            logger.debug("purged messages from {}: {}", queueUrl, isPurged);
-            observer.onNext(response);
-            observer.onCompleted();
-
-        } else {
-            logger.debug("failed to purge messages from queue {}", queueUrl);
-            observer.onError(new QueueDoesNotExistError(queueUrl));
+        if (!isPurged) {
+            logger.error("failed to purge messages from queue {}", request.getQueueUrl());
+            throw new QueueDoesNotExistError(request.getQueueUrl());
         }
+
+        final PurgeQueueResponse response = PurgeQueueResponse.newBuilder()
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .build();
+
+        logger.debug("purged messages from {}", request.getQueueUrl());
+        observer.onNext(response);
+        observer.onCompleted();
     }
 
     /**
@@ -159,23 +156,22 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void getQueueUrl(final GetQueueUrlRequest request,
         final StreamObserver<GetQueueUrlResponse> observer) {
 
-        final String queueName = request.getQueueName();
-        final Optional<HqsQueue> queue = database.getQueue(queueName);
+        validate(request);
+        final Optional<HqsQueue> queue = database.getQueue(request);
 
-        if (queue.isPresent()) {
-            final GetQueueUrlResponse response = GetQueueUrlResponse.newBuilder()
-                .setQueueUrl(queue.get().getUrl())
-                .setRequestId(HqsServiceAdapter.generateRequestId())
-                .build();
-
-            logger.debug("got the queue url for {}: {}", queueName, queue);
-            observer.onNext(response);
-            observer.onCompleted();
-
-        } else {
-            logger.debug("failed to retrieve queue {}", queueName);
-            observer.onError(new QueueDoesNotExistError(queueName));
+        if (!queue.isPresent()) {
+            logger.error("failed to retrieve queue {}", request.getQueueName());
+            throw new QueueDoesNotExistError(request.getQueueName());
         }
+
+        final GetQueueUrlResponse response = GetQueueUrlResponse.newBuilder()
+            .setQueueUrl(queue.get().getUrl())
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .build();
+
+        logger.debug("got the queue url for {}: {}", request.getQueueName(), queue);
+        observer.onNext(response);
+        observer.onCompleted();
     }
 
     /**
@@ -187,25 +183,22 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void sendMessage(final SendMessageRequest request,
         final StreamObserver<SendMessageResponse> observer) {
 
-        final String queueUrl = request.getQueueUrl();
-        final String messageBody = request.getMessageBody();
-        final Map<String, String> attributes = request.getAttributes();
-        final Optional<HqsMessage> message = database.sendMessage(queueUrl, messageBody, attributes);
+        validate(request);
+        final Optional<HqsMessage> message = database.sendMessage(request);
 
-        if (message.isPresent()) {
-            final SendMessageResponse response = SendMessageResponse.newBuilder()
-                .setMetadata(HqsServiceAdapter.adaptMetadata(message.get()))
-                .setRequestId(HqsServiceAdapter.generateRequestId())
-                .build();
-
-            logger.debug("sent the message to queue {}: {}", request.getQueueUrl(), message);
-            observer.onNext(response);
-            observer.onCompleted();
-
-        } else {
-            logger.debug("failed to sent message to queue {}", request.getQueueUrl());
-            observer.onError(new CouldNotSendMessageError(messageBody));
+        if (!message.isPresent()) {
+            logger.error("failed to sent message to queue {}", request.getQueueUrl());
+            throw new CouldNotSendMessageError(request.getMessageBody());
         }
+
+        final SendMessageResponse response = SendMessageResponse.newBuilder()
+            .setMetadata(HqsServiceAdapter.adaptMetadata(message.get()))
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .build();
+
+        logger.debug("sent the message to queue {}: {}", request.getQueueUrl(), message);
+        observer.onNext(response);
+        observer.onCompleted();
     }
 
     /**
@@ -217,11 +210,12 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void sendMessageBatch(final SendMessageBatchRequest request,
         final StreamObserver<SendMessageBatchResponse> observer) {
 
-        final String queueUrl = request.getQueueUrl();
-        final List<String> messageBodies = request.getMessageBodiesList();
-        final List<HqsMessage> messages = database.sendMessageBatch(queueUrl, messageBodies);
+        validate(request);
+        final List<HqsMessage> messages = database.sendMessageBatch(request);
+        final Set<String> possible = Streams.extract(request.getEntriesList(), SendMessageEntry::getId);
+        final Set<String> successful = Streams.extract(messages, HqsMessage::getIdentifier);
         final SendMessageBatchResponse response = SendMessageBatchResponse.newBuilder()
-            // TODO .addAllFailed()
+            .addAllFailed(Streams.disjunction(possible, successful))
             .addAllSuccessful(HqsServiceAdapter.adaptMetadatas(messages))
             .setRequestId(HqsServiceAdapter.generateRequestId())
             .build();
@@ -241,9 +235,8 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void receiveMessage(final ReceiveMessageRequest request,
         final StreamObserver<ReceiveMessageResponse> observer) {
 
-        final String queueUrl = request.getQueueUrl();
-        final int messageCount = Math.max(1, request.getMaxNumberOfMessages());
-        final List<HqsMessage> messages = database.receiveMessages(queueUrl, messageCount);
+        validate(request);
+        final List<HqsMessage> messages = database.receiveMessages(request);
         final ReceiveMessageResponse response = ReceiveMessageResponse.newBuilder()
             .addAllMessage(HqsServiceAdapter.adaptMessages(messages))
             .setRequestId(HqsServiceAdapter.generateRequestId())
@@ -265,22 +258,21 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void deleteMessage(final DeleteMessageRequest request,
         final StreamObserver<DeleteMessageResponse> observer) {
 
-        final String receiptHandle = request.getReceiptHandle();
-        final Optional<HqsMessage> message = database.deleteMessage(receiptHandle);
+        validate(request);
+        final Optional<HqsMessage> message = database.deleteMessage(request);
 
-        if (message.isPresent()) {
-            final DeleteMessageResponse response = DeleteMessageResponse.newBuilder()
-                .setRequestId(HqsServiceAdapter.generateRequestId())
-                .build();
-
-            logger.debug("deleted message from queue {}: {}", request.getQueueUrl(), message);
-            observer.onNext(response);
-            observer.onCompleted();
-
-        } else {
-            logger.debug("failed to delete message from queue {}", request.getQueueUrl());
-            observer.onError(new CouldNotDeleteMessageError(receiptHandle));
+        if (!message.isPresent()) {
+            logger.error("failed to delete message from queue {}", request.getQueueUrl());
+            throw new CouldNotDeleteMessageError(request.getReceiptHandle());
         }
+
+        final DeleteMessageResponse response = DeleteMessageResponse.newBuilder()
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .build();
+
+        logger.debug("deleted message from queue {}: {}", request.getQueueUrl(), message);
+        observer.onNext(response);
+        observer.onCompleted();
     }
 
     /**
@@ -292,7 +284,8 @@ public final class HqsService implements HqsGrpc.Hqs {
     public void deleteMessageBatch(final DeleteMessageBatchRequest request,
         final StreamObserver<DeleteMessageBatchResponse> observer) {
 
-        final List<HqsMessage> messages = database.deleteMessageBatch(request.getReceiptHandlesList());
+        validate(request);
+        final List<HqsMessage> messages = database.deleteMessageBatch(request);
         final Set<String> successful = Streams.extract(messages, HqsMessage::getIdentifier);
         final DeleteMessageBatchResponse response = DeleteMessageBatchResponse.newBuilder()
             .addAllFailed(Streams.disjunction(request.getReceiptHandlesList(), successful))
