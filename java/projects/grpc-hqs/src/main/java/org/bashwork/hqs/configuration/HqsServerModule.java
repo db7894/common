@@ -2,7 +2,7 @@ package org.bashwork.hqs.configuration;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
-import org.bashwork.hqs.HqsGrpc;
+import org.bashwork.hqs.protocol.HqsGrpc;
 import org.bashwork.hqs.service.HqsService;
 import org.bashwork.hqs.ServerMain;
 import org.bashwork.hqs.database.HqsDatabase;

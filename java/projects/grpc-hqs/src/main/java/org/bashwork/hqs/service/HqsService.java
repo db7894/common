@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.List;
 import java.util.Set;
 
-import org.bashwork.hqs.*;
+import org.bashwork.hqs.protocol.*;
 import org.bashwork.hqs.database.HqsMessage;
 import org.bashwork.hqs.database.HqsQueue;
 import org.bashwork.hqs.database.HqsDatabase;
@@ -41,8 +41,6 @@ public final class HqsService implements HqsGrpc.Hqs {
         this.database = requireNonNull(database, "HqsService requires an HqsDatabase");
     }
 
-    // TODO change message visibility
-    // TODO change message visibility batch
     // TODO get queue attributes
     // TODO set queue attributes
 
@@ -246,7 +244,54 @@ public final class HqsService implements HqsGrpc.Hqs {
 
         observer.onNext(response);
         observer.onCompleted();
+    }
 
+    /**
+     *
+     * @param request The request to handle.
+     * @param observer The observer to write the response to.
+     */
+    @Override
+    public void changeMessageVisibility(final ChangeMessageVisibilityRequest request,
+        final StreamObserver<ChangeMessageVisibilityResponse> observer) {
+
+        validate(request);
+        final Optional<HqsMessage> message = database.changeMessageVisibility(request);
+
+        if (!message.isPresent()) {
+            logger.error("failed to change message visibility: {}", request.getReceiptHandle());
+            throw new CouldNotDeleteMessageError(request.getReceiptHandle());
+        }
+
+        final ChangeMessageVisibilityResponse response = ChangeMessageVisibilityResponse.newBuilder()
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .build();
+
+        logger.debug("changed message visibility for message: {}", request.getReceiptHandle());
+
+        observer.onNext(response);
+        observer.onCompleted();
+    }
+
+    /**
+     *
+     * @param request The request to handle.
+     * @param observer The observer to write the response to.
+     */
+    @Override
+    public void changeMessageVisibilityBatch(final ChangeMessageVisibilityBatchRequest request,
+        final StreamObserver<ChangeMessageVisibilityResponse> observer) {
+
+        validate(request);
+
+        final ChangeMessageVisibilityResponse response = ChangeMessageVisibilityResponse.newBuilder()
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .build();
+
+        logger.debug("changed message visibility for {} messages", request.getEntriesCount());
+
+        observer.onNext(response);
+        observer.onCompleted();
     }
 
     /**

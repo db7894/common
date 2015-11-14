@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.google.inject.Guice;
 import io.grpc.netty.NettyServerBuilder;
 import org.bashwork.hqs.configuration.HqsServerModule;
+import org.bashwork.hqs.protocol.HqsGrpc;
 import org.bashwork.hqs.service.HqsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

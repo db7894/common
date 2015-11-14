@@ -1,6 +1,6 @@
 package org.bashwork.hqs.database;
 
-import org.bashwork.hqs.SendMessageEntry;
+import org.bashwork.hqs.protocol.SendMessageEntry;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -78,8 +78,8 @@ public final class HqsDatabaseAdapter {
     public static String md5Hash(Map<String, String> attributes) {
         final StringBuilder builder = new StringBuilder();
 
-        for (String key : attributes.keySet()) {
-            builder.append(key).append(":").append(attributes.get(key));
+        for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            builder.append(entry.getKey()).append(entry.getValue());
         }
 
         return md5Hash(builder.toString());

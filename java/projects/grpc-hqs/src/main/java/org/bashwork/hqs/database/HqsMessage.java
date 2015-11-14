@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * Internal representation of a message on the queue along with
+ * all its metadata and tracking information.
  */
 public class HqsMessage {
 
@@ -16,9 +18,7 @@ public class HqsMessage {
     private final Map<String, String> attributes;
     private final int receiveCount;
     private final Instant sentTime;
-
-    // TODO sender of message
-    // TODO date first touched
+    private final Instant firstReceived;
 
     private HqsMessage(Builder builder) {
         this.body = builder.body;
@@ -29,6 +29,7 @@ public class HqsMessage {
         this.receiptHandle = builder.receiptHandle;
         this.receiveCount = builder.receiveCount;
         this.sentTime = builder.sentTime;
+        this.firstReceived = builder.firstReceived;
     }
 
     public String getBody() {
@@ -63,6 +64,10 @@ public class HqsMessage {
         return sentTime;
     }
 
+    public Instant getFirstReceived() {
+        return firstReceived;
+    }
+
     @Override
     public boolean equals(final Object other) {
         if (this == other) {
@@ -79,13 +84,15 @@ public class HqsMessage {
             && Objects.equals(this.md5HashOfAttributes, that.md5HashOfAttributes)
             && Objects.equals(this.identifier, that.identifier)
             && Objects.equals(this.receiptHandle, that.receiptHandle)
-            && Objects.equals(this.sentTime, that.sentTime);
+            && Objects.equals(this.sentTime, that.sentTime)
+            && Objects.equals(this.firstReceived, that.firstReceived);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(body, md5HashOfBody, md5HashOfAttributes,
-            attributes, identifier, receiveCount, sentTime, receiptHandle);
+            attributes, identifier, receiveCount, sentTime, receiptHandle,
+            firstReceived);
     }
 
 
@@ -101,6 +108,7 @@ public class HqsMessage {
             .append(", receiveCount=").append(receiveCount)
             .append(", attributes=").append(attributes)
             .append(", sentTime=").append(sentTime)
+            .append(", firstReceived=").append(firstReceived)
             .append(" }")
             .toString();
     }
@@ -120,7 +128,8 @@ public class HqsMessage {
             .setMd5HashOfAttributes(message.getMd5HashOfAttributes())
             .setMd5HashOfBody(message.getMd5HashOfBody())
             .setReceiveCount(message.getReceiveCount())
-            .setSentTime(message.getSentTime());
+            .setSentTime(message.getSentTime())
+            .setFirstReceived(message.getFirstReceived());
     }
 
     public static Builder newBuilder() {
@@ -138,6 +147,7 @@ public class HqsMessage {
         private int receiveCount;
         private Map<String, String> attributes;
         private Instant sentTime;
+        private Instant firstReceived;
 
         public Builder setBody(String body) {
             this.body = body;
@@ -176,6 +186,11 @@ public class HqsMessage {
 
         public Builder setSentTime(Instant sentTime) {
             this.sentTime = sentTime;
+            return this;
+        }
+
+        public Builder setFirstReceived(Instant firstReceived) {
+            this.firstReceived = firstReceived;
             return this;
         }
 

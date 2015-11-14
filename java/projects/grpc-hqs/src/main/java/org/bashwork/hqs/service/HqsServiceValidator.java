@@ -1,6 +1,6 @@
 package org.bashwork.hqs.service;
 
-import org.bashwork.hqs.*;
+import org.bashwork.hqs.protocol.*;
 import org.bashwork.hqs.service.errors.InvalidRequestError;
 
 import java.util.List;
@@ -21,7 +21,7 @@ public final class HqsServiceValidator {
     public static void validate(final CreateQueueRequest request) {
         isNotEmpty(request.getQueueName(), "QueueName");
         isPositive(request.getDelayInSeconds(), "DelayInSeconds");
-        isPositive(request.getVisibilityTimeoutInSeconds(), "VisibilityTimeoutInSeconds");
+        isPositive(request.getVisibilityInSeconds(), "VisibilityTimeoutInSeconds");
     }
 
     /**
@@ -79,7 +79,7 @@ public final class HqsServiceValidator {
      */
     public static void validate(final SendMessageBatchRequest request) {
         isNotEmpty(request.getQueueUrl(), "QueueUrl");
-        isValid(request.getEntriesList(), "Entries");
+        isValidSendEntries(request.getEntriesList(), "Entries");
     }
 
     /**
@@ -88,7 +88,7 @@ public final class HqsServiceValidator {
      * @param values The values to validate.
      * @param name The name of the field to validate.
      */
-    private static void isValid(final List<SendMessageEntry> values, final String name) {
+    private static void isValidSendEntries(final List<SendMessageEntry> values, final String name) {
         if (values == null) {
             throw new InvalidRequestError(name);
         }
@@ -115,7 +115,52 @@ public final class HqsServiceValidator {
     public static void validate(final ReceiveMessageRequest request) {
         isNotEmpty(request.getQueueUrl(), "QueueUrl");
         isPositive(request.getMaxNumberOfMessages(), "MaxNumberOfMessages");
-        isPositive(request.getVisibilityTimeoutInSeconds(), "VisibilityTimeoutInSeconds");
+        isPositive(request.getVisibilityInSeconds(), "VisibilityTimeoutInSeconds");
+    }
+
+    /**
+     * Validate the supplied request.
+     *
+     * @param request The request to validate.
+     */
+    public static void validate(final ChangeMessageVisibilityRequest request) {
+        isNotEmpty(request.getQueueUrl(), "QueueUrl");
+        isNotEmpty(request.getReceiptHandle(), "ReceiptHandle");
+        isPositive(request.getVisibilityInSeconds(), "VisibilityTimeoutInSeconds");
+    }
+
+    /**
+     * Validate the supplied request.
+     *
+     * @param request The request to validate.
+     */
+    public static void validate(final ChangeMessageVisibilityBatchRequest request) {
+        isNotEmpty(request.getQueueUrl(), "QueueUrl");
+        isValidChangeEntries(request.getEntriesList(), "Entries");
+    }
+
+    /**
+     * Validate the supplied request.
+     *
+     * @param entry The request to validate.
+     */
+    private static void validate(final ChangeMessageVisibilityEntry entry) {
+
+        isNotEmpty(entry.getReceiptHandle(), "ReceiptHandle");
+        isPositive(entry.getVisibilityInSeconds(), "VisibilityTimeoutInSeconds");
+    }
+
+    /**
+     * Validate the supplied request.
+     *
+     * @param values The values to validate.
+     * @param name The name of the field to validate.
+     */
+    private static void isValidChangeEntries(final List<ChangeMessageVisibilityEntry> values, final String name) {
+        if (values == null) {
+            throw new InvalidRequestError(name);
+        }
+        values.forEach(HqsServiceValidator::validate);
     }
 
     /**

@@ -3,6 +3,7 @@ package org.bashwork.hqs;
 import com.google.inject.Guice;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.bashwork.hqs.protocol.*;
 import org.bashwork.hqs.configuration.HqsClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

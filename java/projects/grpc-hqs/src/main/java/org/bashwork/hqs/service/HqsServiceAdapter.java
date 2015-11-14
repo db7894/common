@@ -1,8 +1,6 @@
 package org.bashwork.hqs.service;
 
-import org.bashwork.hqs.Message;
-import org.bashwork.hqs.MessageMetadata;
-import org.bashwork.hqs.Queue;
+import org.bashwork.hqs.protocol.*;
 import org.bashwork.hqs.database.HqsMessage;
 import org.bashwork.hqs.database.HqsQueue;
 

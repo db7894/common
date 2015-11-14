@@ -18,11 +18,12 @@ public final class Streams {
      * is necessary from that collection.
      *
      * @param collection The collection to extract the value from.
+     * @param extractor The field to extract from each element.
      * @param <T> The original collection type.
      * @param <U> The resulting collection type.
      * @return The resulting extracted set.
      */
-    public static <T, U> Set<U> extract(List<T> collection, Function<T, U> extractor) {
+    public static <T, U> Set<U> extract(final List<T> collection, final Function<T, U> extractor) {
         return collection.stream()
             .map(extractor)
             .collect(Collectors.toSet());
@@ -37,7 +38,7 @@ public final class Streams {
      * @param <T> The type of the collection.
      * @return The set disjunction of the two collections.
      */
-    public static <T> List<T> disjunction(Collection<T> collection, Set<T> disjoint) {
+    public static <T> List<T> disjunction(final Collection<T> collection, final Set<T> disjoint) {
         return collection.stream()
             .filter(entry -> !disjoint.contains(entry))
             .collect(Collectors.toList());

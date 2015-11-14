@@ -1,6 +1,6 @@
 package org.bashwork.hqs.database;
 
-import org.bashwork.hqs.*;
+import org.bashwork.hqs.protocol.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -74,6 +74,22 @@ public interface HqsDatabase {
      * @return The collection of received messages.
      */
     List<HqsMessage> receiveMessages(ReceiveMessageRequest request);
+
+    /**
+     * Change the visibility timeout before some messages are added back to the queue.
+     *
+     * @param request The request to fulfill.
+     * @return The optional updated message.
+     */
+    List<HqsMessage> changeMessageVisibilityBatch(ChangeMessageVisibilityBatchRequest request);
+
+    /**
+     * Change the visibility timeout before a message is added back to the queue.
+     *
+     * @param request The request to fulfill.
+     * @return The optional updated message.
+     */
+    Optional<HqsMessage> changeMessageVisibility(ChangeMessageVisibilityRequest request);
 
     /**
      * Delete a single message that has been handled.
