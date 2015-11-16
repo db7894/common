@@ -75,7 +75,7 @@ LDB.leveldb_create_iterator.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 LDB.leveldb_create_iterator.restype = ctypes.c_void_p
 
 LDB.leveldb_iter_valid.argtypes = [ctypes.c_void_p]
-LDB.leveldb_iter_valid.restype  = ctypes.c_ubyte
+LDB.leveldb_iter_valid.restype  = ctypes.c_bool
 
 LDB.leveldb_iter_seek_to_first.argtypes = [ctypes.c_void_p]
 LDB.leveldb_iter_seek_to_first.restype  = None
@@ -92,10 +92,10 @@ LDB.leveldb_iter_next.restype  = None
 LDB.leveldb_iter_prev.argtypes = [ctypes.c_void_p]
 LDB.leveldb_iter_prev.restype  = None
 
-LDB.leveldb_iter_key.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+LDB.leveldb_iter_key.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_size_t)]
 LDB.leveldb_iter_key.restype  = ctypes.c_void_p
 
-LDB.leveldb_iter_value.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+LDB.leveldb_iter_value.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_size_t)]
 LDB.leveldb_iter_value.restype  = ctypes.c_void_p
 
 LDB.leveldb_iter_get_error.argtypes = [ctypes.c_void_p, ctypes.c_void_p]

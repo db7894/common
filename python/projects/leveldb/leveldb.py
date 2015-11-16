@@ -114,6 +114,14 @@ class DatabaseReadOperations(object):
         LDB.leveldb_readoptions_set_fill_cache(options, fill_cache)
         return options
 
+    def new_iterator(self, verify_checksum=False, fill_cache=True):
+        ''' Create a new interator around the database.
+
+        :returns: The DatabaseIterator context object.
+        '''
+        options = self.get_read_options(verify_checksum, fill_cache)
+        return DatabaseIterator(self.database, options)
+
     def get(self, key, verify_checksum=False, fill_cache=True):
         ''' Delete the supplied value at the given key.
 
@@ -171,13 +179,14 @@ class DatabaseIterator(object):
     with operations to easily move around the entire database.
     '''
 
-    def __init__(self, database):
+    def __init__(self, database, options):
         ''' Initialize a new instance of the DatabaseIterator.
 
+        :param options: The read options to operate with.
         :param database: The databaes to build an iterator on.
         '''
-        options = None # TODO
         self.iterator = LDB.leveldb_create_iterator(database, options)
+        LDB.leveldb_readoptions_destroy(options)
 
     def get_key(self):
         ''' Get the current key at the iterator
@@ -301,7 +310,14 @@ class Database(DatabaseReadOperations):
         ''' Create a new instance of the Database
 
         :param filename: The filename to store the database at.
-        :param TODO:
+        :param create_if_missing: True to create the database if it does not exist
+        :param error_if_exists: True to throw an error if the database exists
+        :param paranoid_checks: True to run all the paranoid checks on the database
+        :param write_buffer_size: The write buffer size on the database
+        :param max_open_files: The max number of memory mapped files open
+        :param block_size: The max block size on the database
+        :param block_restart_interval: 
+        :param compression: True to enable compression on the database
         '''
         self.filename = kwargs.pop('filename', 'db')
         self.options  = dict(kwargs)
@@ -399,13 +415,6 @@ class Database(DatabaseReadOperations):
             self.handle_error(error)
         finally:
             if options: LDB.leveldb_writeoptions_destroy(options)
-
-    def new_iterator(self):
-        ''' Create a new interator around the database.
-
-        :returns: The DatabaseIterator context object.
-        '''
-        return DatabaseIterator(self.database)
 
     def new_write_batch(self, synchronous=False):
         ''' Start a new atomic write batch operation::
@@ -556,7 +565,8 @@ class Database(DatabaseReadOperations):
             raise DatabaseException(message)
 
     def __exit__(self, type, value, traceback): self.close()
-    def __iter__(self): return self.new_iterator().seek_to_first()
+    #def __iter__(self): return self.new_iterator().seek_to_first()
+    def __iter__(self): return self.new_iterator()
     def __enter__(self):
         if not self.database: self.open()
         return self
@@ -579,5 +589,13 @@ if __name__ == "__main__":
             batch.delete("name")
         print database.get("new-name")
         print database.get("name")
+
+    with Database(filename='temporary') as database:
+        with database.new_write_batch() as batch:
+            batch.put_many({chr(v + 48) : str(v) for v in range(26)})
+        print [database.get(chr(v + 48)) for v in range(26)]
+
+        for key, value in database.new_iterator():
+            print key,value
 
     Database(filename='temporary').destroy()
