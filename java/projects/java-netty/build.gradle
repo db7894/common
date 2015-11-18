@@ -1,0 +1,12 @@
+apply plugin: 'java'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.12',
+      'io.netty:netty-all:5.0.0.Alpha2'
+
+    testCompile 'junit:junit:4.12'
+}
