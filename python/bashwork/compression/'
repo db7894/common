@@ -1,0 +1,24 @@
+from collections import Counter, namedtuple
+import heapq
+
+Node = namedtuple('Node', ['value', 'probability', 'left', 'right'])
+Node.__new__.__defaults__ = (None, None, None, None)
+
+def build_huffman_tree(string):
+    '''
+    '''
+    size  = len(string)
+    nodes = [(float(count) / size, char) for char, count in Counter(string).most_common()]
+    heapq.heapify(nodes)
+
+    tree  = {}
+    for char, count in chars.most_common():
+        node[code + b'0'] = (char, float(count) / size)
+        node[1] = {}
+        node    = node[1]
+    return tree
+
+def encode_with_tree(string, tree):
+
+
+huffman = build_huffman_tree("this is an example of a huffman tree")
