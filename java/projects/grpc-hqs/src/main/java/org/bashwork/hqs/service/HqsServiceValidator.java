@@ -39,7 +39,7 @@ public final class HqsServiceValidator {
      * @param request The request to validate.
      */
     public static void validate(final ListQueuesRequest request) {
-        isNotEmpty(request.getQueueNamePrefix(), "QueueNamePrefix");
+        //isNotEmpty(request.getQueueNamePrefix(), "QueueNamePrefix");
     }
 
     /**

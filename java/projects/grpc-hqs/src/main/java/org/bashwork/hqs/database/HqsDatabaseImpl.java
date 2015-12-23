@@ -7,6 +7,8 @@ import static org.bashwork.hqs.utility.MoreObjects.*;
 import org.bashwork.hqs.protocol.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Gauge;
 
 import javax.inject.Inject;
 import java.time.Duration;
@@ -27,9 +29,11 @@ import java.util.stream.Collectors;
  */
 public final class HqsDatabaseImpl implements HqsDatabase {
 
+    private static final String MISSING = "";
     private static final boolean MAY_INTERRUPT = true;
     private static final Logger logger = LoggerFactory.getLogger(HqsDatabaseImpl.class);
 
+    private final MetricRegistry metrics;
     private final ConcurrentHashMap<String, String> queueUrlToName;
     private final ConcurrentHashMap<String, HqsQueue> queueMetadata;
     private final ConcurrentHashMap<String, MessageTask> messageTasks;
@@ -42,12 +46,15 @@ public final class HqsDatabaseImpl implements HqsDatabase {
      * @param executor The executor to run asynchronous operations on.
      */
     @Inject
-    public HqsDatabaseImpl(ScheduledExecutorService executor) {
+    public HqsDatabaseImpl(ScheduledExecutorService executor, MetricRegistry metrics) {
         this.queueMetadata = new ConcurrentHashMap<>();
         this.queueUrlToName = new ConcurrentHashMap<>();
         this.messageTasks = new ConcurrentHashMap<>();
         this.queueMessages = new ConcurrentHashMap<>();
         this.executor = requireNonNull(executor, "HqsDatabase requires an Executor");
+        this.metrics = requireNonNull(metrics, "HqsDatabase requires a MetricsRegistry");
+
+        registerMetrics();
     }
 
     /**
@@ -72,6 +79,9 @@ public final class HqsDatabaseImpl implements HqsDatabase {
                 .build());
 
         logger.debug("created queue {} -> {}", queue.getName(), queue.getUrl());
+        metrics.counter("org.bashwork.hqs.database.queues-created").inc();
+        metrics.counter("org.bashwork.hqs.database.queue-count").inc(); // TODO creating same queue will increase this
+
         queueUrlToName.putIfAbsent(queue.getUrl(), queue.getName());
         queueMessages.putIfAbsent(queue.getUrl(), new ConcurrentLinkedDeque<>());
 
@@ -103,6 +113,9 @@ public final class HqsDatabaseImpl implements HqsDatabase {
         final boolean isQueueAvailable = (queueName != null);
 
         if (isQueueAvailable) {
+            metrics.counter("org.bashwork.hqs.database.queues-deleted").inc();
+            metrics.counter("org.bashwork.hqs.database.queue-count").dec();
+
             queueMetadata.remove(queueName);
             queueMessages.remove(request.getQueueUrl());
         }
@@ -155,11 +168,13 @@ public final class HqsDatabaseImpl implements HqsDatabase {
      */
     @Override
     public Optional<HqsMessage> sendMessage(final SendMessageRequest request) {
-        final HqsQueue metadata = queueMetadata.get(request.getQueueUrl());
+        final String queueName = queueUrlToName.getOrDefault(request.getQueueUrl(), MISSING);
+        final HqsQueue metadata = queueMetadata.get(queueName);
         final ConcurrentLinkedDeque<HqsMessage> messages = queueMessages.get(request.getQueueUrl());
         final boolean isQueueNotAvailable = (messages == null) || (metadata == null);
 
         if (isQueueNotAvailable) {
+            logger.debug("requested queue {} does not exist", request.getQueueUrl());
             return Optional.empty();
         }
 
@@ -167,6 +182,9 @@ public final class HqsDatabaseImpl implements HqsDatabase {
         final long delayInSeconds = firstPositive(request.getDelayInSeconds(), metadata.getMessageDelay());
 
         offerWithDelay(message, delayInSeconds, messages);
+
+        metrics.counter("org.bashwork.hqs.database.messages-sent").inc();
+        metrics.counter("org.bashwork.hqs.database.messages-count").inc();
 
         return Optional.ofNullable(message);
     }
@@ -176,12 +194,14 @@ public final class HqsDatabaseImpl implements HqsDatabase {
      */
     @Override
     public List<HqsMessage> sendMessageBatch(final SendMessageBatchRequest request) {
-        final HqsQueue metadata = queueMetadata.get(request.getQueueUrl());
+        final String queueName = queueUrlToName.getOrDefault(request.getQueueUrl(), MISSING);
+        final HqsQueue metadata = queueMetadata.get(queueName);
         final ConcurrentLinkedDeque<HqsMessage> messages = queueMessages.get(request.getQueueUrl());
         final List<HqsMessage> sentMessages = new ArrayList<>();
         final boolean isQueueNotAvailable = (metadata == null) || (messages == null);
 
         if (isQueueNotAvailable) {
+            logger.debug("requested queue {} does not exist", request.getQueueUrl());
             return sentMessages;
         }
 
@@ -193,6 +213,9 @@ public final class HqsDatabaseImpl implements HqsDatabase {
             sentMessages.add(newMessage);
         }
 
+        metrics.counter("org.bashwork.hqs.database.messages-sent").inc(sentMessages.size());
+        metrics.counter("org.bashwork.hqs.database.messages-count").inc(sentMessages.size());
+
         return sentMessages;
     }
 
@@ -202,12 +225,14 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     @Override
     public List<HqsMessage> receiveMessages(final ReceiveMessageRequest request) {
         final int maxNumberOfMessages = Math.max(1, request.getMaxNumberOfMessages());
-        final HqsQueue metadata = queueMetadata.get(request.getQueueUrl());
+        final String queueName = queueUrlToName.getOrDefault(request.getQueueUrl(), MISSING);
+        final HqsQueue metadata = queueMetadata.get(queueName);
         final ConcurrentLinkedDeque<HqsMessage> messages = queueMessages.get(request.getQueueUrl());
         final List<HqsMessage> receivedMessages = new ArrayList<>();
         final boolean isQueueNotAvailable = (metadata == null) || (messages == null);
 
         if (isQueueNotAvailable) {
+            logger.debug("requested queue {} does not exist", request.getQueueUrl());
             return receivedMessages;
         }
 
@@ -242,6 +267,8 @@ public final class HqsDatabaseImpl implements HqsDatabase {
             receivedMessages.add(newMessage);
         }
 
+        metrics.counter("org.bashwork.hqs.database.messages-received").inc(receivedMessages.size());
+
         return receivedMessages;
     }
 
@@ -254,6 +281,7 @@ public final class HqsDatabaseImpl implements HqsDatabase {
         final boolean isTaskNotAvailable = (task == null);
 
         if (isTaskNotAvailable) {
+            logger.debug("requested message {} does not exist", request.getReceiptHandle());
             return Optional.empty();
         }
 
@@ -296,8 +324,17 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     public Optional<HqsMessage> deleteMessage(final DeleteMessageRequest request) {
         final String receiptHandle = request.getReceiptHandle();
         final MessageTask task = messageTasks.remove(receiptHandle);
+        final boolean isTaskMissing = (task == null);
+        
+        if (isTaskMissing) {
+            return Optional.empty();
+        }
 
         task.getFuture().cancel(MAY_INTERRUPT);
+
+        metrics.counter("org.bashwork.hqs.database.messages-deleted").inc();
+        metrics.counter("org.bashwork.hqs.database.messages-count").dec();
+
         return Optional.ofNullable(task.getMessage());
     }
 
@@ -317,6 +354,9 @@ public final class HqsDatabaseImpl implements HqsDatabase {
                 messages.add(task.getMessage());
             }
         }
+
+        metrics.counter("org.bashwork.hqs.database.messages-deleted").inc(messages.size());
+        metrics.counter("org.bashwork.hqs.database.messages-count").dec(messages.size());
 
         return messages;
     }
@@ -366,6 +406,12 @@ public final class HqsDatabaseImpl implements HqsDatabase {
         } else {
             messages.offer(message);
         }
+    }
+
+    private void registerMetrics() {
+        metrics.register("org.bashwork.hqs.database.task-count", new Gauge<Integer>(){
+            public Integer getValue() { return messageTasks.size(); }
+        });
     }
 
     /**

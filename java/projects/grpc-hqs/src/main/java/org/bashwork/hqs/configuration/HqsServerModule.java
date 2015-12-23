@@ -8,6 +8,9 @@ import org.bashwork.hqs.ServerMain;
 import org.bashwork.hqs.database.HqsDatabase;
 import org.bashwork.hqs.database.HqsDatabaseImpl;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.JmxReporter;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -24,6 +27,16 @@ public class HqsServerModule extends AbstractModule {
         bind(HqsDatabase.class).to(HqsDatabaseImpl.class);
         bind(HqsGrpc.Hqs.class).to(HqsService.class);
         bind(ScheduledExecutorService.class).toInstance(Executors.newScheduledThreadPool(cores));
+        bind(MetricRegistry.class).toInstance(getMetrics());
         bind(ServerMain.class).asEagerSingleton();
+    }
+
+    private MetricRegistry getMetrics() {
+        final MetricRegistry registry = new MetricRegistry();
+
+        JmxReporter.forRegistry(registry)
+            .build().start();
+
+        return registry;
     }
 }

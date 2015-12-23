@@ -185,7 +185,7 @@ public final class HqsService implements HqsGrpc.Hqs {
         final Optional<HqsMessage> message = database.sendMessage(request);
 
         if (!message.isPresent()) {
-            logger.error("failed to sent message to queue {}", request.getQueueUrl());
+            logger.error("failed to send message to queue {}", request.getQueueUrl());
             throw new CouldNotSendMessageError(request.getMessageBody());
         }
 

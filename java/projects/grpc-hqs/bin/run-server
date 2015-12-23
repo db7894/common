@@ -1,6 +1,6 @@
 #!/bin/bash
 #mvn clean
 pushd ..
-mvn compile
+#mvn compile
 mvn exec:java -Dexec.mainClass="org.bashwork.hqs.ServerMain"
 popd
