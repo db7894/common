@@ -1,5 +1,7 @@
 package org.bashwork.hqs.service;
 
+import static org.bashwork.hqs.service.HqsConstraints.*;
+
 import org.bashwork.hqs.protocol.*;
 import org.bashwork.hqs.service.errors.InvalidRequestError;
 
@@ -22,6 +24,28 @@ public final class HqsServiceValidator {
         isNotEmpty(request.getQueueName(), "QueueName");
         isPositive(request.getDelayInSeconds(), "DelayInSeconds");
         isPositive(request.getVisibilityInSeconds(), "VisibilityTimeoutInSeconds");
+        isPositive(request.getMaxMessageSize(), "MaxMessageSize");
+    }
+
+    /**
+     * Validate the supplied request.
+     *
+     * @param request The request to validate.
+     */
+    public static void validate(final GetQueueAttributesRequest request) {
+        isNotEmpty(request.getQueueUrl(), "QueueUrl");
+    }
+
+    /**
+     * Validate the supplied request.
+     *
+     * @param request The request to validate.
+     */
+    public static void validate(final SetQueueAttributesRequest request) {
+        isNotEmpty(request.getQueueUrl(), "QueueUrl");
+        isPositive(request.getDelayInSeconds(), "DelayInSeconds");
+        isPositive(request.getVisibilityInSeconds(), "VisibilityTimeoutInSeconds");
+        isPositive(request.getMaxMessageSize(), "MaxMessageSize");
     }
 
     /**
@@ -39,7 +63,7 @@ public final class HqsServiceValidator {
      * @param request The request to validate.
      */
     public static void validate(final ListQueuesRequest request) {
-        //isNotEmpty(request.getQueueNamePrefix(), "QueueNamePrefix");
+        isNotNull(request.getQueueNamePrefix(), "QueueNamePrefix");
     }
 
     /**
@@ -70,6 +94,8 @@ public final class HqsServiceValidator {
         isNotEmpty(request.getMessageBody(), "MessageBody");
         isNotEmpty(request.getAttributes(), "Attributes");
         isPositive(request.getDelayInSeconds(), "DelayInSeconds");
+        isLessThan(request.getDelayInSeconds(), MAX_VISIBILITY, "DelayInSeconds");
+        isLessThan(request.getMessageBody().length(), MAX_MESSAGE_SIZE, "MessageBody Size");
     }
 
     /**
@@ -80,6 +106,7 @@ public final class HqsServiceValidator {
     public static void validate(final SendMessageBatchRequest request) {
         isNotEmpty(request.getQueueUrl(), "QueueUrl");
         isValidSendEntries(request.getEntriesList(), "Entries");
+        isLessThan(request.getEntriesCount(), MAX_MESSAGE_COUNT, "Entries Count");
     }
 
     /**
@@ -105,6 +132,8 @@ public final class HqsServiceValidator {
         isNotEmpty(entry.getId(), "Identifier");
         isNotEmpty(entry.getMessageBody(), "MessageBody");
         isPositive(entry.getDelayInSeconds(), "DelayInSeconds");
+        isLessThan(entry.getDelayInSeconds(), MAX_VISIBILITY, "DelayInSeconds");
+        isLessThan(entry.getMessageBody().length(), MAX_MESSAGE_SIZE, "MessageBody Size");
     }
 
     /**
@@ -127,6 +156,7 @@ public final class HqsServiceValidator {
         isNotEmpty(request.getQueueUrl(), "QueueUrl");
         isNotEmpty(request.getReceiptHandle(), "ReceiptHandle");
         isPositive(request.getVisibilityInSeconds(), "VisibilityTimeoutInSeconds");
+        isLessThan(request.getVisibilityInSeconds(), MAX_VISIBILITY, "VisibilityTimeoutInSeconds");
     }
 
     /**
@@ -137,6 +167,7 @@ public final class HqsServiceValidator {
     public static void validate(final ChangeMessageVisibilityBatchRequest request) {
         isNotEmpty(request.getQueueUrl(), "QueueUrl");
         isValidChangeEntries(request.getEntriesList(), "Entries");
+        isLessThan(request.getEntriesCount(), MAX_MESSAGE_COUNT, "Entries Count");
     }
 
     /**
@@ -148,6 +179,7 @@ public final class HqsServiceValidator {
 
         isNotEmpty(entry.getReceiptHandle(), "ReceiptHandle");
         isPositive(entry.getVisibilityInSeconds(), "VisibilityTimeoutInSeconds");
+        isLessThan(entry.getVisibilityInSeconds(), MAX_VISIBILITY, "VisibilityTimeoutInSeconds");
     }
 
     /**
@@ -181,6 +213,18 @@ public final class HqsServiceValidator {
     public static void validate(final DeleteMessageBatchRequest request) {
         isNotEmpty(request.getQueueUrl(), "QueueUrl");
         isNotEmpty(request.getReceiptHandlesList(), "ReceiptHandles");
+    }
+
+    /**
+     * Validate that the supplied string is not null.
+     *
+     * @param value The value of the string to validate.
+     * @param name The name of the field to validate.
+     */
+    private static void isNotNull(final String value, final String name) {
+        if (value == null) {
+            throw new InvalidRequestError(name);
+        }
     }
 
     /**
@@ -231,6 +275,19 @@ public final class HqsServiceValidator {
      */
     private static void isPositive(final int value, final String name) {
         if (value < 0) {
+            throw new InvalidRequestError(name);
+        }
+    }
+
+    /**
+     * Validate that the supplied value is less than its maximum limit.
+     *
+     * @param value The field value to validate.
+     * @param limit The maximum value for this field
+     * @param name The name of the value to test.
+     */
+    private static void isLessThan(final int value, final int limit, final String name) {
+        if (value > limit) {
             throw new InvalidRequestError(name);
         }
     }

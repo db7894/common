@@ -12,10 +12,10 @@ public class HqsQueue {
     private final String name;
     private final String url;
     private final Instant createdTime;
-    private final Long visibilityTimeout;
-    private final Long messageDelay;
+    private final Integer visibilityTimeout;
+    private final Integer messageDelay;
+    private final Integer maxMessageSize;
     // TODO message retention policy
-    // TODO max message size
     // TODO re-drive policy
     // TODO dead letter queue
 
@@ -25,6 +25,7 @@ public class HqsQueue {
         this.createdTime = builder.createdTime;
         this.visibilityTimeout = builder.visibilityTimeout;
         this.messageDelay = builder.messageDelay;
+        this.maxMessageSize = builder.maxMessageSize;
     }
 
     public String getName() {
@@ -39,12 +40,16 @@ public class HqsQueue {
         return createdTime;
     }
 
-    public Long getVisibilityTimeout() {
+    public Integer getVisibilityTimeout() {
         return visibilityTimeout;
     }
 
-    public Long getMessageDelay() {
+    public Integer getMessageDelay() {
         return messageDelay;
+    }
+
+    public Integer getMaxMessageSize() {
+        return maxMessageSize;
     }
 
     @Override
@@ -60,12 +65,14 @@ public class HqsQueue {
             && Objects.equals(this.url, that.url)
             && Objects.equals(this.createdTime, that.createdTime)
             && Objects.equals(this.visibilityTimeout, that.visibilityTimeout)
-            && Objects.equals(this.messageDelay, that.messageDelay);
+            && Objects.equals(this.messageDelay, that.messageDelay)
+            && Objects.equals(this.maxMessageSize, that.maxMessageSize);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url, name, createdTime, visibilityTimeout, messageDelay);
+        return Objects.hash(url, name, createdTime, visibilityTimeout,
+            messageDelay, maxMessageSize);
     }
 
     @Override
@@ -77,8 +84,26 @@ public class HqsQueue {
             .append(", createdTime=").append(createdTime)
             .append(", visibilityTimeout=").append(visibilityTimeout)
             .append(", messageDelay=").append(messageDelay)
+            .append(", maxMessageSize=").append(maxMessageSize)
             .append(" }")
             .toString();
+    }
+
+    /**
+     * Build a new instance of the HqsQueue using an existing message
+     * as a template.
+     *
+     * @param queue The queue to build from.
+     * @return The cloned queue builder.
+     */
+    public static Builder buildFrom(final HqsQueue queue) {
+        return new Builder()
+            .setName(queue.getName())
+            .setUrl(queue.getUrl())
+            .setCreatedTime(queue.getCreatedTime())
+            .setVisibilityTimeout(Duration.ofSeconds(queue.getVisibilityTimeout()))
+            .setMessageDelay(Duration.ofSeconds(queue.getMessageDelay()))
+            .setMaxMessageSize(queue.getMaxMessageSize());
     }
 
     public static Builder newBuilder() {
@@ -91,8 +116,9 @@ public class HqsQueue {
         private String name;
         private String url;
         private Instant createdTime;
-        private Long visibilityTimeout;
-        private Long messageDelay;
+        private Integer visibilityTimeout;
+        private Integer messageDelay;
+        private Integer maxMessageSize;
 
         public Builder setName(String name) {
             this.name = name;
@@ -110,12 +136,17 @@ public class HqsQueue {
         }
 
         public Builder setVisibilityTimeout(Duration visibilityTimeout) {
-            this.visibilityTimeout = visibilityTimeout.getSeconds();
+            this.visibilityTimeout = (int)visibilityTimeout.getSeconds();
             return this;
         }
 
         public Builder setMessageDelay(Duration messageDelay) {
-            this.messageDelay = messageDelay.getSeconds();
+            this.messageDelay = (int)messageDelay.getSeconds();
+            return this;
+        }
+
+        public Builder setMaxMessageSize(Integer maxMessageSize) {
+            this.maxMessageSize = maxMessageSize;
             return this;
         }
 
@@ -125,6 +156,7 @@ public class HqsQueue {
             Objects.requireNonNull(createdTime, "Queue created time is required");
             Objects.requireNonNull(visibilityTimeout, "Queue visibility timeout is required");
             Objects.requireNonNull(messageDelay, "Queue message delay is required");
+            Objects.requireNonNull(maxMessageSize, "Max Message Size is required");
             return new HqsQueue(this);
         }
     }

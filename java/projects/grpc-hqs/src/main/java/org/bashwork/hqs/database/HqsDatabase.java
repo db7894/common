@@ -28,6 +28,22 @@ public interface HqsDatabase {
     Optional<HqsQueue> getQueue(GetQueueUrlRequest request);
 
     /**
+     * Get the attributes of the queue specified.
+     *
+     * @param request The request to handle.
+     * @return The optional queue that is mapped to the supplied name.
+     */
+    Optional<HqsQueue> getQueueAttributes(GetQueueAttributesRequest request);
+
+    /**
+     * Set the attributes of the queue specified.
+     *
+     * @param request The request to handle.
+     * @return The optional queue that is mapped to the supplied name.
+     */
+    Optional<HqsQueue> setQueueAttributes(SetQueueAttributesRequest request);
+
+    /**
      * Delete the supplied queue and all its messages.
      *
      * @param request The request to handle.

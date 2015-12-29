@@ -15,6 +15,8 @@ service Hqs {
     rpc ListQueues (ListQueuesRequest) returns (ListQueuesResponse) {}
     rpc PurgeQueue (PurgeQueueRequest) returns (PurgeQueueResponse) {}
     rpc GetQueueUrl (GetQueueUrlRequest) returns (GetQueueUrlResponse) {}
+    rpc GetQueueAttributes (GetQueueAttributesRequest) returns (GetQueueAttributesResponse) {}
+    rpc SetQueueAttributes (SetQueueAttributesRequest) returns (SetQueueAttributesResponse) {}
     rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
     rpc SendMessageBatch (SendMessageBatchRequest) returns (SendMessageBatchResponse) {}
     rpc ReceiveMessage (ReceiveMessageRequest) returns (ReceiveMessageResponse) {}
@@ -33,6 +35,7 @@ message CreateQueueRequest {
     string queueName = 1;
     int32 delayInSeconds = 2;
     int32 visibilityInSeconds = 3;
+    int32 maxMessageSize = 4;
 }
 
 message CreateQueueResponse {
@@ -46,6 +49,35 @@ message DeleteQueueRequest {
 }
 
 message DeleteQueueResponse {
+    string requestId = 1;
+}
+
+// Get Queue Attirbutes Operation
+message GetQueueAttributesRequest {
+    string requestId = 1;
+    string queueUrl = 2;
+}
+
+message GetQueueAttributesResponse {
+    string requestId = 1;
+    string queueName = 2;
+    string queueUrl = 3;
+    int64 createdTime = 4;
+    int32 visibilityInSeconds = 5;
+    int32 delayInSeconds = 6;
+    int32 maxMessageSize = 7;
+}
+
+// Set Queue Attirbutes Operation
+message SetQueueAttributesRequest {
+    string requestId = 1;
+    string queueUrl = 2;
+    int32 visibilityInSeconds = 3;
+    int32 delayInSeconds = 4;
+    int32 maxMessageSize = 5;
+}
+
+message SetQueueAttributesResponse {
     string requestId = 1;
 }
 

@@ -41,9 +41,6 @@ public final class HqsService implements HqsGrpc.Hqs {
         this.database = requireNonNull(database, "HqsService requires an HqsDatabase");
     }
 
-    // TODO get queue attributes
-    // TODO set queue attributes
-
     /**
      *
      * @param request The request to handle.
@@ -67,6 +64,7 @@ public final class HqsService implements HqsGrpc.Hqs {
             .build();
 
         logger.debug("created queue {}: {}", request.getQueueName(), queue);
+
         observer.onNext(response);
         observer.onCompleted();
     }
@@ -93,6 +91,7 @@ public final class HqsService implements HqsGrpc.Hqs {
             .build();
 
         logger.debug("deleted queue {}", request.getQueueUrl());
+
         observer.onNext(response);
         observer.onCompleted();
     }
@@ -141,6 +140,7 @@ public final class HqsService implements HqsGrpc.Hqs {
             .build();
 
         logger.debug("purged messages from {}", request.getQueueUrl());
+
         observer.onNext(response);
         observer.onCompleted();
     }
@@ -168,6 +168,67 @@ public final class HqsService implements HqsGrpc.Hqs {
             .build();
 
         logger.debug("got the queue url for {}: {}", request.getQueueName(), queue);
+
+        observer.onNext(response);
+        observer.onCompleted();
+    }
+
+    /**
+     *
+     * @param request The request to handle.
+     * @param observer The observer to write the response to.
+     */
+    @Override
+    public void getQueueAttributes(final GetQueueAttributesRequest request,
+        final StreamObserver<GetQueueAttributesResponse> observer) {
+
+        validate(request);
+        final Optional<HqsQueue> queue = database.getQueueAttributes(request);
+
+        if (!queue.isPresent()) {
+            logger.error("failed to get queue attributes {}", request.getQueueUrl());
+            throw new QueueDoesNotExistError(request.getQueueUrl());
+        }
+
+        final GetQueueAttributesResponse response = GetQueueAttributesResponse.newBuilder()
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .setQueueName(queue.get().getName())
+            .setQueueUrl(queue.get().getUrl())
+            .setCreatedTime(queue.get().getCreatedTime().getEpochSecond())
+            .setDelayInSeconds(queue.get().getMessageDelay())
+            .setMaxMessageSize(queue.get().getMaxMessageSize())
+            .setVisibilityInSeconds(queue.get().getVisibilityTimeout())
+            .build();
+
+        logger.debug("got queue attributes for {}: {}", request.getQueueUrl(), queue);
+
+        observer.onNext(response);
+        observer.onCompleted();
+    }
+
+    /**
+     *
+     * @param request The request to handle.
+     * @param observer The observer to write the response to.
+     */
+    @Override
+    public void setQueueAttributes(final SetQueueAttributesRequest request,
+        final StreamObserver<SetQueueAttributesResponse> observer) {
+
+        validate(request);
+        final Optional<HqsQueue> queue = database.setQueueAttributes(request);
+
+        if (!queue.isPresent()) {
+            logger.error("failed to set queue attributes {}", request.getQueueUrl());
+            throw new QueueDoesNotExistError(request.getQueueUrl());
+        }
+
+        final SetQueueAttributesResponse response = SetQueueAttributesResponse.newBuilder()
+            .setRequestId(HqsServiceAdapter.generateRequestId())
+            .build();
+
+        logger.debug("set queue attributes for {}: {}", request.getQueueUrl(), queue);
+
         observer.onNext(response);
         observer.onCompleted();
     }
@@ -195,6 +256,7 @@ public final class HqsService implements HqsGrpc.Hqs {
             .build();
 
         logger.debug("sent the message to queue {}: {}", request.getQueueUrl(), message);
+
         observer.onNext(response);
         observer.onCompleted();
     }
@@ -316,6 +378,7 @@ public final class HqsService implements HqsGrpc.Hqs {
             .build();
 
         logger.debug("deleted message from queue {}: {}", request.getQueueUrl(), message);
+
         observer.onNext(response);
         observer.onCompleted();
     }

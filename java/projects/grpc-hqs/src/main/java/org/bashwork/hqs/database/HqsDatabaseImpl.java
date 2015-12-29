@@ -1,5 +1,6 @@
 package org.bashwork.hqs.database;
 
+import static org.bashwork.hqs.service.HqsConstraints.*;
 import static java.util.Objects.requireNonNull;
 import static org.bashwork.hqs.database.HqsDatabaseAdapter.*;
 import static org.bashwork.hqs.utility.MoreObjects.*;
@@ -29,6 +30,12 @@ import java.util.stream.Collectors;
  */
 public final class HqsDatabaseImpl implements HqsDatabase {
 
+    //
+    // TODO validate constraints set by AWS
+    // - maximum messages per queue (120000) + O(N) check
+    // - maximum delay per message (12 hours) + visibility is additive
+    //
+
     private static final String MISSING = "";
     private static final boolean MAY_INTERRUPT = true;
     private static final Logger logger = LoggerFactory.getLogger(HqsDatabaseImpl.class);
@@ -41,9 +48,25 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     private final ScheduledExecutorService executor;
 
     /**
+     * A collection of common metrics used in the database
+     */
+    private final class Metric {
+        private static final String Namespace = "org.bashwork.hqs.database";
+
+        static final String QueuesCreated = Namespace + ".queues-created";
+        static final String QueuesDeleted = Namespace + ".queues-deleted";
+        static final String QueueCount = Namespace + ".queue-count";
+        static final String MessagesSent = Namespace + ".messages-sent";
+        static final String MessageCount = Namespace + ".messages-count";
+        static final String MessagesReceived = Namespace + ".messages-received";
+        static final String MessagesDeleted = Namespace + ".messages-deleted";
+    }
+
+    /**
      * Initializes a new instance of the HqsDatabaseImpl class.
      *
      * @param executor The executor to run asynchronous operations on.
+     * @param metrics The metrics registry to send metrics to.
      */
     @Inject
     public HqsDatabaseImpl(ScheduledExecutorService executor, MetricRegistry metrics) {
@@ -64,26 +87,41 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     public Optional<HqsQueue> createQueue(final CreateQueueRequest request) {
 
         /**
-         * If the queue name has already been created, then we will simply use
-         * the same values when we update the remaining structures. As such the
-         * first created queue will always continue to exist.
+         * This is the locking operation. The first client to create the queue
+         * will win and the resulting clients will simply perform the same work
+         * using the winning queue. We separate the queueUrl generation so we can
+         * check if _we_ won the creation.
          */
 
+        final String queueUrl = generateQueueUrl(request.getQueueName());
         final HqsQueue queue = queueMetadata.computeIfAbsent(request.getQueueName(),
             (key) -> HqsQueue.newBuilder()
                 .setName(request.getQueueName())
-                .setUrl(generateQueueUrl(request.getQueueName()))
+                .setUrl(queueUrl)
                 .setCreatedTime(Instant.now())
                 .setMessageDelay(Duration.ofSeconds(request.getDelayInSeconds()))
                 .setVisibilityTimeout(Duration.ofSeconds(request.getVisibilityInSeconds()))
+                .setMaxMessageSize(firstPositive(request.getMaxMessageSize(), MAX_MESSAGE_SIZE))
                 .build());
 
-        logger.debug("created queue {} -> {}", queue.getName(), queue.getUrl());
-        metrics.counter("org.bashwork.hqs.database.queues-created").inc();
-        metrics.counter("org.bashwork.hqs.database.queue-count").inc(); // TODO creating same queue will increase this
+        final boolean isCreated = queue.getName().equals(queueUrlToName.get(queueUrl));
+
+        if (!isCreated) {
+            logger.debug("attempted to create existing queue {}", queue.getName());
+            return Optional.empty();
+        }
+
+        /**
+         * These will be no-ops if the queue already exists, however
+         * they will not be reached if the queue was not just created.
+         */
 
         queueUrlToName.putIfAbsent(queue.getUrl(), queue.getName());
         queueMessages.putIfAbsent(queue.getUrl(), new ConcurrentLinkedDeque<>());
+
+        logger.debug("created queue {} -> {}", queue.getName(), queue.getUrl());
+        metrics.counter(Metric.QueuesCreated).inc();
+        metrics.counter(Metric.QueueCount).inc();
 
         return Optional.of(queue);
     }
@@ -95,6 +133,48 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     public Optional<HqsQueue> getQueue(final GetQueueUrlRequest request) {
         final HqsQueue queue = queueMetadata.get(request.getQueueName());
         return Optional.ofNullable(queue);
+    }
+
+    /**
+     * @see HqsDatabase#getQueueAttributes(GetQueueAttributesRequest)
+     */
+    @Override
+    public Optional<HqsQueue> getQueueAttributes(final GetQueueAttributesRequest request) {
+        final String queueName = queueUrlToName.getOrDefault(request.getQueueUrl(), MISSING);
+        final HqsQueue queue = queueMetadata.get(queueName);
+
+        return Optional.ofNullable(queue);
+    }
+
+    /**
+     * @see HqsDatabase#setQueueAttributes(SetQueueAttributesRequest)
+     */
+    @Override
+    public Optional<HqsQueue> setQueueAttributes(final SetQueueAttributesRequest request) {
+        final String queueName = queueUrlToName.getOrDefault(request.getQueueUrl(), MISSING);
+        final HqsQueue oldQueue = queueMetadata.get(queueName);
+        final boolean isQueueAvailable = (oldQueue != null);
+
+        if (isQueueAvailable) {
+            // TODO get largest value
+            final HqsQueue newQueue = HqsQueue.buildFrom(oldQueue)
+                .setMaxMessageSize(request.getMaxMessageSize())
+                .setMessageDelay(Duration.ofSeconds(request.getDelayInSeconds()))
+                .setVisibilityTimeout(Duration.ofSeconds(request.getVisibilityInSeconds()))
+                .build();
+
+            /**
+             * We only try to replace the metadata with the new values once
+             * and if someone beat us to it, we abort and return the current
+             * values to the customer so they can try again.
+             */
+
+            return queueMetadata.replace(queueName, oldQueue, newQueue)
+                ? Optional.of(newQueue)
+                : Optional.of(queueMetadata.get(queueName));
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -113,8 +193,8 @@ public final class HqsDatabaseImpl implements HqsDatabase {
         final boolean isQueueAvailable = (queueName != null);
 
         if (isQueueAvailable) {
-            metrics.counter("org.bashwork.hqs.database.queues-deleted").inc();
-            metrics.counter("org.bashwork.hqs.database.queue-count").dec();
+            metrics.counter(Metric.QueuesDeleted).inc();
+            metrics.counter(Metric.QueueCount).dec();
 
             queueMetadata.remove(queueName);
             queueMessages.remove(request.getQueueUrl());
@@ -153,11 +233,12 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     @Override
     public List<HqsQueue> listQueues(final ListQueuesRequest request) {
         final String prefix = request.getQueueNamePrefix();
-        final boolean isPrefixValid = (prefix != null) && (!prefix.isEmpty());
+        final boolean isPrefixValid = (prefix != null);
 
         if (isPrefixValid) {
             return queueMetadata.values().stream()
                 .filter(queue -> queue.getName().startsWith(prefix))
+                .limit(MAX_LISTED_QUEUE_NAMES)
                 .collect(Collectors.toList());
         }
         return new ArrayList<>(queueMetadata.values());
@@ -183,8 +264,8 @@ public final class HqsDatabaseImpl implements HqsDatabase {
 
         offerWithDelay(message, delayInSeconds, messages);
 
-        metrics.counter("org.bashwork.hqs.database.messages-sent").inc();
-        metrics.counter("org.bashwork.hqs.database.messages-count").inc();
+        metrics.counter(Metric.MessagesSent).inc();
+        metrics.counter(Metric.MessageCount).inc();
 
         return Optional.ofNullable(message);
     }
@@ -213,8 +294,8 @@ public final class HqsDatabaseImpl implements HqsDatabase {
             sentMessages.add(newMessage);
         }
 
-        metrics.counter("org.bashwork.hqs.database.messages-sent").inc(sentMessages.size());
-        metrics.counter("org.bashwork.hqs.database.messages-count").inc(sentMessages.size());
+        metrics.counter(Metric.MessagesSent).inc(sentMessages.size());
+        metrics.counter(Metric.MessageCount).inc(sentMessages.size());
 
         return sentMessages;
     }
@@ -267,7 +348,7 @@ public final class HqsDatabaseImpl implements HqsDatabase {
             receivedMessages.add(newMessage);
         }
 
-        metrics.counter("org.bashwork.hqs.database.messages-received").inc(receivedMessages.size());
+        metrics.counter(Metric.MessagesReceived).inc(receivedMessages.size());
 
         return receivedMessages;
     }
@@ -332,8 +413,8 @@ public final class HqsDatabaseImpl implements HqsDatabase {
 
         task.getFuture().cancel(MAY_INTERRUPT);
 
-        metrics.counter("org.bashwork.hqs.database.messages-deleted").inc();
-        metrics.counter("org.bashwork.hqs.database.messages-count").dec();
+        metrics.counter(Metric.MessagesDeleted).inc();
+        metrics.counter(Metric.MessageCount).dec();
 
         return Optional.ofNullable(task.getMessage());
     }
@@ -409,9 +490,8 @@ public final class HqsDatabaseImpl implements HqsDatabase {
     }
 
     private void registerMetrics() {
-        metrics.register("org.bashwork.hqs.database.task-count", new Gauge<Integer>(){
-            public Integer getValue() { return messageTasks.size(); }
-        });
+        metrics.register("org.bashwork.hqs.database.task-count",
+            (Gauge<Integer>) messageTasks::size);
     }
 
     /**
