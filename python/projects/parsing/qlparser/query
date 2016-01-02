@@ -1,0 +1,22 @@
+{
+  name  # this is a comment
+  email 
+  user(id: 1, date: now) {
+    age {
+      year
+      month
+      day
+    }
+  }
+}
+{
+  ...name 
+  email 
+  user(id: 1, date: now) {
+    age {
+      year
+      month
+      day
+    }
+  }
+}
