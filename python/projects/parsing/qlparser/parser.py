@@ -53,9 +53,6 @@ class Nodes(object):
     INPUT_OBJECT_TYPE_DEFINITION = 'InputObjectTypeDefinition'
     TYPE_EXTENSION_DEFINITION = 'TypeExtensionDefinition'
 
-# TODO Node classes
-class Node(object):pass
-
 #--------------------------------------------------------------------------------
 # Parser
 #--------------------------------------------------------------------------------

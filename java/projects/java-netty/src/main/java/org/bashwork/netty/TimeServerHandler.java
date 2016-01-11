@@ -3,7 +3,7 @@ package org.bashwork.netty;
 public class TimeServerHandler extends ChannelHandlerAdapter {
 
     @Override
-    public void channelActive(final ChannelHandlerContext ctx) { // (1)
+    public void channelActive(final ChannelHandlerContext ctx) {
         final ByteBuf time = ctx.alloc().buffer(4); // (2)
         time.writeInt((int) (System.currentTimeMillis() / 1000L + 2208988800L));
 
