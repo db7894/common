@@ -41,10 +41,6 @@ int main() {
     }
     threads.push_back(std::thread(subscriber, std::ref(queue)));
 
-    //std::for_each(threads, [](std::thread& thread) {
-    //    thread.join();
-    //});
-
     for (auto & thread : threads) {
         thread.join();
     }

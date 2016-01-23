@@ -9,8 +9,8 @@ int main() {
     std::string result;
     bs::locked_queue<std::string> queue;
 
-    for (int i = 0; i < 100; ++i) {
-        queue.push(boost::lexical_cast<std::string>(i));
+    for (int number = 0; number < 100; ++number) {
+        queue.push(boost::lexical_cast<std::string>(number));
     }
 
     while (queue.pop(result)) {

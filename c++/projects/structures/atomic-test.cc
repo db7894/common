@@ -51,18 +51,18 @@ void updater(bsd::atomic<ref_t>& atomic) {
 }
 
 int main() {
+    const unsigned number_of_cpus = std::thread::hardware_concurrency();
     val_t value = "original message";
     ref_t pointer(&value);
     ato_t atomic(pointer);
 
     std::vector<std::thread> threads;
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < number_of_cpus; ++i) {
         threads.push_back(std::thread(updater, std::ref(atomic)));
     }
 
-    for (auto & thread : threads) {
-        thread.join();
-    }
+    std::for_each(threads.begin(), threads.end(),
+        std::mem_fn(&std::thread::join));
 
     ref_t current(atomic.load(bsd::memory_order_acquire));
     std::cout << "version:  " << current.get_version() << std::endl;
