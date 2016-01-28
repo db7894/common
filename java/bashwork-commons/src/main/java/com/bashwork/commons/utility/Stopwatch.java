@@ -1,8 +1,10 @@
-package org.bashwork.commons.utility;
+package com.bashwork.commons.utility;
 
-import static org.bashwork.commons.utility.Validate.notNull;
-import static org.bashwork.commons.utility.Validate.check;
+import static com.bashwork.commons.utility.Validate.notNull;
+import static com.bashwork.commons.utility.Validate.check;
 import java.time.Clock;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple stopwatch using the java.time API.
@@ -29,7 +31,7 @@ public final class Stopwatch {
         return running ? (clock.millis() - startTimeMs + elapsedTimeMs) : elapsedTimeMs;
     }
 
-    public long elapsed(TimeUnit units) {
+    public long elapsed(TimeUnit unit) {
         return unit.convert(elapsedMs(), TimeUnit.MILLISECONDS);
     }
 

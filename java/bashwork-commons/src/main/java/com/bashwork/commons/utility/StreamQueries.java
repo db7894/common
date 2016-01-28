@@ -1,6 +1,5 @@
-package ql.api.itemdb;
+package com.bashwork.commons.utility;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -18,8 +17,8 @@ import java.util.stream.StreamSupport;
  * A collection of simple queries that can be applied to any java collection
  * type without having to deal with any of the java Streams API.
  */
-public final class QX {
-    private QX() { }
+public final class StreamQueries {
+    private StreamQueries() { }
 
     /**
      * Given a collection of values, convert it into a Java8 Stream.
@@ -483,44 +482,6 @@ public final class QX {
 
     public static <T> Optional<T> lastOf(Stream<T> values, Predicate<T> predicate) {
         return values.filter(predicate).reduce((prev, next) -> next);
-    }
-
-    public final class Customer {
-        private final String name;
-        private final int group;
-
-        public Customer(String name, int group) {
-            this.name = name;
-            this.group = group;
-        }
-
-        String getName() { return name; }
-        int getGroup() { return group; }
-
-    }
-}
-
-public final class PX {
-    private PX() { }
-
-    public static <T, R> Predicate<T> notNull(Function<T, R> mapper) {
-        return o -> (o != null) ? (mapper.apply(o) != null) : false;
-    }
-
-    public static <T, R> Predicate<T> isEmpty(Function<T, Collection<R>> mapper) {
-        return o -> mapper.apply(o).isEmpty();
-    }
-
-    public static <T, R> Predicate<T> notEmpty(Function<T, Collection<R>> mapper) {
-        return o -> !mapper.apply(o).isEmpty();
-    }
-
-    public static <T> Predicate<T> isEmptyString(Function<T, String> mapper) {
-        return o -> mapper.apply(o).isEmpty();
-    }
-
-    public static <T> Predicate<T> notEmptyString(Function<T, String> mapper) {
-        return o -> !mapper.apply(o).isEmpty();
     }
 }
 
