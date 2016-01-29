@@ -1,6 +1,6 @@
 package com.bashwork.commons.worker;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 /**
  * An extension to the Supplier interface that allows clients
@@ -10,6 +10,6 @@ import com.google.common.base.Optional;
  */
 public interface EventSource<TEvent> {
     
-    public Optional<TEvent> get();
-    public void confirm(TEvent message);
+    Optional<TEvent> get();
+    void confirm(TEvent message);
 }

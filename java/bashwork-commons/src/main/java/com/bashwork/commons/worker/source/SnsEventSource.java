@@ -3,9 +3,9 @@ package com.bashwork.commons.worker.source;
 import static org.apache.commons.lang3.Validate.notBlank;
 import static org.apache.commons.lang3.Validate.notNull;
 
+import com.bashwork.commons.serialize.Serializer;
+import com.bashwork.commons.serialize.string.JsonStringSerializer;
 import com.bashwork.commons.worker.model.AmazonSnsDTO;
-import com.bashwork.commons.serialize.JsonStringSerializer;
-import com.bashwork.commons.serialize.StringSerializer;
 import com.bashwork.commons.worker.EventSource;
 import com.bashwork.commons.worker.TaggedType;
 import com.amazonaws.services.sqs.AmazonSQS;
@@ -13,7 +13,8 @@ import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
-import com.google.common.base.Optional;
+
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,7 +29,7 @@ public class SnsEventSource<TEvent> implements EventSource<TaggedType<TEvent>> {
     private final Class<TEvent> eventClass; 
     private final AmazonSQS client;
     private final String queueUrl;
-    private final StringSerializer serializer;
+    private final Serializer<String> serializer;
     
     /**
      * Initializes a new instance of the the SnsEventSupplier.
@@ -50,7 +51,7 @@ public class SnsEventSource<TEvent> implements EventSource<TaggedType<TEvent>> {
      * @param serializer The serializer to operate with.
      */
     public SnsEventSource(AmazonSQS client, String queueUrl,
-        Class<TEvent> eventClass, StringSerializer serializer) {
+        Class<TEvent> eventClass, Serializer<String> serializer) {
         
         this.client = notNull(client, "Must supply a valid SQS client");
         this.queueUrl = notBlank(queueUrl, "Must supply a valid SQS url");
@@ -90,7 +91,7 @@ public class SnsEventSource<TEvent> implements EventSource<TaggedType<TEvent>> {
         ReceiveMessageResult result = client.receiveMessage(request);
 
         if (result.getMessages().isEmpty()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         
         return Optional.of(result.getMessages().get(0));
@@ -130,6 +131,6 @@ public class SnsEventSource<TEvent> implements EventSource<TaggedType<TEvent>> {
                 logger.error("Failed to decode the supplied message", ex);
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 }

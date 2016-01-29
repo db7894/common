@@ -2,7 +2,7 @@ package com.bashwork.commons.worker;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;

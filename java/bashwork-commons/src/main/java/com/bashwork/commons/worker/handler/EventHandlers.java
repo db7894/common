@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.bashwork.commons.worker.EventHandler;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -62,7 +62,7 @@ public class EventHandlers {
 
             @Override
             public void handle(T event) {
-                if (shouldHandle.apply(event)) {
+                if (shouldHandle.test(event)) {
                     handler.handle(event);
                 }
             }            
@@ -81,7 +81,7 @@ public class EventHandlers {
      * @param router The routing function to route an event
      * @return An initialized event handler.
      */
-    public static <K, T> EventHandler<T>routingHandler(final Map<K, EventHandler<? extends T>> routes,
+    public static <K, T> EventHandler<T> routingHandler(final Map<K, EventHandler<T>> routes,
         final Function<T, K> router) {
         
         return new EventHandler<T>() {
@@ -110,7 +110,7 @@ public class EventHandlers {
      * @param fallback The handler for an un-routable event
      * @return An initialized event handler.
      */
-    public static <K, T> EventHandler<T>routingHandler(final Map<K, EventHandler<? extends T>> routes,
+    public static <K, T> EventHandler<T>routingHandler(final Map<K, EventHandler<T>> routes,
         final Function<T, K> router, final EventHandler<T> fallback) {
         
         return new EventHandler<T>() {

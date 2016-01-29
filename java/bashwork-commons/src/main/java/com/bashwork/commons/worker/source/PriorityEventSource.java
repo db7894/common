@@ -3,10 +3,11 @@ package com.bashwork.commons.worker.source;
 import static org.apache.commons.lang3.Validate.notNull;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.bashwork.commons.worker.EventSource;
 import com.bashwork.commons.worker.TaggedType;
-import com.google.common.base.Optional;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,7 +25,7 @@ public class PriorityEventSource<TEvent> implements EventSource<TaggedType<TEven
 
     static final Logger logger = LogManager.getLogger(PriorityEventSource.class);
     private static final String DELIMITER = ":";
-    private final Optional<TaggedType<TEvent>> EMPTY = Optional.<TaggedType<TEvent>> absent();
+    private final Optional<TaggedType<TEvent>> EMPTY = Optional.<TaggedType<TEvent>>empty();
     private final List<EventSource<TaggedType<TEvent>>> sources;
 
     /**
@@ -75,7 +76,7 @@ public class PriorityEventSource<TEvent> implements EventSource<TaggedType<TEven
      * @param index The source index to add to the tag.
      * @return The tagged event.
      */
-    private TaggedType<TEvent> tagEvent(TEvent event, int index) {
+    private TaggedType<TEvent> tagEvent(TaggedType<TEvent> event, int index) {
         String tag = String.format("%d%s%s", index, DELIMITER, event.getTag());
         return TaggedType.create(event.getValue(), tag);
     }

@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.bashwork.commons.worker.EventSource;
 import com.bashwork.commons.worker.TaggedType;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class InMemoryEventSource<TEvent> implements EventSource<TaggedType<TEvent>> {
 
-    static final Logger logger = LogManager.getLogger(InMemoryEventSource.class);
+    private static final Logger logger = LogManager.getLogger(InMemoryEventSource.class);
     private final AtomicLong counter = new AtomicLong();
     private final Queue<TEvent> queue;
 
@@ -40,7 +40,7 @@ public class InMemoryEventSource<TEvent> implements EventSource<TaggedType<TEven
         TEvent event = queue.poll();
         return (event != null)
             ? Optional.of(tagEvent(event))
-            : Optional.<TaggedType<TEvent>> absent();
+            : Optional.<TaggedType<TEvent>> empty();
     }
 
     /**
