@@ -1,4 +1,6 @@
 def mapping(transform):
+    '''
+    '''
     def transducer(step):
         def new_reducer(total, piece):
             return step(total, transform(piece))
@@ -6,6 +8,8 @@ def mapping(transform):
     return transducer
 
 def filtering(predicate):
+    '''
+    '''
     def transducer(step):
         def new_reducer(total, piece):
             return step(total, transform(piece)) if predicate(piece) else total
@@ -13,6 +17,8 @@ def filtering(predicate):
     return transducer
 
 def mapcatting(flatten):
+    '''
+    '''
     def transducer(step):
         def new_reducer(total, piece):
             return reduce(step, flatten(piece), total)

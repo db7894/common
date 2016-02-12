@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doThrow;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Optional;
 
 import com.amazonaws.services.s3.model.*;
 import org.junit.Before;
@@ -17,11 +18,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import zaaa.com.google.common.io.ByteStreams;
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.google.common.base.Optional;
+import com.google.common.io.ByteStreams;
 
 /**
  * Code to validate the S3Filesystem class.

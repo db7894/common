@@ -239,36 +239,38 @@ class Writer(Monad):
         return Writer(value, functor.diary, self.monoid)
 
 #------------------------------------------------------------
-# Reader Monad TODO
+# Reader Monad
 #------------------------------------------------------------
 
 class Reader(Monad):
-    ''' A Writer that contains an underlying value as well as
-    an accumulated diary of events.
+    ''' A Reader that is a monad that results in a chain of
+    functions missing an initial value to apply.
+
+    TODO how to deal with arity?
     '''
 
     __slots__ = ['value']
 
     def __init__(self, value):
-        if callable(value):
-            self.value = value
-        else: self.value = constant(value)
+        if not callable(value):
+            value = constant(value)
+        self.value = value
 
     def flat_map(self, function):
-        return Reader(lambda x: function(self.value()(x))(x))
+        return Reader(lambda x: function(self.value(x))(x))
 
     @classmethod
     def unit(klass, value):
         return klass(constant(value))
 
     def map(self, function):
-        return Reader(lambda x: function(self.value()(x)))
+        return Reader(lambda x: function(self.value(x)))
 
     def apply(self, functor):
-        return Reader(lambda x: self(x)(functor(x)))
+        return Reader(lambda x: functor.map(self.value(x)))
 
     def __call__(self, *args):
-        pass# TODO
+        return self.value(*args)
 
 #------------------------------------------------------------
 # Continuation Monad TODO

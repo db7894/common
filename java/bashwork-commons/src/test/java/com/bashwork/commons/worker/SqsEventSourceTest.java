@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Matchers.any;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,8 +21,6 @@ import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
-import com.google.common.base.Optional;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class SqsEventSourceTest {

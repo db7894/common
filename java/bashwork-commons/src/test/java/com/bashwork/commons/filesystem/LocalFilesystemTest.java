@@ -1,6 +1,5 @@
 package com.bashwork.commons.filesystem;
 
-import static com.bashwork.commons.activity.UnitTestHelper.getPathForImage;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -8,11 +7,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.base.Optional;
 import com.google.common.io.ByteStreams;
 
 /**
@@ -21,10 +20,8 @@ import com.google.common.io.ByteStreams;
 public class LocalFilesystemTest {
 
     private static final String ROOT = "/tmp/";
-
-    private static final String PATH = getPathForImage("Warehouse", "LocalFilesystemTest");
+    private static final String PATH = ROOT + "image.jpeg";
     private static final FileType TYPE = FileType.IMAGE;
-
     private static final byte[] DATA_BYTES = "payload".getBytes();
 
     private Filesystem filesystem;
@@ -167,5 +164,4 @@ public class LocalFilesystemTest {
         byte[] result = ByteStreams.toByteArray(object.getData());
         assertArrayEquals(DATA_BYTES, result);
     }
-
 }

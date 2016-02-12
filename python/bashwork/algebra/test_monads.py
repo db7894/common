@@ -3,6 +3,7 @@ import unittest
 from bashwork.algebra.functor import FunctorLaws
 from bashwork.algebra.applicative import ApplicativeLaws
 from bashwork.algebra.monad import *
+from bashwork.algebra.monads import *
 
 class MonadsTest(unittest.TestCase):
 
@@ -76,6 +77,13 @@ class MonadsTest(unittest.TestCase):
     #    FunctorLaws.validate(Writer)
     #    ApplicativeLaws.validate(Writer)
     #    MonadLaws.validate(Writer)
+
+    #
+    # this will not work unless we __call__ the methods
+    # as there is not a great way to compare two free
+    # functions in python::
+    # lambda _: 2 == lambda _: 2
+    #
 
     #def test_reader_interface(self):
     #    FunctorLaws.validate(Reader)

@@ -6,12 +6,12 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bashwork.commons.serialize.Serializers;
 import org.junit.Test;
 
 import com.bashwork.commons.filesystem.Filesystems;
 import com.bashwork.commons.notification.NotifierServices;
 import com.bashwork.commons.producer.Producers;
-import com.bashwork.commons.serializer.Serializers;
 import com.bashwork.commons.supplier.Suppliers;
 import com.bashwork.commons.supplier.sqs.SqsAttribute;
 import com.bashwork.commons.utility.Validate;

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.Thread;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -19,7 +20,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.bashwork.commons.common.TestPojo;
 import com.bashwork.commons.worker.handler.EventHandlers;
 import com.bashwork.commons.worker.source.EventSources;
-import com.google.common.base.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventWorkerTest {
@@ -27,8 +27,8 @@ public class EventWorkerTest {
     private static final String PAYLOAD = "hello world";
     private static final String TAG = "message tag";
     private static final TaggedType<String> TAGGED = new TaggedType<String>(PAYLOAD, TAG);
-    private static final Optional<TaggedType<String>> MESSAGE = Optional.of(TAGGED);    
-    private static final Optional<TaggedType<String>> EMPTY = Optional.absent();
+    private static final Optional<TaggedType<String>> MESSAGE = Optional.of(TAGGED);
+    private static final Optional<TaggedType<String>> EMPTY = Optional.empty();
     
     @Mock private EventSource<TaggedType<String>> source;
     @Mock private EventHandler<String> handler;

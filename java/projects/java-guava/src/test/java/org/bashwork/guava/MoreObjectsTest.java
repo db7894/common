@@ -6,8 +6,9 @@ import static org.junit.Assert.assertFalse;
 import static org.hamcrest.Matchers.is;
 
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import org.junit.Test;
-import java.util.Comparator;
 import java.util.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.MoreObjects;
@@ -69,5 +70,29 @@ public final class MoreObjectsTest {
         assertTrue(person.equals(person));
         assertFalse(person.equals(null));
         assertFalse(person.equals(person2));
+    }
+
+    @Test
+    public void test_ordering_methods() {
+        final Ordering<Person> ordering = Ordering.natural();
+        final Person p1 = new Person("Ricky", 25);
+        final Person p2 = new Person("Ricky", 26);
+
+        assertThat(ordering.max(p1, p2), is(p2));
+        assertThat(ordering.min(p1, p2), is(p1));
+        assertThat(ordering.reversed().compare(p1, p2), is(1));
+        assertThat(ordering.compare(p1, p2), is(-1));
+        assertThat(ordering.isOrdered(Lists.newArrayList(p1, p2)), is(true));
+    }
+
+    /**
+     * Works by using an index map such that { key -> counter } and then it simply
+     * subtracts the looked up values of each key.
+     */
+    @Test
+    public void test_explicit_ordering() {
+        final Ordering<Integer> ordering = Ordering.explicit(1, 5, 3, 6, 7);
+        assertThat(ordering.isOrdered(Lists.newArrayList(1, 5, 3, 6, 7)), is(true));
+        assertThat(ordering.isOrdered(Lists.newArrayList(1, 3, 5, 6, 7)), is(false));
     }
 }

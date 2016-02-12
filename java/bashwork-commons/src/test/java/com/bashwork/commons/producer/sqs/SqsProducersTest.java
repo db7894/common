@@ -11,9 +11,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.bashwork.commons.serializer.Serializer;
-import com.bashwork.commons.serializer.TestPojo;
-import com.bashwork.commons.serializer.string.JsonStringSerializer;
+import com.bashwork.commons.serialize.Serializer;
+import com.bashwork.commons.serialize.TestPojo;
+import com.bashwork.commons.serialize.string.JsonStringSerializer;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;

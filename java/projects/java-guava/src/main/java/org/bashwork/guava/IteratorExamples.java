@@ -92,14 +92,16 @@ public final class IteratorExamples {
 
     /**
      * Given an iterator, check during usage that it indeed is in order,
-     * otherwise throw an {@link AssertError}.
+     * otherwise throw an {@link AssertionError}.
      *
      * @param iterator The iterator to check for order.
      * @param comparator The comparator to use for checking order.
      * @param <E> The type of the value being iterated.
      * @return The order checking iterator.
      */
-    public static <E> Iterator<E> orderChecking(Iterator<E> iterator, Comparator<E> comparator) {
+    public static <E> Iterator<E> orderChecking(final Iterator<E> iterator,
+        final Comparator<E> comparator) {
+
         final PeekingIterator<E> peeker = Iterators.peekingIterator(iterator);
         return new AbstractIterator<E>() {
             @Override
@@ -118,13 +120,13 @@ public final class IteratorExamples {
 
     /**
      * Given an iterator, check during usage that it indeed is in order,
-     * otherwise throw an {@link AssertError}.
+     * otherwise throw an {@link AssertionError}.
      *
      * @param iterator The iterator to check for order.
      * @param <E> The type of the value being iterated (must be Comparable).
      * @return The order checking iterator.
      */
-    public static <E extends Comparable<E>> Iterator<E> orderChecking(Iterator<E> iterator) {
+    public static <E extends Comparable<E>> Iterator<E> orderChecking(final Iterator<E> iterator) {
         final PeekingIterator<E> peeker = Iterators.peekingIterator(iterator);
         return new AbstractIterator<E>() {
             @Override

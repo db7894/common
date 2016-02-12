@@ -5,8 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.bashwork.commons.serializer.Serializers;
-import com.bashwork.commons.serializer.SpecificSerializer;
+import com.bashwork.commons.serialize.Serializers;
+import com.bashwork.commons.serialize.SpecificSerializer;
 
 public class WorkflowRequestTest {
 

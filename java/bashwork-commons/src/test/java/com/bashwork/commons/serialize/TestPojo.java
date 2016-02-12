@@ -1,4 +1,4 @@
-package com.bashwork.commons.serializer;
+package com.bashwork.commons.serialize;
 
 import java.util.Objects;
 

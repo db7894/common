@@ -10,8 +10,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.bashwork.commons.metrics.MetricFactory;
-import com.bashwork.commons.metrics.NullMetricFactory;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
@@ -22,7 +20,6 @@ import com.amazonaws.services.sns.model.PublishResult;
 @RunWith(MockitoJUnitRunner.class)
 public class SnsNotifierServiceTest {
 
-    private static final MetricFactory METRICS = new NullMetricFactory();
     private static final String IDENTIFIER = "63a3f6b6-d533-4a47-aef9-fcf5cf758c76";
     private static final String MESSAGE = "s3://bucket/filename.png";
     private static final String NULL_MESSAGE = null;
@@ -40,19 +37,13 @@ public class SnsNotifierServiceTest {
 
     @Before
     public void setup() {
-        service = new SnsNotifierService(client, METRICS);
+        service = new SnsNotifierService(client);
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void create_with_bad_client() {
         AmazonSNS client = null;
-        new SnsNotifierService(client, METRICS);
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void create_with_bad_metrics() {
-        MetricFactory metrics = null;
-        new SnsNotifierService(client, metrics);
+        new SnsNotifierService(client);
     }
 
     @Test(expected=NotificationException.class)
