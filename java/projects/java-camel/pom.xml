@@ -3,17 +3,12 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
-
-	<parent>
-		<groupId>org.bashwork</groupId>
-		<artifactId>examples</artifactId>
-		<version>1.0</version>
-	</parent>
-
-	<artifactId>camel-examples</artifactId>
-	<packaging>jar</packaging>
-	<name>Camel :: Examples</name>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.bashwork</groupId>
+    <artifactId>java-camel</artifactId>
+    <version>1.0</version>
+    <name>java-camel</name>
+    <url>http://maven.apache.org</url>
 	<description>A collection of camel examples</description>
 
 	<dependencies>
@@ -22,13 +17,29 @@
 	<dependency>
 		<groupId>org.apache.camel</groupId>
 		<artifactId>camel-core</artifactId>
-	</dependency>
+        <version>2.16.1</version>
+    </dependency>
+
 	<dependency>
 		<groupId>org.apache.camel</groupId>
 		<artifactId>camel-jms</artifactId>
+        <version>2.16.1</version>
+    </dependency>
+
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-rx</artifactId>
+        <version>2.16.1</version>
+    </dependency>
+
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-test</artifactId>
+        <version>2.16.1</version>
+        <scope>test</scope>
 	</dependency>
 
-    <!-- ActiveMQ dependencies -->
+    <!-- ActiveMQ dependencies
 	<dependency>
 		<groupId>org.apache.activemq</groupId>
 		<artifactId>activemq-core</artifactId>
@@ -42,16 +53,28 @@
 				<artifactId>camel-web</artifactId>
 			</exclusion>
 		</exclusions>
-	</dependency>
+    </dependency>
+    -->
 
     <!-- logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.12</version>
     </dependency>
+
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>2.0.2-beta</version>
+      <scope>test</scope>
     </dependency>
 
 	</dependencies>

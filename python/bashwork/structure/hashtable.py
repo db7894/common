@@ -1,3 +1,5 @@
+import random
+
 class Entry(object):
 
     def __init__(self, key, value, link=None):
@@ -56,3 +58,45 @@ class HashTable(object):
 
     def __len__(self):
         return self.length
+
+class RandomHashTable(object):
+    ''' Implement a hash table with methods get, put, remove, and
+    a new method random which will return a uniformally random
+    value from the hash table all in amortized constant time.
+    '''
+
+    def __init__(self):
+        self.lookup = dict()                 # key   -> values[index]
+        self.values = []                     # index -> (key, value)
+
+    def get(self, key):
+        index = self.lookup[key]             # get the location of the value
+        return self.values[index][1]         # return the underlying value
+
+    def put(self, key, value):
+        self.lookup[key] = len(self.values)  # store our index location
+        self.values.append((key, value))     # always add to the end of the values
+
+    def remove(self, key):
+        index  = self.lookup.pop(key)        # remove index of old value
+        _, value = self.values[index]        # get value for removed key
+        self.values[index] = self.values[-1] # fill in slot with last value
+        key, _ = self.values.pop()           # remove duplicate last value in list
+        self.lookup[key] = index             # populate the lookup index
+        return value                         # return removed value
+
+    def random(self):
+        index = random.randint(0, len(self.values) - 1) # uniformly choose an entry
+        return self.values[index][1]         # return the underlying value
+
+    def __str__(self): return str(self.values)
+    def __iter__(self): return iter(self.values)
+    def __len__(self): return len(self.values)
+    def __contains__(self, key): return key in self.lookup
+
+    __delitem__ = remove
+    __setitem__ = put
+    __getitem__ = get
+    __repr__ = __str__
+    __unicode__ = __str__
+

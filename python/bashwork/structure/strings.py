@@ -145,12 +145,12 @@ def string_set_cover(letters, string):
     violated = set(letters)                      # current uncovered letters
 
     while r < len(string):                       # while our range is less than the word
-        if not violated:                         # if we are corrently covered
+        if not violated:                         # if we are currently covered
             answer = min(answer, (r - l + 1, l)) # see if we are the smallest cover range
             counter.subtract(string[l])          # remove this character from our counter
             if string[l] in letters and counter[string[l]] == 0: # if our range no longer covers the set
                 violated.add(string[l])          # add this char to the set of uncovered
-            l += 1                               # increaes the left hand range
+            l += 1                               # increases the left hand range
         else:                                    # otherwise we have to cover the set
             r += 1                               # keep moving right until
             if r < len(string):                  # we are longer than the string
@@ -169,7 +169,7 @@ def ransom_note(note, magazines):
     :params magazines: The letters we have available
     :returns: True if you can write the magazine, False otherwise
     '''
-    counts  = {chr(a):0 for a in range(256)}
+    counts  = { chr(a):0 for a in range(256) }
     letters = iter(magazines)
 
     for entry in note:

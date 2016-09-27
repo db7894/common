@@ -96,6 +96,7 @@ class BinaryNode(object):
         ''' Insert the supplied point into the tree
 
         :param value: The value to insert into the tree
+        :returns: The newly created node
         '''
         curr, node = self, type(self)(value)
         while curr:
@@ -106,6 +107,7 @@ class BinaryNode(object):
             if curr.value < value:
                 if curr.right: curr = curr.right
                 else: curr.right = node
+        return node
 
     def remove(self, value):
         ''' Remove the supplied point from the tree
